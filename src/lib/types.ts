@@ -1,57 +1,17 @@
-// Tipi che rispecchiano il modello dati Postgres (design_handoff_cusbros/README.md → Data model),
-// in camelCase. Le date sono stringhe ISO 8601 con offset (timestamptz).
+// Tipi ricavati dallo schema Drizzle (src/db/schema.ts).
+import type { matchSets, matches, seasons, standings, teams } from "@/db/schema";
 
-export type Season = {
-  id: number;
-  name: string;
-  isCurrent: boolean;
-};
+export type Season = typeof seasons.$inferSelect;
+export type Team = typeof teams.$inferSelect;
+export type Match = typeof matches.$inferSelect;
+export type MatchSet = typeof matchSets.$inferSelect;
+export type Standing = typeof standings.$inferSelect;
 
-export type Team = {
-  id: number;
-  name: string;
-  isUs: boolean;
-};
+// Viste con le relazioni già risolte, come le restituisce src/lib/data.ts.
 
-export type MatchStatus = "scheduled" | "live" | "finished";
-
-export type Match = {
-  id: number;
-  seasonId: number;
-  round: number;
-  startsAt: string;
-  /** true = giochiamo in casa */
-  home: boolean;
-  opponentId: number;
-  venue: string;
-  status: MatchStatus;
-  mvpPlayerId: number | null;
-};
-
-/** Parziale di un set, già orientato noi/loro. */
-export type MatchSet = {
-  id: number;
-  matchId: number;
-  n: number;
-  us: number;
-  them: number;
-};
-
-export type Standing = {
-  id: number;
-  seasonId: number;
-  teamId: number;
-  points: number;
-  played: number;
-  won: number;
-  lost: number;
-  setsWon: number;
-  setsLost: number;
-};
-
-// Viste con le relazioni già risolte, come le restituirà il livello dati.
-
+/** Partita con data fissata, avversario e parziali in ordine. */
 export type MatchWithDetails = Match & {
+  startsAt: Date;
   opponent: Team;
   sets: MatchSet[];
 };

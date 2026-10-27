@@ -63,8 +63,12 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 
 ---
 
+## 📌 Da fare (Max)
+- [ ] **Classifica:** decidere se inserita a mano o calcolata. Il DB ha già la tabella `standings` (va bene per entrambe le strade).
+- [ ] **"Andata" nel Calendario:** decidere se aggiungere la fase del campionato al modello dati.
+
 ## Note e decisioni aperte
-- **Classifica:** probabilmente inserita a mano (le partite delle altre squadre non le registriamo). Da confermare prima dello step 2.
+- **Classifica:** probabilmente inserita a mano (le partite delle altre squadre non le registriamo). Vedi "Da fare".
 - **npm audit:** 2 avvisi su `postcss` interno a Next 15 (solo build-time). La "fix" proposta è passare a Next 16: non applicata, si rivaluta quando esce una patch 15.x.
 - **Password dimenticata:** per ora solo messaggio "contatta l'admin".
 - **"Andata" nel Calendario:** testo fisso; il modello dati non ha la fase del campionato. Da decidere se aggiungerla.

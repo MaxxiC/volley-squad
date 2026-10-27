@@ -46,7 +46,7 @@ function NextMatchCard({ match, us }: { match: MatchWithDetails; us: Team }) {
           </span>
           <span className="text-muted">{match.venue}</span>
         </div>
-        <Countdown target={match.startsAt} />
+        <Countdown target={match.startsAt.toISOString()} />
       </div>
     </section>
   );
