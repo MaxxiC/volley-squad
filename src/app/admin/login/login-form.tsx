@@ -16,7 +16,15 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
       <input type="hidden" name="callbackUrl" value={callbackUrl ?? ""} />
       <label className="flex flex-col gap-2">
         <span className={LABEL}>Email</span>
-        <input name="email" type="email" required autoComplete="username" placeholder="nome@cusbros.it" className={INPUT} />
+        <input
+          name="email"
+          type="email"
+          required
+          autoComplete="username"
+          placeholder="nome@cusbros.it"
+          defaultValue={state.email}
+          className={INPUT}
+        />
       </label>
       <label className="flex flex-col gap-2">
         <span className={LABEL}>Password</span>
