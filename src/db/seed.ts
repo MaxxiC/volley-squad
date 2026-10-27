@@ -1,8 +1,9 @@
 // Dati iniziali: Libertas Cup Mix 2027, girone Challenge (calendario ufficiale SportAdmin al 27/10/2026).
-// Si eseguono solo su DB vuoto. La rosa è ancora quella di esempio dei prototipi.
+// Si eseguono solo su DB vuoto.
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import { HOME_VENUE } from "../lib/club";
 import { fromRomeInput } from "../lib/format";
+import type { PlayerRole } from "../lib/players";
 import * as schema from "./schema";
 import { matchSets, matches, players, seasons, standings, teams } from "./schema";
 
@@ -75,20 +76,23 @@ const STANDINGS: [string, number, number, number, number, number][] = [
   ["Stordyteam", 0, 0, 1, 0, 3],
 ];
 
-// Rosa di esempio (prototipi): da sostituire con quella vera.
-const PLAYERS: [number, string, string, (typeof schema.playerRole.enumValues)[number]][] = [
-  [7, "Luca", "Bianchi", "P"],
-  [54, "Marco", "Rossi", "S"],
-  [67, "Andrea", "Conti", "O"],
-  [11, "Davide", "Ferri", "C"],
-  [30, "Matteo", "Gallo", "S"],
-  [4, "Simone", "Neri", "C"],
-  [1, "Giorgio", "Riva", "L"],
-  [9, "Paolo", "Greco", "S"],
-  [18, "Fabio", "Marino", "P"],
-  [22, "Nicola", "Villa", "C"],
-  [15, "Tommaso", "Leone", "O"],
-  [3, "Stefano", "Moro", "L"],
+// Rosa 2026/27. Numeri di maglia provvisori (1–14) finché non arrivano quelli veri;
+// cognome vuoto dove non ancora noto.
+const PLAYERS: [number, string, string, PlayerRole][] = [
+  [1, "Micol", "Capelli", "O"],
+  [2, "Alessia", "Federici", "L"],
+  [3, "Claudio", "", "S"],
+  [4, "Tommaso", "Clementi", "S"],
+  [5, "Gabriele", "Placucci", "C"],
+  [6, "Kevi", "", "O"],
+  [7, "Mattia", "Botticelli", "S"],
+  [8, "Simone", "Rega", "C"],
+  [9, "Daniel", "Casadei", "L"],
+  [10, "Mattia", "Fish", "S"],
+  [11, "Francesco", "", "C"],
+  [12, "Maria Chiara", "", "P"],
+  [13, "Rebecca", "", "P"],
+  [14, "Massimiliano", "Conti", "C"],
 ];
 
 type AnyDb = PgDatabase<PgQueryResultHKT, typeof schema>;

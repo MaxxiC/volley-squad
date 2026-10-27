@@ -17,11 +17,12 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
+import { PLAYER_ROLES } from "../lib/players";
 
 export const userRole = pgEnum("user_role", ["admin", "coach"]);
 export const matchStatus = pgEnum("match_status", ["scheduled", "live", "finished"]);
 export const matchPhase = pgEnum("match_phase", ["andata", "ritorno"]);
-export const playerRole = pgEnum("player_role", ["P", "S", "O", "C", "L"]);
+export const playerRole = pgEnum("player_role", PLAYER_ROLES);
 export const eventKind = pgEnum("event_kind", ["action", "sub", "rotation", "set_end"]);
 export const eventSkill = pgEnum("event_skill", [
   "serve",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { SegmentedField } from "@/components/admin/segmented-field";
 import { BTN_DANGER, BTN_GOLD_OUTLINE, BTN_PRIMARY, BTN_SECONDARY, INPUT, LABEL } from "@/components/admin/styles";
 import type { ActionResult } from "@/lib/actions";
 import { HOME_VENUE, TEAM_NAME } from "@/lib/club";
@@ -14,40 +15,6 @@ type Props = {
   onClose: () => void;
   onDuplicated: (id: number) => void;
 };
-
-const SEGMENT = "flex-1 min-h-11 cursor-pointer rounded-chip px-1 font-display text-sm font-bold tracking-[.04em] uppercase";
-
-/** Scelta tra due opzioni (Casa/Trasferta, Andata/Ritorno). */
-function Segmented<T extends string | boolean>({
-  label,
-  value,
-  onChange,
-  options,
-}: {
-  label: string;
-  value: T;
-  onChange: (value: T) => void;
-  options: { value: T; label: string }[];
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <span className={LABEL}>{label}</span>
-      <div role="group" aria-label={label} className="flex gap-1 rounded-btn border border-line p-0.5">
-        {options.map((opt) => (
-          <button
-            key={opt.label}
-            type="button"
-            aria-pressed={value === opt.value}
-            onClick={() => onChange(opt.value)}
-            className={`${SEGMENT} ${value === opt.value ? "bg-gold text-bg" : "bg-transparent text-muted"}`}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 function initialSlots(match?: AdminMatch): SetSlot[] {
   return Array.from({ length: SET_SLOTS }, (_, i) => {
@@ -107,7 +74,7 @@ export function MatchEditor({ match, timeChips, onClose, onDuplicated }: Props) 
             className={INPUT}
           />
         </label>
-        <Segmented
+        <SegmentedField
           label="Campo"
           value={home}
           onChange={setHome}
@@ -116,7 +83,7 @@ export function MatchEditor({ match, timeChips, onClose, onDuplicated }: Props) 
             { value: false, label: "Trasferta" },
           ]}
         />
-        <Segmented
+        <SegmentedField
           label="Fase"
           value={phase}
           onChange={setPhase}

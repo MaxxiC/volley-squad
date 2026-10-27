@@ -33,12 +33,12 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] Pagina Admin Login + shell admin (header, tab, Esci) con segnaposto delle 4 sezioni
 - [x] Verifica end-to-end su Neon reale (migrate, seed, build, login vero, Esci)
 
-## 3 · Admin Partite + Giocatori
+## 3 · Admin Partite + Giocatori ✅
 - [x] Partite: lista, form espandibile, parziali validati, crea/modifica/elimina con conferma
 - [x] Scorciatoie: orari frequenti (i 3 più usati), autocompletamento palestra e avversario, "Usa PalaCUS", "Duplica come ritorno"
 - [x] Gestione classifica (`/admin/partite/classifica`, G = V + P calcolato)
 - [x] `revalidatePath` di Home e Calendario dopo ogni modifica
-- [ ] Giocatori: lista + form (numero, nome, cognome, ruolo, attivo), scheda base
+- [x] Giocatori: lista + form (numero, nome, cognome, ruolo, attivo), scheda base con presenze/stelline/MVP; numero unico tra gli attivi; eliminazione solo senza dati di partita (altrimenti si disattiva)
 
 ## 4 · Live 🌿 `feat/live`
 - [ ] Prepara Live: wizard Presenti → Formazione → Inizio (+ scorciatoie)
@@ -74,7 +74,13 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [ ] **Utenti staff:** crea te stesso (`admin`) e i 2 allenatori (`coach`) con `npm run user:create`.
 - [ ] **Classifica:** decidere se inserita a mano o calcolata. Il DB ha già la tabella `standings` (va bene per entrambe le strade).
 - [x] **"Andata" nel Calendario:** aggiunta la fase (andata/ritorno) e il numero gara ufficiale.
-- [ ] **Rosa vera:** nel DB ci sono ancora i 12 giocatori finti dei prototipi; serve elenco con numero, nome, cognome, ruolo (P/S/O/C/L).
+- [x] **Rosa vera:** 14 giocatori caricati (27/10/2026).
+- [ ] **Numeri di maglia veri** (ora provvisori 1–14) e **cognomi mancanti** (Claudio, Kevi, Francesco, Maria Chiara, Rebecca): si sistemano da Admin Giocatori.
+
+## 🔎 Da analizzare (prima del Live / test generale)
+- **Ruoli variabili:** molti giocano più ruoli (variabili: Capelli, Claudio, Clementi, Placucci, Kevi, Botticelli, Fish; Claudio anche "adattatore"). Oggi il DB ha un solo ruolo principale per giocatore. Valutare: ruoli alternativi in anagrafica e/o **ruolo per partita** (in Prepara Live) e **ruolo di chi entra nei cambi**.
+- **Cambi:** quando c'è un cambio va indicato chi entra *e in che ruolo* (non sempre ovvio). Impatta evento `sub` (`detail: { in, out, role }`) e le statistiche per ruolo.
+- **Campionato misto:** verificare eventuali regole sul numero minimo di donne in campo, da considerare in formazione/cambi.
 
 ## Note e decisioni aperte
 - **Campionato reale:** Libertas Cup Mix 2027, girone Challenge (Rimini). Fonte: [calendario ufficiale SportAdmin](https://sportadmin.net/s/libertas-volley-comitato-provinciale-rimini). I dati dei prototipi (Bologna, PalaCUS, squadre) erano inventati e sono stati sostituiti il 27/10/2026.
