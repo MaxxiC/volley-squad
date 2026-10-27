@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { SegmentedField } from "@/components/admin/segmented-field";
 import { BTN_DANGER, BTN_PRIMARY, BTN_SECONDARY, INPUT, LABEL } from "@/components/admin/styles";
 import type { ActionResult } from "@/lib/actions";
-import { PLAYER_ROLES, ROLE_LABEL, type PlayerRole } from "@/lib/players";
+import { GENDER_LABEL, PLAYER_ROLES, ROLE_LABEL, type PlayerGender, type PlayerRole } from "@/lib/players";
 import { deletePlayer, savePlayer } from "./actions";
 import type { AdminPlayer } from "./player-form";
 
@@ -21,6 +21,7 @@ export function PlayerEditor({ player, onDone, onCancel, onDeleted = onCancel }:
   const [firstName, setFirstName] = useState(player?.firstName ?? "");
   const [lastName, setLastName] = useState(player?.lastName ?? "");
   const [role, setRole] = useState<PlayerRole>(player?.role ?? "S");
+  const [gender, setGender] = useState<PlayerGender | "">(player?.gender ?? "");
   const [active, setActive] = useState(player?.active ?? true);
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -73,6 +74,17 @@ export function PlayerEditor({ player, onDone, onCancel, onDeleted = onCancel }:
         {PLAYER_ROLES.map((r) => `${r} ${ROLE_LABEL[r]}`).join(" · ")}
       </span>
 
+      <SegmentedField
+        label="Sesso (per l'avviso del misto)"
+        value={gender}
+        onChange={setGender}
+        options={[
+          { value: "", label: "Non indicato" },
+          { value: "F", label: GENDER_LABEL.F },
+          { value: "M", label: GENDER_LABEL.M },
+        ]}
+      />
+
       <label className="flex min-h-11 cursor-pointer items-center gap-3 self-start">
         <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} className="size-5 accent-gold" />
         <span className="text-base">In rosa (attivo)</span>
@@ -104,7 +116,7 @@ export function PlayerEditor({ player, onDone, onCancel, onDeleted = onCancel }:
           <button
             type="button"
             disabled={pending}
-            onClick={() => run(() => savePlayer({ id: player?.id, number, firstName, lastName, role, active }), onDone)}
+            onClick={() => run(() => savePlayer({ id: player?.id, number, firstName, lastName, role, gender, active }), onDone)}
             className={BTN_PRIMARY}
           >
             {pending ? "Salvo…" : "Salva"}

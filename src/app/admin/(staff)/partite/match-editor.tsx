@@ -6,7 +6,7 @@ import { BTN_DANGER, BTN_GOLD_OUTLINE, BTN_PRIMARY, BTN_SECONDARY, INPUT, LABEL 
 import type { ActionResult } from "@/lib/actions";
 import { HOME_VENUE, TEAM_NAME } from "@/lib/club";
 import { deleteMatch, duplicateAsReturn, saveMatch } from "./actions";
-import { SET_SLOTS, type AdminMatch, type SetSlot } from "./match-form";
+import { MATCH_SPECIALS, SET_SLOTS, SPECIAL_LABEL, specialOf, type AdminMatch, type MatchSpecial, type SetSlot } from "./match-form";
 
 type Props = {
   /** Assente = nuova partita. */
@@ -32,6 +32,7 @@ export function MatchEditor({ match, timeChips, onClose, onDuplicated }: Props) 
   const [opponent, setOpponent] = useState(match?.opponent ?? "");
   const [home, setHome] = useState(match?.home ?? true);
   const [venue, setVenue] = useState(match?.venue ?? (match ? "" : HOME_VENUE));
+  const [special, setSpecial] = useState<MatchSpecial>(match ? specialOf(match) : "none");
   const [slots, setSlots] = useState(() => initialSlots(match));
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -47,7 +48,7 @@ export function MatchEditor({ match, timeChips, onClose, onDuplicated }: Props) 
   };
 
   const save = () =>
-    run(() => saveMatch({ id: match?.id, phase, round, number, date, time, home, opponent, venue, slots }), onClose);
+    run(() => saveMatch({ id: match?.id, phase, round, number, date, time, home, opponent, venue, special, slots }), onClose);
 
   const setSlot = (i: number, side: keyof SetSlot, value: string) =>
     setSlots((prev) => prev.map((s, j) => (j === i ? { ...s, [side]: value.replace(/\D/g, "").slice(0, 2) } : s)));
@@ -155,36 +156,49 @@ export function MatchEditor({ match, timeChips, onClose, onDuplicated }: Props) 
         )}
       </div>
 
-      <div className="flex flex-col gap-2">
-        <span className={LABEL}>Parziali (noi – loro)</span>
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(118px,1fr))] gap-2">
-          {slots.map((s, i) => (
-            <div key={i} className="flex items-center gap-1.5 rounded-btn border border-line bg-surface px-2 py-0.5">
-              <span className="w-4.5 font-display text-[13px] font-semibold text-faint">{i + 1}</span>
-              <input
-                type="text"
-                inputMode="numeric"
-                aria-label={`Set ${i + 1}, punti ${TEAM_NAME}`}
-                value={s.us}
-                onChange={(e) => setSlot(i, "us", e.target.value)}
-                placeholder="–"
-                className="min-h-11 w-9 bg-transparent text-center font-display text-lg font-bold text-gold tabular-nums placeholder:text-faint focus:outline-none"
-              />
-              <span className="text-faint">–</span>
-              <input
-                type="text"
-                inputMode="numeric"
-                aria-label={`Set ${i + 1}, punti avversario`}
-                value={s.them}
-                onChange={(e) => setSlot(i, "them", e.target.value)}
-                placeholder="–"
-                className="min-h-11 w-9 bg-transparent text-center font-display text-lg font-bold text-ink tabular-nums placeholder:text-faint focus:outline-none"
-              />
-            </div>
+      <label className="flex flex-col gap-1.5">
+        <span className={LABEL}>Situazione</span>
+        <select value={special} onChange={(e) => setSpecial(e.target.value as MatchSpecial)} className={INPUT}>
+          {MATCH_SPECIALS.map((v) => (
+            <option key={v} value={v}>
+              {SPECIAL_LABEL[v]}
+            </option>
           ))}
+        </select>
+      </label>
+
+      {special === "none" && (
+        <div className="flex flex-col gap-2">
+          <span className={LABEL}>Parziali (noi – loro)</span>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(118px,1fr))] gap-2">
+            {slots.map((s, i) => (
+              <div key={i} className="flex items-center gap-1.5 rounded-btn border border-line bg-surface px-2 py-0.5">
+                <span className="w-4.5 font-display text-[13px] font-semibold text-faint">{i + 1}</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  aria-label={`Set ${i + 1}, punti ${TEAM_NAME}`}
+                  value={s.us}
+                  onChange={(e) => setSlot(i, "us", e.target.value)}
+                  placeholder="–"
+                  className="min-h-11 w-9 bg-transparent text-center font-display text-lg font-bold text-gold tabular-nums placeholder:text-faint focus:outline-none"
+                />
+                <span className="text-faint">–</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  aria-label={`Set ${i + 1}, punti avversario`}
+                  value={s.them}
+                  onChange={(e) => setSlot(i, "them", e.target.value)}
+                  placeholder="–"
+                  className="min-h-11 w-9 bg-transparent text-center font-display text-lg font-bold text-ink tabular-nums placeholder:text-faint focus:outline-none"
+                />
+              </div>
+            ))}
+          </div>
+          <span className="text-[13px] text-faint">Se la partita viene registrata dal Live, i parziali si compilano da soli.</span>
         </div>
-        <span className="text-[13px] text-faint">Se la partita viene registrata dal Live, i parziali si compilano da soli.</span>
-      </div>
+      )}
 
       {error && (
         <p role="alert" className="text-[15px] text-red">

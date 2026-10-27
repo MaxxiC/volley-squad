@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { PageHeader } from "@/components/admin/page-header";
 import { BTN_PRIMARY } from "@/components/admin/styles";
-import { ROLE_LABEL, fullName } from "@/lib/players";
+import { GENDER_LABEL, ROLE_LABEL, fullName } from "@/lib/players";
 import type { AdminPlayer } from "./player-form";
 import { PlayerEditor } from "./player-editor";
 
@@ -114,8 +114,7 @@ function PlayerCard({ player: p, onEdit }: { player: AdminPlayer; onEdit: () => 
         <div className="mr-auto flex flex-col gap-1">
           <span className="font-display text-[30px] leading-none font-bold uppercase">{fullName(p)}</span>
           <span className="text-sm text-muted">
-            {ROLE_LABEL[p.role]}
-            {p.active ? "" : " · non attivo"}
+            {[ROLE_LABEL[p.role], p.gender && GENDER_LABEL[p.gender], !p.active && "non attivo"].filter(Boolean).join(" · ")}
           </span>
         </div>
         <button

@@ -15,6 +15,13 @@
       "when": 1793116918869,
       "tag": "0001_fase_e_numero_gara",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793133226134,
+      "tag": "0002_stati_partita_sesso_ruolo_partita",
+      "breakpoints": true
     }
   ]
 }

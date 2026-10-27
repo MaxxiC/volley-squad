@@ -20,9 +20,11 @@ function infoLine(m: AdminMatch) {
   const parts = [roundLabel(m), ...(m.number ? [`n. ${m.number}`] : []), m.home ? "Casa" : "Trasferta"];
   if (m.status === "finished") {
     const score = matchScore(m.sets);
-    parts.push(`${score.us}–${score.them}`, score.won ? "Vinta" : "Persa");
+    parts.push(`${score.us}–${score.them}`, `${score.won ? "Vinta" : "Persa"}${m.forfeit ? " a tavolino" : ""}`);
   } else if (m.status === "live") {
     parts.push("In corso");
+  } else if (m.status === "postponed") {
+    parts.push("Rinviata");
   } else {
     parts.push(m.time || "Data da definire");
   }

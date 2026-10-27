@@ -33,6 +33,8 @@ export default async function CalendarioPage() {
       usIsHome: homeTeam.isUs,
       isNext: m.id === next?.id,
       played: m.status === "finished",
+      postponed: m.status === "postponed",
+      forfeit: m.forfeit,
       sets: m.sets.map((s) => ({ id: s.id, label: `${s.us}–${s.them}`, won: s.us > s.them })),
       score: `${score.us}–${score.them}`,
       won: score.won,

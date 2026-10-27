@@ -1,7 +1,7 @@
 // Validazione del form partita (solo server: importata dalle action).
 import { z } from "zod";
-import { matchScore } from "@/lib/matches";
-import { SET_SLOTS, type MatchFormInput, type SetSlot } from "./match-form";
+import { forfeitSets, matchScore } from "@/lib/matches";
+import { MATCH_SPECIALS, SET_SLOTS, type MatchFormInput, type SetSlot } from "./match-form";
 
 const score = (s: string) => (/^\d{1,2}$/.test(s) ? Number(s) : null);
 
@@ -20,6 +20,7 @@ export const MatchFormSchema = z
     home: z.boolean(),
     opponent: z.string().trim().min(1, "Inserisci l'avversario").max(80, "Nome avversario troppo lungo"),
     venue: z.string().trim().max(120, "Nome palestra troppo lungo"),
+    special: z.enum(MATCH_SPECIALS),
     slots: z.array(z.object({ us: z.string().trim(), them: z.string().trim() })).length(SET_SLOTS),
   })
   .transform(({ slots, ...f }, ctx) => {
@@ -27,6 +28,9 @@ export const MatchFormSchema = z
       ctx.addIssue({ code: "custom", message: "Inserisci l'ora della partita" });
       return z.NEVER;
     }
+    // Rinviata: nessun parziale. A tavolino: 3–0 d'ufficio. Altrimenti i parziali inseriti.
+    if (f.special === "postponed") return { ...f, sets: [] };
+    if (f.special === "forfeit_won" || f.special === "forfeit_lost") return { ...f, sets: forfeitSets(f.special === "forfeit_won") };
     const parsed = parseSets(slots);
     if ("error" in parsed) {
       ctx.addIssue({ code: "custom", message: parsed.error });

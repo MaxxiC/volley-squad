@@ -27,29 +27,30 @@ export async function saveMatch(input: MatchFormInput): Promise<MatchResult> {
   await requireStaff();
   const parsed = MatchFormSchema.safeParse(input);
   if (!parsed.success) return invalid(parsed.error);
-  const { id, sets, date, time, opponent: opponentName, ...rest } = parsed.data;
+  const { id, sets, date, time, special, opponent: opponentName, ...rest } = parsed.data;
 
   const opponent = await findOrCreateTeam(opponentName);
   if (opponent.isUs) return { ok: false, error: `L'avversario non può essere ${TEAM_NAME}` };
 
-  const fields = { ...rest, opponentId: opponent.id, startsAt: date ? fromRomeInput(date, time) : null };
-  const played = matchScore(sets).over ? "finished" : "scheduled";
+  const forfeit = special === "forfeit_won" || special === "forfeit_lost";
+  const fields = { ...rest, forfeit, opponentId: opponent.id, startsAt: date ? fromRomeInput(date, time) : null };
+  const status = special === "postponed" ? "postponed" : matchScore(sets).over ? "finished" : "scheduled";
 
   let matchId: number;
   if (id) {
     const current = await db.query.matches.findFirst({ where: eq(matches.id, id) });
     if (!current) return NOT_FOUND;
     matchId = current.id;
-    // Una partita in corso nel Live resta "live": la chiude il Live.
+    // Una partita in corso nel Live resta "live" (la chiude il Live), salvo rinvio o tavolino.
     await db
       .update(matches)
-      .set({ ...fields, status: current.status === "live" ? "live" : played })
+      .set({ ...fields, status: current.status === "live" && special === "none" ? "live" : status })
       .where(eq(matches.id, matchId));
   } else {
     const season = await getCurrentSeason();
     const [created] = await db
       .insert(matches)
-      .values({ ...fields, seasonId: season.id, status: played })
+      .values({ ...fields, seasonId: season.id, status })
       .returning({ id: matches.id });
     matchId = created.id;
   }

@@ -1,3 +1,5 @@
+import type { Match } from "@/lib/types";
+
 // Tipi e costanti del form partita usati dal client. La validazione (zod) è in match-schema.ts,
 // importata solo dalle server action, così zod non finisce nel bundle del browser.
 
@@ -14,9 +16,28 @@ export type AdminMatch = {
   home: boolean;
   opponent: string;
   venue: string;
-  status: "scheduled" | "live" | "finished";
+  status: Match["status"];
+  forfeit: boolean;
   sets: { us: number; them: number }[];
 };
+
+/** Situazioni particolari di una partita, scelte nell'editor al posto dei parziali. */
+export const SPECIAL_LABEL = {
+  none: "Normale",
+  postponed: "Rinviata",
+  forfeit_won: "Vinta a tavolino (3–0)",
+  forfeit_lost: "Persa a tavolino (0–3)",
+} as const;
+
+export type MatchSpecial = keyof typeof SPECIAL_LABEL;
+
+export const MATCH_SPECIALS = Object.keys(SPECIAL_LABEL) as [MatchSpecial, ...MatchSpecial[]];
+
+export function specialOf(m: Pick<AdminMatch, "status" | "forfeit" | "sets">): MatchSpecial {
+  if (m.status === "postponed") return "postponed";
+  if (m.forfeit) return m.sets[0] && m.sets[0].us > m.sets[0].them ? "forfeit_won" : "forfeit_lost";
+  return "none";
+}
 
 export type SetSlot = { us: string; them: string };
 
@@ -33,5 +54,6 @@ export type MatchFormInput = {
   home: boolean;
   opponent: string;
   venue: string;
+  special: MatchSpecial;
   slots: SetSlot[];
 };

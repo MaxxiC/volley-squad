@@ -109,16 +109,20 @@ export default async function HomePage() {
                   </span>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {last.sets.map((s) => (
-                  <span
-                    key={s.id}
-                    className="rounded-chip border border-line bg-chip px-3.5 py-1.5 font-display text-[17px] font-semibold tabular-nums"
-                  >
-                    {s.us}–{s.them}
-                  </span>
-                ))}
-              </div>
+              {last.forfeit ? (
+                <span className="text-sm text-muted">Risultato a tavolino</span>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {last.sets.map((s) => (
+                    <span
+                      key={s.id}
+                      className="rounded-chip border border-line bg-chip px-3.5 py-1.5 font-display text-[17px] font-semibold tabular-nums"
+                    >
+                      {s.us}–{s.them}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

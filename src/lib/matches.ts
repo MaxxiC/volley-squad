@@ -13,9 +13,9 @@ export function matchScore(sets: SetScore[]) {
   return { us, them, won: us > them, over: us === SETS_TO_WIN || them === SETS_TO_WIN };
 }
 
-/** Prima partita non ancora conclusa (le partite sono già in ordine cronologico). */
+/** Prima partita da giocare o in corso (le partite sono già in ordine cronologico); le rinviate si saltano. */
 export function findNextMatch(matches: MatchWithDetails[]) {
-  return matches.find((m) => m.status !== "finished") ?? null;
+  return matches.find((m) => m.status === "scheduled" || m.status === "live") ?? null;
 }
 
 export function findLastResult(matches: MatchWithDetails[]) {
@@ -30,6 +30,11 @@ export function matchSides(match: MatchWithDetails, us: Team): [Team, Team] {
 /** "CUSBros vs Dinamite" oppure "Dinamite vs CUSBros". */
 export function matchTitle(home: boolean, opponent: string) {
   return home ? `${TEAM_NAME} vs ${opponent}` : `${opponent} vs ${TEAM_NAME}`;
+}
+
+/** Parziali di una partita assegnata a tavolino (3–0 d'ufficio, 25–0 a set). */
+export function forfeitSets(won: boolean) {
+  return Array.from({ length: SETS_TO_WIN }, () => (won ? { us: 25, them: 0 } : { us: 0, them: 25 }));
 }
 
 export const PHASE_LABEL = { andata: "Andata", ritorno: "Ritorno" } as const;

@@ -17,12 +17,14 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
-import { PLAYER_ROLES } from "../lib/players";
+import { PLAYER_GENDERS, PLAYER_ROLES } from "../lib/players";
 
 export const userRole = pgEnum("user_role", ["admin", "coach"]);
-export const matchStatus = pgEnum("match_status", ["scheduled", "live", "finished"]);
+/** postponed = rinviata (data da ridefinire). */
+export const matchStatus = pgEnum("match_status", ["scheduled", "live", "finished", "postponed"]);
 export const matchPhase = pgEnum("match_phase", ["andata", "ritorno"]);
 export const playerRole = pgEnum("player_role", PLAYER_ROLES);
+export const playerGender = pgEnum("player_gender", PLAYER_GENDERS);
 export const eventKind = pgEnum("event_kind", ["action", "sub", "rotation", "set_end"]);
 export const eventSkill = pgEnum("event_skill", [
   "serve",
@@ -67,7 +69,10 @@ export const players = pgTable("players", {
   number: smallint().notNull(),
   firstName: text().notNull(),
   lastName: text().notNull(),
+  /** Ruolo principale: in ogni partita può cambiare (match_players.role). */
   role: playerRole().notNull(),
+  /** Facoltativo: serve solo per l'avviso "almeno 2 donne in campo" del misto. */
+  gender: playerGender(),
   active: boolean().notNull().default(true),
 });
 
@@ -92,6 +97,8 @@ export const matches = pgTable(
       .references(() => teams.id),
     venue: text().notNull().default(""),
     status: matchStatus().notNull().default("scheduled"),
+    /** Risultato assegnato a tavolino (3–0 d'ufficio): i parziali sono 25–0. */
+    forfeit: boolean().notNull().default(false),
     mvpPlayerId: integer().references(() => players.id, { onDelete: "set null" }),
   },
   (t) => [index("matches_season_starts").on(t.seasonId, t.startsAt)],
@@ -142,6 +149,8 @@ export const matchPlayers = pgTable(
     playerId: integer()
       .notNull()
       .references(() => players.id),
+    /** Ruolo in questa partita (proposto: quello principale del giocatore). */
+    role: playerRole().notNull(),
   },
   (t) => [primaryKey({ columns: [t.matchId, t.playerId] })],
 );

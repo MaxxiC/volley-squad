@@ -1,5 +1,5 @@
 // Tipi del form giocatore usati dal client. La validazione (zod) è in player-schema.ts.
-import type { PlayerRole } from "@/lib/players";
+import type { PlayerGender, PlayerRole } from "@/lib/players";
 
 /** Giocatore con i conteggi della stagione corrente, come lo vede la pagina staff. */
 export type AdminPlayer = {
@@ -8,6 +8,7 @@ export type AdminPlayer = {
   firstName: string;
   lastName: string;
   role: PlayerRole;
+  gender: PlayerGender | null;
   active: boolean;
   presences: number;
   stars: number;
@@ -21,5 +22,7 @@ export type PlayerFormInput = {
   firstName: string;
   lastName: string;
   role: PlayerRole;
+  /** "" = non indicato. */
+  gender: PlayerGender | "";
   active: boolean;
 };

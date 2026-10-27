@@ -47,6 +47,7 @@ export default async function PartitePage() {
     opponent: m.opponent.name,
     venue: m.venue,
     status: m.status,
+    forfeit: m.forfeit,
     sets: m.sets.map((s) => ({ us: s.us, them: s.them })),
   }));
 

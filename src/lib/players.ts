@@ -12,6 +12,12 @@ export const ROLE_LABEL: Record<PlayerRole, string> = {
   L: "Libero",
 };
 
+export const PLAYER_GENDERS = ["F", "M"] as const;
+export type PlayerGender = (typeof PLAYER_GENDERS)[number];
+
+/** Sesso: facoltativo, serve solo per l'avviso del misto (almeno 2 donne in campo). */
+export const GENDER_LABEL: Record<PlayerGender, string> = { F: "Donna", M: "Uomo" };
+
 type Named = { firstName: string; lastName: string };
 
 /** "Micol Capelli", oppure solo "Claudio" se il cognome manca. */
