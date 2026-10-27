@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { SEGMENTED, segmentClass } from "@/components/ui/segmented";
 
 /** Dati di una card partita già pronti per la UI (calcolati lato server). */
 export type MatchCardData = {
@@ -38,14 +39,14 @@ export function CalendarMatches({ matches }: { matches: MatchCardData[] }) {
 
   return (
     <section className="flex flex-col gap-4.5">
-      <div role="group" aria-label="Filtra partite" className="flex max-w-full gap-1 self-start rounded-tile border border-line p-1">
+      <div role="group" aria-label="Filtra partite" className={SEGMENTED}>
         {FILTERS.map((f) => (
           <button
             key={f.key}
             type="button"
             aria-pressed={filter === f.key}
             onClick={() => setFilter(f.key)}
-            className={`min-h-11 cursor-pointer rounded-seg px-4.5 font-display text-base font-semibold tracking-[.08em] whitespace-nowrap uppercase ${filter === f.key ? "bg-gold text-bg" : "bg-transparent text-ink"}`}
+            className={segmentClass(filter === f.key)}
           >
             {f.label}
           </button>

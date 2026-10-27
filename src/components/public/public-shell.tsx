@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { TEAM_NAME } from "@/lib/club";
 
 const MAX_WIDTH = {
   wide: "max-w-[1200px]",
@@ -30,9 +31,9 @@ export function PublicShell({ width, navLink, watermark = false, children }: Pub
       )}
 
       <nav className={`relative z-1 mx-auto flex items-center gap-4 px-gutter py-4.5 ${maxWidth}`}>
-        <Link href="/" className="mr-auto flex items-center gap-3 text-ink hover:text-ink">
-          <Image src="/logo.png" alt="Logo CUSBros" width={40} height={40} priority className="block size-10" />
-          <span className="font-display text-xl font-bold tracking-[.08em] uppercase">CUSBros</span>
+        <Link href="/" className="mr-auto flex min-h-11 items-center gap-3 text-ink hover:text-ink">
+          <Image src="/logo.png" alt={`Logo ${TEAM_NAME}`} width={40} height={40} priority className="block size-10" />
+          <span className="font-display text-xl font-bold tracking-[.08em] uppercase">{TEAM_NAME}</span>
         </Link>
         <Link
           href={navLink.href}
@@ -45,7 +46,7 @@ export function PublicShell({ width, navLink, watermark = false, children }: Pub
       {children}
 
       <footer className={`relative z-1 mx-auto border-t border-line-soft px-gutter pt-6 pb-10 text-[13px] text-faint ${maxWidth}`}>
-        CUSBros Volleyball Team · CUSB
+        {TEAM_NAME} Volleyball Team · CUSB
       </footer>
     </div>
   );

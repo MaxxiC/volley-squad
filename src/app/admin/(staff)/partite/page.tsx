@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { db } from "@/db";
 import { matches, teams } from "@/db/schema";
 import { getCurrentSeason } from "@/lib/data";
-import { toDateInput, toTimeInput } from "@/lib/format";
+import { dateBox, toDateInput, toTimeInput } from "@/lib/format";
 import type { AdminMatch } from "./match-form";
 import { MatchesManager } from "./matches-manager";
 
@@ -42,6 +42,7 @@ export default async function PartitePage() {
     number: m.number,
     date: m.startsAt ? toDateInput(m.startsAt) : "",
     time: m.startsAt ? toTimeInput(m.startsAt) : "",
+    box: m.startsAt ? dateBox(m.startsAt) : null,
     home: m.home,
     opponent: m.opponent.name,
     venue: m.venue,

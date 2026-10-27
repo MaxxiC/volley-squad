@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { PageHeader } from "@/components/admin/page-header";
 import { BTN_PRIMARY } from "@/components/admin/styles";
-import { roundLabel } from "@/lib/matches";
+import { matchScore, matchTitle, roundLabel } from "@/lib/matches";
 import type { AdminMatch } from "./match-form";
 import { MatchEditor } from "./match-editor";
-
-const MONTHS = ["gen", "feb", "mar", "apr", "mag", "giu", "lug", "ago", "set", "ott", "nov", "dic"];
 
 type Props = {
   seasonName: string;
@@ -20,9 +19,8 @@ type Props = {
 function infoLine(m: AdminMatch) {
   const parts = [roundLabel(m), ...(m.number ? [`n. ${m.number}`] : []), m.home ? "Casa" : "Trasferta"];
   if (m.status === "finished") {
-    const won = m.sets.filter((s) => s.us > s.them).length;
-    const lost = m.sets.length - won;
-    parts.push(`${won}–${lost}`, won > lost ? "Vinta" : "Persa");
+    const score = matchScore(m.sets);
+    parts.push(`${score.us}–${score.them}`, score.won ? "Vinta" : "Persa");
   } else if (m.status === "live") {
     parts.push("In corso");
   } else {
@@ -37,18 +35,16 @@ export function MatchesManager({ seasonName, matches, opponents, venues, timeChi
 
   return (
     <>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="flex flex-col gap-1.5">
-          <span className="font-display text-sm font-semibold tracking-[.24em] text-gold uppercase">
-            Stagione {seasonName}
-          </span>
-          <h1 className="font-display text-[clamp(40px,8vw,64px)] leading-[.9] font-extrabold uppercase">Partite</h1>
-        </div>
-        <button type="button" onClick={() => setOpenId("new")} className={BTN_PRIMARY}>
-          + Nuova partita
-        </button>
-      </div>
-      <p className="text-sm text-muted">Le modifiche sono visibili subito su Home e Calendario.</p>
+      <PageHeader
+        kicker={`Stagione ${seasonName}`}
+        title="Partite"
+        description="Le modifiche sono visibili subito su Home e Calendario."
+        action={
+          <button type="button" onClick={() => setOpenId("new")} className={BTN_PRIMARY}>
+            + Nuova partita
+          </button>
+        }
+      />
 
       <datalist id="avversari">
         {opponents.map((name) => (
@@ -71,7 +67,6 @@ export function MatchesManager({ seasonName, matches, opponents, venues, timeChi
 
         {matches.map((m) => {
           const open = openId === m.id;
-          const [, month, day] = m.date.split("-");
           return (
             <article
               key={m.id}
@@ -79,15 +74,15 @@ export function MatchesManager({ seasonName, matches, opponents, venues, timeChi
             >
               <div className="grid grid-cols-[56px_minmax(0,1fr)_auto] items-center gap-3.5 px-4 py-3.5">
                 <div className="flex h-14 flex-col items-center justify-center rounded-btn bg-surface-sel">
-                  <span className="font-display text-2xl leading-none font-extrabold">{m.date ? Number(day) : "?"}</span>
+                  <span className="font-display text-2xl leading-none font-extrabold">{m.box?.day ?? "?"}</span>
                   <span className="font-display text-xs font-semibold tracking-[.12em] text-muted uppercase">
-                    {m.date ? MONTHS[Number(month) - 1] : "data"}
+                    {m.box?.month ?? "data"}
                   </span>
                 </div>
                 <div className="flex min-w-0 flex-col gap-1">
                   {/* Su due righe invece che troncato: su telefono il nome avversario è l'informazione chiave. */}
                   <span className="line-clamp-2 font-display text-[19px] leading-[1.05] font-bold uppercase">
-                    {m.home ? `CUSBros vs ${m.opponent}` : `${m.opponent} vs CUSBros`}
+                    {matchTitle(m.home, m.opponent)}
                   </span>
                   <span className="text-[13px] text-muted">{infoLine(m)}</span>
                 </div>

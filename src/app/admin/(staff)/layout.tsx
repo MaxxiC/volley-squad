@@ -2,6 +2,7 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 import { LOGIN_PATH } from "@/auth.config";
+import { TEAM_NAME } from "@/lib/club";
 import { AdminTabs } from "./admin-tabs";
 
 const ROLE_LABEL = { admin: "Admin", coach: "Allenatore" } as const;
@@ -21,10 +22,10 @@ export default async function StaffLayout({ children }: { children: React.ReactN
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-5 border-b border-line-soft bg-bg">
-        <div className="mx-auto flex max-w-[1100px] flex-col gap-2.5 px-[clamp(16px,4vw,40px)] pt-3">
+        <div className="mx-auto flex max-w-[1100px] flex-col gap-2.5 px-admin pt-3">
           <div className="flex items-center gap-2.5">
             <Image src="/logo.png" alt="" width={32} height={32} className="block size-8" />
-            <span className="font-display text-lg font-bold tracking-[.08em] uppercase">CUSBros</span>
+            <span className="font-display text-lg font-bold tracking-[.08em] uppercase">{TEAM_NAME}</span>
             <span className="mr-auto font-display text-[13px] font-semibold tracking-[.2em] text-gold uppercase">
               Staff
             </span>
@@ -50,7 +51,7 @@ export default async function StaffLayout({ children }: { children: React.ReactN
         </div>
       </header>
 
-      <main className="mx-auto flex max-w-[1100px] flex-col gap-6 px-[clamp(16px,4vw,40px)] pt-7 pb-18">{children}</main>
+      <main className="mx-auto flex max-w-[1100px] flex-col gap-6 px-admin pt-7 pb-18">{children}</main>
     </div>
   );
 }

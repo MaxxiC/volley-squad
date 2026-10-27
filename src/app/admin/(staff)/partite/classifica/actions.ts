@@ -1,22 +1,21 @@
 "use server";
 
 import { eq } from "drizzle-orm";
-import type { BatchItem } from "drizzle-orm/batch";
 import { revalidatePath } from "next/cache";
-import { db } from "@/db";
+import { db, runBatch } from "@/db";
 import { standings } from "@/db/schema";
+import { invalid, revalidatePublicPages, type ActionResult } from "@/lib/actions";
 import { requireStaff } from "@/lib/auth-guard";
 import { getCurrentSeason } from "@/lib/data";
 import { findOrCreateTeam } from "@/lib/teams";
-import { StandingsSchema, type StandingsInput } from "./standings-form";
-
-export type SaveResult = { ok: true } | { ok: false; error: string };
+import type { StandingsInput } from "./standings-form";
+import { StandingsSchema } from "./standings-schema";
 
 /** Sostituisce l'intera classifica della stagione corrente. */
-export async function saveStandings(input: StandingsInput): Promise<SaveResult> {
+export async function saveStandings(input: StandingsInput): Promise<ActionResult> {
   await requireStaff();
   const parsed = StandingsSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+  if (!parsed.success) return invalid(parsed.error);
 
   const season = await getCurrentSeason();
   const rows = [];
@@ -27,12 +26,12 @@ export async function saveStandings(input: StandingsInput): Promise<SaveResult> 
   }
 
   // Cancella e riscrive in un'unica transazione.
-  const queries: BatchItem<"pg">[] = [db.delete(standings).where(eq(standings.seasonId, season.id))];
-  if (rows.length) queries.push(db.insert(standings).values(rows));
-  await db.batch(queries as [BatchItem<"pg">, ...BatchItem<"pg">[]]);
+  await runBatch([
+    db.delete(standings).where(eq(standings.seasonId, season.id)),
+    ...(rows.length ? [db.insert(standings).values(rows)] : []),
+  ]);
 
-  revalidatePath("/");
-  revalidatePath("/calendario");
+  revalidatePublicPages();
   revalidatePath("/admin/partite/classifica");
   return { ok: true };
 }

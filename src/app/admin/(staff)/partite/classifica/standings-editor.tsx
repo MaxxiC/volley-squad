@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { PageHeader } from "@/components/admin/page-header";
 import { BTN_DANGER, BTN_PRIMARY, BTN_SECONDARY, INPUT, LABEL } from "@/components/admin/styles";
 import { saveStandings } from "./actions";
 import { STAT_FIELDS, type StandingDraft } from "./standings-form";
@@ -46,14 +47,11 @@ export function StandingsEditor({ seasonName, teamNames, initial }: Props) {
 
   return (
     <>
-      <div className="flex flex-col gap-1.5">
-        <span className="font-display text-sm font-semibold tracking-[.24em] text-gold uppercase">Stagione {seasonName}</span>
-        <h1 className="font-display text-[clamp(40px,8vw,64px)] leading-[.9] font-extrabold uppercase">Classifica</h1>
-      </div>
-      <p className="text-sm text-muted">
-        Inserita a mano. Le partite giocate (G) si calcolano da sole: vinte + perse. L&apos;ordine sul sito segue punti,
-        vittorie e quoziente set.
-      </p>
+      <PageHeader
+        kicker={`Stagione ${seasonName}`}
+        title="Classifica"
+        description="Inserita a mano. Le partite giocate (G) si calcolano da sole: vinte + perse. L'ordine sul sito segue punti, vittorie e quoziente set."
+      />
 
       <datalist id="squadre">
         {teamNames.map((n) => (
@@ -119,7 +117,7 @@ export function StandingsEditor({ seasonName, teamNames, initial }: Props) {
         </p>
       )}
 
-      <div className="sticky bottom-0 -mx-[clamp(16px,4vw,40px)] flex flex-wrap gap-2.5 border-t border-line-soft bg-bg px-[clamp(16px,4vw,40px)] py-3">
+      <div className="sticky bottom-0 -mx-admin flex flex-wrap gap-2.5 border-t border-line-soft bg-bg px-admin py-3">
         <button type="button" disabled={pending || !dirty} onClick={save} className={BTN_PRIMARY}>
           {pending ? "Salvo…" : "Salva"}
         </button>

@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { BTN_DANGER, BTN_GOLD_OUTLINE, BTN_PRIMARY, BTN_SECONDARY, INPUT, LABEL } from "@/components/admin/styles";
-import { HOME_VENUE } from "@/lib/club";
+import type { ActionResult } from "@/lib/actions";
+import { HOME_VENUE, TEAM_NAME } from "@/lib/club";
 import { deleteMatch, duplicateAsReturn, saveMatch } from "./actions";
 import { SET_SLOTS, type AdminMatch, type SetSlot } from "./match-form";
 
@@ -69,7 +70,7 @@ export function MatchEditor({ match, timeChips, onClose, onDuplicated }: Props) 
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  const run = (action: () => Promise<{ ok: true; id: number } | { ok: false; error: string }>, done: (id: number) => void) => {
+  const run = (action: () => Promise<ActionResult<{ id: number }>>, done: (id: number) => void) => {
     setError(null);
     startTransition(async () => {
       const res = await action();
@@ -196,7 +197,7 @@ export function MatchEditor({ match, timeChips, onClose, onDuplicated }: Props) 
               <input
                 type="text"
                 inputMode="numeric"
-                aria-label={`Set ${i + 1}, punti CUSBros`}
+                aria-label={`Set ${i + 1}, punti ${TEAM_NAME}`}
                 value={s.us}
                 onChange={(e) => setSlot(i, "us", e.target.value)}
                 placeholder="–"

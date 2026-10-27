@@ -12,7 +12,7 @@ export async function getCurrentSeason(): Promise<Season> {
 
 export async function getUsTeam(): Promise<Team> {
   const us = await db.query.teams.findFirst({ where: eq(teams.isUs, true) });
-  if (!us) throw new Error("Squadra CUSBros non trovata");
+  if (!us) throw new Error("Squadra di casa (is_us) non trovata: esegui il seed");
   return us;
 }
 

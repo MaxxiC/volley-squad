@@ -1,14 +1,16 @@
-import type { MatchSet, MatchWithDetails, Team } from "./types";
+import { TEAM_NAME } from "./club";
+import type { MatchWithDetails, Team } from "./types";
 
-/** Set vinti da noi e da loro. */
-export function matchScore(sets: MatchSet[]) {
-  let us = 0;
-  let them = 0;
-  for (const s of sets) {
-    if (s.us > s.them) us++;
-    else them++;
-  }
-  return { us, them, won: us > them };
+/** Set necessari per vincere una partita. */
+export const SETS_TO_WIN = 3;
+
+type SetScore = { us: number; them: number };
+
+/** Set vinti da noi e da loro; `over` = qualcuno è arrivato a 3. */
+export function matchScore(sets: SetScore[]) {
+  const us = sets.filter((s) => s.us > s.them).length;
+  const them = sets.length - us;
+  return { us, them, won: us > them, over: us === SETS_TO_WIN || them === SETS_TO_WIN };
 }
 
 /** Prima partita non ancora conclusa (le partite sono già in ordine cronologico). */
@@ -23,6 +25,11 @@ export function findLastResult(matches: MatchWithDetails[]) {
 /** Squadre nell'ordine casa → ospite. */
 export function matchSides(match: MatchWithDetails, us: Team): [Team, Team] {
   return match.home ? [us, match.opponent] : [match.opponent, us];
+}
+
+/** "CUSBros vs Dinamite" oppure "Dinamite vs CUSBros". */
+export function matchTitle(home: boolean, opponent: string) {
+  return home ? `${TEAM_NAME} vs ${opponent}` : `${opponent} vs ${TEAM_NAME}`;
 }
 
 export const PHASE_LABEL = { andata: "Andata", ritorno: "Ritorno" } as const;
