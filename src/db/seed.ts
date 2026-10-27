@@ -1,10 +1,10 @@
 // Dati iniziali di esempio (stagione 2026/27 dei prototipi). Si eseguono solo su DB vuoto.
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
+import { HOME_VENUE as PALACUS } from "../lib/venues";
 import * as schema from "./schema";
 import { matchSets, matches, players, seasons, standings, teams } from "./schema";
 
 const US = "CUSBros";
-const PALACUS = "PalaCUS, Bologna";
 
 const TEAMS = [US, "Volley Castello", "Pol. Zola", "Pallavolo Savena", "Pallavolo Reno", "Budrio Volley", "Vis Imola", "Ozzano Volley"];
 

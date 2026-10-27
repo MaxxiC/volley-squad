@@ -55,6 +55,9 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [ ] Grafico Andamento (ultime 12, bande migliore/peggiore finestra di 3)
 - [ ] Pagina pubblica `/partite/[id]`: score, parziali, MVP, come abbiamo fatto punto, migliori, confronto
 
+## 💡 Idee future
+- [ ] **Animazioni leggere tra le pagine:** transizioni morbide (fade/slide brevi) senza librerie pesanti, es. View Transitions API del browser o CSS puro; rispettare `prefers-reduced-motion`.
+
 ## 6 · PWA + deploy
 - [ ] Manifest + icone 192/512 dal logo
 - [ ] Progetto Vercel collegato al repo, env `DATABASE_URL` + `AUTH_SECRET`
