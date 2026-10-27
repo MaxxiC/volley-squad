@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CUSBros Staff — Prepara live</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body { margin: 0; background: #0b0b0c; color: #f3efe6; -webkit-font-smoothing: antialiased; }
+a { color: #d4ae62; text-decoration: none; }
+a:hover { color: #e6c682; }
+:focus-visible { outline: 2px solid #d4ae62; outline-offset: 3px; }
+button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+</style>
+</helmet>
+<div style="min-height: 100vh; font-family: 'Barlow', sans-serif;">
+  <header style="position: sticky; top: 0; z-index: 5; background: #0b0b0c; border-bottom: 1px solid #1f1d19;">
+    <div style="max-width: 1100px; margin: 0 auto; padding: 12px clamp(16px, 4vw, 40px) 0; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <img src="assets/logo.png" alt="" style="width: 32px; height: 32px; display: block;">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 0.08em; text-transform: uppercase;">CUSBros</span>
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; color: #d4ae62; margin-right: auto;">Staff</span>
+        <span style="font-size: 13px; color: #a39e93; white-space: nowrap;">Marco R. · Allenatore</span>
+        <a href="Admin Login.dc.html" style="font-size: 13px; font-weight: 600;">Esci</a>
+      </div>
+      <nav style="display: flex; gap: 4px; overflow-x: auto; margin: 0 -8px;">
+        <a href="Admin Partite.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 10px; white-space: nowrap; color: #a39e93; border-bottom: 2px solid transparent;" style-hover="color: #f3efe6;">Partite</a>
+        <a href="Admin Giocatori.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 10px; white-space: nowrap; color: #a39e93; border-bottom: 2px solid transparent;" style-hover="color: #f3efe6;">Giocatori</a>
+        <a href="Admin Prepara Live.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 10px; white-space: nowrap; color: #d4ae62; border-bottom: 2px solid #d4ae62;">Live</a>
+        <a href="Admin Storico.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 10px; white-space: nowrap; color: #a39e93; border-bottom: 2px solid transparent;" style-hover="color: #f3efe6;">Storico live</a>
+      </nav>
+    </div>
+  </header>
+
+  <main style="max-width: 1100px; margin: 0 auto; padding: 24px clamp(16px, 4vw, 40px) 120px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px;">
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 0.24em; text-transform: uppercase; color: #d4ae62;">4ª · Sab 31 ott · 21:00</span>
+      <h1 style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(36px, 8vw, 56px); line-height: 0.9; text-transform: uppercase; margin: 0;">Pallavolo Reno vs CUSBros</h1>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;">
+      <sc-for list="{{ steps }}" as="st" hint-placeholder-count="3">
+        <button type="button" onClick="{{ st.on }}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 0; border: none; background: transparent; color: {{ st.fg }}; cursor: pointer; text-align: left; min-height: 44px;">
+          <span style="display: block; width: 100%; height: 4px; border-radius: 999px; background: {{ st.bar }};"></span>
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.1em; text-transform: uppercase;">{{ st.n }}. {{ st.label }}</span>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #2c2922; border-radius: 10px; font-size: 14px; color: #cfc9bd;">
+      <span style="width: 8px; height: 8px; border-radius: 50%; background: #7fbf8a; flex: none;"></span>
+      <span>Dati salvati sul telefono: il live funziona anche senza rete.</span>
+    </div>
+
+    <sc-if value="{{ s1 }}" hint-placeholder-val="{{ true }}">
+      <section style="display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;">
+          <h2 style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 24px; text-transform: uppercase; margin: 0;">Chi è presente?</h2>
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; color: #d4ae62;">{{ presentCount }}/12</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <sc-for list="{{ quick1 }}" as="q" hint-placeholder-count="3">
+            <button type="button" onClick="{{ q.on }}" style="min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid #3a352b; background: transparent; color: #f3efe6; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;" style-hover="border-color: #d4ae62; color: #d4ae62;">{{ q.label }}</button>
+          </sc-for>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: 8px;">
+          <sc-for list="{{ roster }}" as="p" hint-placeholder-count="12">
+            <button type="button" onClick="{{ p.toggle }}" style="display: grid; grid-template-columns: 40px minmax(0, 1fr) 22px; align-items: center; gap: 10px; min-height: 60px; padding: 8px 12px; border-radius: 10px; border: 1px solid {{ p.border }}; background: {{ p.bg }}; color: #f3efe6; cursor: pointer; text-align: left; font: inherit; opacity: {{ p.op }};">
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 26px; line-height: 1; color: #d4ae62;">{{ p.num }}</span>
+              <span style="display: flex; flex-direction: column; min-width: 0;">
+                <span style="font-weight: 600; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ p.name }}</span>
+                <span style="font-size: 12px; color: #a39e93; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ p.role }}</span>
+              </span>
+              <span style="width: 22px; height: 22px; border-radius: 6px; border: 2px solid {{ p.border }}; background: {{ p.check }}; color: #0b0b0c; display: grid; place-items: center; font-size: 14px; font-weight: 800;">{{ p.mark }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ s2 }}" hint-placeholder-val="{{ false }}">
+      <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 18px; align-items: start;">
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <h2 style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 24px; text-transform: uppercase; margin: 0;">Formazione set 1</h2>
+          <span style="font-size: 14px; color: #a39e93;">{{ slotHint }}</span>
+          <div style="border: 1px solid #2c2922; background: #121212; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+            <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: #6f6a60; text-align: center;">Rete</span>
+            <div style="border-top: 3px solid #cfc9bd; padding-top: 8px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;">
+              <sc-for list="{{ slots }}" as="sl" hint-placeholder-count="6">
+                <button type="button" onClick="{{ sl.on }}" style="position: relative; min-height: 80px; border-radius: 10px; border: {{ sl.borderStyle }}; background: {{ sl.bg }}; color: #f3efe6; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+                  <span style="position: absolute; top: 5px; left: 7px; font-size: 11px; font-weight: 600; color: #6f6a60;">{{ sl.p }}</span>
+                  <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 30px; line-height: 1; color: {{ sl.numFg }};">{{ sl.num }}</span>
+                  <span style="font-size: 12px; color: #cfc9bd;">{{ sl.name }}</span>
+                </button>
+              </sc-for>
+            </div>
+            <button type="button" onClick="{{ pickLibero }}" style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 12px; border-radius: 8px; border: 1px dashed {{ liberoBorder }}; background: transparent; color: #cfc9bd; cursor: pointer; font: inherit; font-size: 14px;">
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: #7f9fe0;">Libero</span>
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 20px; color: #d4ae62;">{{ liberoNum }}</span>{{ liberoName }}
+            </button>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <h2 style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 24px; text-transform: uppercase; margin: 0;">Presenti</h2>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <sc-for list="{{ pool }}" as="pp" hint-placeholder-count="10">
+              <button type="button" onClick="{{ pp.on }}" style="min-height: 48px; padding: 0 12px; border-radius: 8px; border: 1px solid {{ pp.border }}; background: #0f0f10; color: #f3efe6; cursor: pointer; display: flex; align-items: center; gap: 8px; opacity: {{ pp.op }};">
+                <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 20px; color: #d4ae62;">{{ pp.num }}</span><span style="font-size: 13px;">{{ pp.name }}</span><span style="font-size: 11px; color: #6f6a60;">{{ pp.tag }}</span>
+              </button>
+            </sc-for>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <sc-for list="{{ quick2 }}" as="q" hint-placeholder-count="3">
+              <button type="button" onClick="{{ q.on }}" style="min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid #3a352b; background: transparent; color: #f3efe6; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;" style-hover="border-color: #d4ae62; color: #d4ae62;">{{ q.label }}</button>
+            </sc-for>
+          </div>
+          <span style="font-size: 13px; color: #6f6a60;">"Riempi in ordine" mette i presenti nelle posizioni vuote seguendo i ruoli (P, S, C, O, S, C).</span>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ s3 }}" hint-placeholder-val="{{ false }}">
+      <section style="display: flex; flex-direction: column; gap: 22px; max-width: 560px;">
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <h2 style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 24px; text-transform: uppercase; margin: 0;">Chi batte per primo?</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <sc-for list="{{ serveOpts }}" as="so" hint-placeholder-count="2">
+              <button type="button" onClick="{{ so.on }}" style="min-height: 72px; border-radius: 12px; border: 1px solid {{ so.border }}; background: {{ so.bg }}; color: {{ so.fg }}; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: 0.06em; text-transform: uppercase;">{{ so.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <h2 style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 24px; text-transform: uppercase; margin: 0;">Modalità di partenza</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <sc-for list="{{ modeOpts }}" as="mo" hint-placeholder-count="2">
+              <button type="button" onClick="{{ mo.on }}" style="min-height: 88px; padding: 10px 14px; border-radius: 12px; border: 1px solid {{ mo.border }}; background: {{ mo.bg }}; color: #f3efe6; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 4px; text-align: left;">
+                <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: 0.06em; text-transform: uppercase; color: {{ mo.fg }};">{{ mo.label }}</span>
+                <span style="font-size: 13px; color: #a39e93;">{{ mo.sub }}</span>
+              </button>
+            </sc-for>
+          </div>
+          <span style="font-size: 13px; color: #6f6a60;">Si può cambiare in qualsiasi momento durante la partita.</span>
+        </div>
+        <div style="border: 1px solid #2c2922; background: #121212; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #cfc9bd;">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; color: #d4ae62;">Riepilogo</span>
+          <span>{{ presentCount }} presenti · formazione {{ filledCount }}/6 · libero {{ liberoSummary }}</span>
+          <span>Batte: {{ serveSummary }} · Modalità: {{ modeSummary }}</span>
+        </div>
+      </section>
+    </sc-if>
+  </main>
+
+  <div style="position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: #0b0b0c; border-top: 1px solid #1f1d19;">
+    <div style="max-width: 1100px; margin: 0 auto; padding: 12px clamp(16px, 4vw, 40px); box-sizing: border-box; display: flex; gap: 10px;">
+      <sc-if value="{{ canBack }}" hint-placeholder-val="{{ false }}">
+        <button type="button" onClick="{{ back }}" style="min-height: 54px; padding: 0 20px; border-radius: 8px; border: 1px solid #3a352b; background: transparent; color: #f3efe6; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 17px; letter-spacing: 0.1em; text-transform: uppercase;">Indietro</button>
+      </sc-if>
+      <button type="button" onClick="{{ next }}" style="flex: 1; min-height: 54px; border-radius: 8px; border: none; background: {{ nextBg }}; color: {{ nextFg }}; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 0.12em; text-transform: uppercase;">{{ nextLabel }}</button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const ROSTER = [
+  [7, 'Luca Bianchi', 'Palleggiatore'], [54, 'Marco Rossi', 'Schiacciatore'], [67, 'Andrea Conti', 'Opposto'],
+  [11, 'Davide Ferri', 'Centrale'], [30, 'Matteo Gallo', 'Schiacciatore'], [4, 'Simone Neri', 'Centrale'],
+  [1, 'Giorgio Riva', 'Libero'], [9, 'Paolo Greco', 'Schiacciatore'], [18, 'Fabio Marino', 'Palleggiatore'],
+  [22, 'Nicola Villa', 'Centrale'], [15, 'Tommaso Leone', 'Opposto'], [3, 'Stefano Moro', 'Libero']
+];
+const BY = Object.fromEntries(ROSTER.map(([n, name, role]) => [n, { n, name, short: name.split(' ')[1], role }]));
+const LAST = [7, 54, 11, 67, 30, 4];
+const LAST_PRESENT = [7, 54, 67, 11, 30, 4, 1, 9, 18, 22];
+const ROLE_ORDER = ['Palleggiatore', 'Schiacciatore', 'Centrale', 'Opposto', 'Schiacciatore', 'Centrale'];
+const GOLD = '#d4ae62';
+
+class Component extends DCLogic {
+  state = { step: 1, present: ROSTER.map(r => r[0]).filter(n => n !== 15 && n !== 3), slots: [7, 54, null, null, null, null], libero: 1, active: 2, liberoActive: false, serve: 'them', mode: 'semplice' };
+  renderVals() {
+    const s = this.state;
+    const roster = ROSTER.map(([num, name, role]) => {
+      const on = s.present.includes(num);
+      return { num, name, role, op: on ? 1 : 0.55, bg: on ? '#121212' : 'transparent', border: on ? GOLD : '#3a352b', check: on ? GOLD : 'transparent', mark: on ? '✓' : '',
+        toggle: () => this.setState(st => ({ present: on ? st.present.filter(x => x !== num) : [...st.present, num], slots: on ? st.slots.map(x => x === num ? null : x) : st.slots, libero: on && st.libero === num ? null : st.libero })) };
+    });
+    const order = [3, 2, 1, 4, 5, 0];
+    const slots = order.map(i => {
+      const n = s.slots[i]; const act = !s.liberoActive && s.active === i;
+      return { p: `P${i + 1}`, num: n ?? '+', name: n ? BY[n].short : 'vuoto', numFg: n ? GOLD : '#6f6a60',
+        bg: act ? '#1a1813' : '#0f0f10', borderStyle: act ? `1px solid ${GOLD}` : n ? '1px solid #2c2922' : '1px dashed #3a352b',
+        on: () => this.setState({ active: i, liberoActive: false }) };
+    });
+    const used = [...s.slots.filter(Boolean), s.libero].filter(Boolean);
+    const pool = s.present.map(n => {
+      const inUse = used.includes(n);
+      return { num: n, name: BY[n].short, tag: s.libero === n ? 'L' : s.slots.includes(n) ? `P${s.slots.indexOf(n) + 1}` : '', op: inUse ? 0.45 : 1, border: inUse ? '#2c2922' : '#3a352b',
+        on: () => this.setState(st => {
+          if (st.liberoActive) return { libero: n, slots: st.slots.map(x => x === n ? null : x), liberoActive: false };
+          const slotsN = st.slots.map(x => x === n ? null : x); slotsN[st.active] = n;
+          const nextEmpty = slotsN.findIndex(x => !x);
+          return { slots: slotsN, libero: st.libero === n ? null : st.libero, active: nextEmpty >= 0 ? nextEmpty : st.active };
+        }) };
+    });
+    const filledCount = s.slots.filter(Boolean).length;
+    const labels = ['Presenti', 'Formazione', 'Inizio'];
+    const steps = labels.map((label, i) => ({ n: i + 1, label, bar: i + 1 <= s.step ? GOLD : '#2c2922', fg: i + 1 === s.step ? GOLD : i + 1 < s.step ? '#f3efe6' : '#6f6a60', on: () => this.setState({ step: i + 1 }) }));
+    const ready = s.step === 1 ? s.present.length >= 6 : s.step === 2 ? filledCount === 6 : true;
+    const nextLabel = s.step === 1 ? `Avanti · ${s.present.length} presenti` : s.step === 2 ? (filledCount === 6 ? 'Avanti' : `Mancano ${6 - filledCount} in campo`) : 'Inizia partita';
+    const opt = (cur, k) => ({ bg: cur === k ? '#1a1813' : '#121212', border: cur === k ? GOLD : '#2c2922', fg: cur === k ? GOLD : '#f3efe6' });
+    return {
+      steps, roster, slots, pool, filledCount, presentCount: s.present.length,
+      s1: s.step === 1, s2: s.step === 2, s3: s.step === 3, canBack: s.step > 1,
+      slotHint: s.liberoActive ? 'Scegli il libero tra i presenti' : `Tocca un presente per metterlo in P${s.active + 1}`,
+      liberoNum: s.libero ?? '+', liberoName: s.libero ? BY[s.libero].short : 'Nessuno', liberoBorder: s.liberoActive ? GOLD : '#3a352b',
+      pickLibero: () => this.setState({ liberoActive: true }),
+      quick1: [
+        { label: 'Tutti', on: () => this.setState({ present: ROSTER.map(r => r[0]) }) },
+        { label: 'Nessuno', on: () => this.setState({ present: [], slots: [null, null, null, null, null, null], libero: null }) },
+        { label: 'Come ultima partita', on: () => this.setState({ present: [...LAST_PRESENT] }) }
+      ],
+      quick2: [
+        { label: 'Come ultima partita', on: () => this.setState({ slots: LAST.map(n => s.present.includes(n) ? n : null), libero: s.present.includes(1) ? 1 : s.libero, active: 0 }) },
+        { label: 'Riempi in ordine', on: () => this.setState(st => {
+          const slotsN = [...st.slots]; const taken = new Set([...slotsN.filter(Boolean), st.libero]);
+          let libero = st.libero;
+          if (!libero) { const l = st.present.find(n => BY[n].role === 'Libero' && !taken.has(n)); if (l) { libero = l; taken.add(l); } }
+          slotsN.forEach((x, i) => { if (x) return; const n = st.present.find(n => !taken.has(n) && BY[n].role === ROLE_ORDER[i]) ?? st.present.find(n => !taken.has(n) && BY[n].role !== 'Libero'); if (n) { slotsN[i] = n; taken.add(n); } });
+          return { slots: slotsN, libero };
+        }) },
+        { label: 'Svuota', on: () => this.setState({ slots: [null, null, null, null, null, null], libero: null, active: 0 }) }
+      ],
+      serveOpts: [['us', 'CUSBros'], ['them', 'Reno']].map(([k, label]) => ({ label, ...opt(s.serve, k), on: () => this.setState({ serve: k }) })),
+      modeOpts: [['semplice', 'Semplice', 'Punto + tipo + chi'], ['avanzato', 'Avanzato', 'Ogni tocco della squadra']].map(([k, label, sub]) => ({ label, sub, ...opt(s.mode, k), on: () => this.setState({ mode: k }) })),
+      liberoSummary: s.libero ? `#${s.libero}` : 'nessuno', serveSummary: s.serve === 'us' ? 'CUSBros' : 'Reno', modeSummary: s.mode === 'semplice' ? 'Semplice' : 'Avanzato',
+      nextLabel, nextBg: ready ? GOLD : '#2c2922', nextFg: ready ? '#0b0b0c' : '#6f6a60',
+      next: () => { if (!ready) return; if (s.step < 3) this.setState({ step: s.step + 1 }); else window.location.href = 'Admin Live.dc.html'; },
+      back: () => this.setState({ step: s.step - 1 })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+# Fine riga LF nel repo per tutti i file di testo (coerenza tra Windows e Vercel/Linux)
+* text=auto eol=lf
+
+*.png binary
+*.ico binary

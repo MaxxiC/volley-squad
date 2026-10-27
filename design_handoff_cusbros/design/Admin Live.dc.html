@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CUSBros Staff — Live</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body { margin: 0; background: #0b0b0c; color: #f3efe6; -webkit-font-smoothing: antialiased; }
+a { color: #d4ae62; text-decoration: none; }
+a:hover { color: #e6c682; }
+:focus-visible { outline: 2px solid #d4ae62; outline-offset: 3px; }
+button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+</style>
+</helmet>
+<div style="min-height: 100vh; font-family: 'Barlow', sans-serif;">
+  <header style="position: sticky; top: 0; z-index: 5; background: #0b0b0c; border-bottom: 1px solid #1f1d19;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 12px clamp(16px, 4vw, 40px) 0; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <img src="assets/logo.png" alt="" style="width: 32px; height: 32px; display: block;">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 0.08em; text-transform: uppercase;">CUSBros</span>
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; color: #d4ae62; margin-right: auto;">Staff</span>
+        <span style="font-size: 13px; color: #a39e93; white-space: nowrap;">Giulia T. · Statistica</span>
+        <a href="Admin Login.dc.html" style="font-size: 13px; font-weight: 600;">Esci</a>
+      </div>
+      <nav style="display: flex; gap: 4px; overflow-x: auto; margin: 0 -8px;">
+        <a href="Admin Partite.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 10px; white-space: nowrap; color: #a39e93; border-bottom: 2px solid transparent;" style-hover="color: #f3efe6;">Partite</a>
+        <a href="Admin Giocatori.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 10px; white-space: nowrap; color: #a39e93; border-bottom: 2px solid transparent;" style-hover="color: #f3efe6;">Giocatori</a>
+        <a href="Admin Live.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 10px; white-space: nowrap; color: #d4ae62; border-bottom: 2px solid #d4ae62;">Live</a>
+        <a href="Admin Storico.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 10px; white-space: nowrap; color: #a39e93; border-bottom: 2px solid transparent;" style-hover="color: #f3efe6;">Storico live</a>
+      </nav>
+    </div>
+  </header>
+
+  <main style="max-width: 1200px; margin: 0 auto; padding: 16px clamp(12px, 3vw, 40px) 64px; box-sizing: border-box; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 16px; align-items: start;">
+
+    <div style="display: flex; flex-direction: column; gap: 14px; min-width: 0;">
+      <section style="border: 1px solid #2c2922; background: #121212; border-radius: 14px; padding: 14px 16px; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px;">
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+          <span style="display: flex; align-items: center; gap: 6px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.1em; text-transform: uppercase; color: #d4ae62;">CUSBros <span style="width: 8px; height: 8px; border-radius: 50%; background: {{ serveUs }};"></span></span>
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(64px, 18vw, 88px); line-height: 0.9; font-variant-numeric: tabular-nums; color: #d4ae62;">{{ us }}</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 4px;">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; color: #a39e93;">Set {{ setN }}</span>
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 26px; line-height: 1; font-variant-numeric: tabular-nums;">{{ setsUs }}–{{ setsThem }}</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
+          <span style="display: flex; align-items: center; gap: 6px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.1em; text-transform: uppercase; color: #cfc9bd;"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{ serveThem }};"></span> Reno</span>
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(64px, 18vw, 88px); line-height: 0.9; font-variant-numeric: tabular-nums;">{{ them }}</span>
+        </div>
+      </section>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border: 1px solid #2c2922; border-radius: 10px;">
+        <sc-for list="{{ modes }}" as="md" hint-placeholder-count="2">
+          <button type="button" onClick="{{ md.on }}" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 17px; letter-spacing: 0.1em; text-transform: uppercase; min-height: 46px; border: none; border-radius: 7px; cursor: pointer; background: {{ md.bg }}; color: {{ md.fg }};">{{ md.label }}</button>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ setOver }}" hint-placeholder-val="{{ false }}">
+        <div style="border: 1px solid #d4ae62; background: #1a1813; border-radius: 12px; padding: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; text-transform: uppercase; margin-right: auto;">{{ setOverLabel }}</span>
+          <button type="button" onClick="{{ closeSet }}" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; min-height: 48px; padding: 0 18px; border: none; border-radius: 8px; background: #d4ae62; color: #0b0b0c; cursor: pointer;">Chiudi set</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isSimple }}" hint-placeholder-val="{{ true }}">
+        <sc-if value="{{ sIdle }}" hint-placeholder-val="{{ true }}">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button type="button" onClick="{{ plusUs }}" style="min-height: 150px; border: none; border-radius: 14px; background: #d4ae62; color: #0b0b0c; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;" style-active="background: #b8924a;">
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 56px; line-height: 0.9;">+1</span>
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 17px; letter-spacing: 0.12em; text-transform: uppercase;">CUSBros</span>
+            </button>
+            <button type="button" onClick="{{ plusThem }}" style="min-height: 150px; border: 1px solid #3a352b; border-radius: 14px; background: #121212; color: #f3efe6; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;" style-active="background: #1c1b18;">
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 56px; line-height: 0.9;">+1</span>
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 17px; letter-spacing: 0.12em; text-transform: uppercase;">Reno</span>
+            </button>
+          </div>
+          <span style="font-size: 13px; color: #6f6a60;">Il punto si segna subito. Poi puoi aggiungere come è arrivato e chi l'ha fatto.</span>
+        </sc-if>
+        <sc-if value="{{ sDetail }}" hint-placeholder-val="{{ false }}">
+          <section style="border: 1px solid #2c2922; background: #121212; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 22px; text-transform: uppercase; margin-right: auto;">{{ sTitle }}</span>
+              <button type="button" onClick="{{ sSkip }}" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; min-height: 44px; padding: 0 14px; border: 1px solid #3a352b; border-radius: 7px; background: transparent; color: #a39e93; cursor: pointer;">Salta</button>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <sc-for list="{{ sOpts }}" as="o" hint-placeholder-count="4">
+                <button type="button" onClick="{{ o.on }}" style="min-height: 64px; padding: 8px 12px; border-radius: 10px; border: 1px solid {{ o.border }}; background: #0f0f10; color: {{ o.fg }}; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.1;" style-active="background: #1c1b18;">{{ o.label }}</button>
+              </sc-for>
+            </div>
+            <sc-if value="{{ sShowPlayers }}" hint-placeholder-val="{{ false }}">
+              <button type="button" onClick="{{ toggleStar }}" style="align-self: flex-start; min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid {{ starBorder }}; background: {{ starBg }}; color: {{ starFg }}; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 0.06em; text-transform: uppercase;">★ Meritevole</button>
+              <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
+                <sc-for list="{{ sPlayers }}" as="sp" hint-placeholder-count="6">
+                  <button type="button" onClick="{{ sp.on }}" style="position: relative; min-height: 68px; border-radius: 10px; border: 1px solid {{ sp.border }}; background: {{ sp.bg }}; color: #f3efe6; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;" style-active="border-color: #d4ae62;">
+                    <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 28px; line-height: 1; color: #d4ae62;">{{ sp.num }}</span>
+                    <span style="font-size: 13px; color: #cfc9bd;">{{ sp.name }}</span>
+                    <span style="position: absolute; top: 4px; right: 6px; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #d4ae62;">{{ sp.tag }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+          </section>
+        </sc-if>
+      </sc-if>
+
+      <sc-if value="{{ isAdv }}" hint-placeholder-val="{{ false }}">
+        <section style="border: 1px solid #2c2922; background: #121212; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 14px;">
+          <div style="display: flex; align-items: center; gap: 10px; min-height: 28px;">
+            <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93;">Giocatore</span>
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; text-transform: uppercase; color: {{ aPlayerFg }};">{{ aPlayerLabel }}</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;">
+            <sc-for list="{{ fonds }}" as="f" hint-placeholder-count="6">
+              <button type="button" onClick="{{ f.on }}" style="min-height: 46px; border-radius: 8px; border: 1px solid {{ f.border }}; background: {{ f.bg }}; color: {{ f.fg }}; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 0.06em; text-transform: uppercase;">{{ f.label }}</button>
+            </sc-for>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
+            <sc-for list="{{ esiti }}" as="e" hint-placeholder-count="4">
+              <button type="button" onClick="{{ e.on }}" style="min-height: 64px; padding: 6px 10px; border-radius: 10px; border: 1px solid {{ e.border }}; background: {{ e.bg }}; color: {{ e.fg }}; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;" style-active="opacity: 0.8;">
+                <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 19px; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1;">{{ e.label }}</span>
+                <span style="font-size: 12px; opacity: 0.8;">{{ e.sub }}</span>
+              </button>
+            </sc-for>
+          </div>
+          <button type="button" onClick="{{ toggleStar }}" style="align-self: flex-start; min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid {{ starBorder }}; background: {{ starBg }}; color: {{ starFg }}; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 0.06em; text-transform: uppercase;">★ Meritevole</button>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-top: 12px; border-top: 1px solid #2c2922;">
+            <button type="button" onClick="{{ oppPoint }}" style="min-height: 52px; border-radius: 10px; border: 1px solid #3a352b; background: transparent; color: #f3efe6; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 0.06em; text-transform: uppercase;">Punto Reno</button>
+            <button type="button" onClick="{{ oppError }}" style="min-height: 52px; border-radius: 10px; border: 1px solid #5a4b2c; background: transparent; color: #d4ae62; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 0.06em; text-transform: uppercase;">Errore Reno</button>
+          </div>
+        </section>
+      </sc-if>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px; min-width: 0;">
+      <section style="border: 1px solid #2c2922; background: #121212; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; color: #d4ae62; margin-right: auto;">{{ courtTitle }}</span>
+          <button type="button" onClick="{{ rotate }}" style="min-height: 40px; padding: 0 12px; border-radius: 7px; border: 1px solid #3a352b; background: transparent; color: #f3efe6; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase;">Ruota</button>
+          <button type="button" onClick="{{ toggleSub }}" style="min-height: 40px; padding: 0 12px; border-radius: 7px; border: 1px solid {{ subBtnBorder }}; background: {{ subBtnBg }}; color: {{ subBtnFg }}; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase;">Cambio {{ subs }}/6</button>
+        </div>
+        <div style="border-top: 3px solid #cfc9bd; padding-top: 8px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;">
+          <sc-for list="{{ court }}" as="c" hint-placeholder-count="6">
+            <button type="button" onClick="{{ c.on }}" style="position: relative; min-height: 72px; border-radius: 10px; border: 1px solid {{ c.border }}; background: {{ c.bg }}; color: #f3efe6; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+              <span style="position: absolute; top: 5px; left: 7px; font-size: 11px; font-weight: 600; color: #6f6a60;">{{ c.p }}</span>
+              <span style="position: absolute; top: 6px; right: 7px; width: 8px; height: 8px; border-radius: 50%; background: {{ c.serve }};"></span>
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 28px; line-height: 1; color: #d4ae62;">{{ c.num }}</span>
+              <span style="font-size: 12px; color: #cfc9bd;">{{ c.name }}</span>
+            </button>
+          </sc-for>
+        </div>
+        <button type="button" onClick="{{ selLibero }}" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border-radius: 8px; border: 1px dashed {{ liberoBorder }}; background: transparent; color: #cfc9bd; cursor: pointer; font: inherit; font-size: 14px;">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: #7f9fe0;">Libero</span>
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 20px; color: #d4ae62;">1</span> Riva
+        </button>
+        <sc-if value="{{ subMode }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 10px; border-top: 1px solid #2c2922;">
+            <span style="font-size: 13px; color: #a39e93;">{{ subHint }}</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <sc-for list="{{ bench }}" as="b" hint-placeholder-count="5">
+                <button type="button" onClick="{{ b.on }}" style="min-height: 48px; padding: 0 12px; border-radius: 8px; border: 1px solid #3a352b; background: #0f0f10; color: #f3efe6; cursor: pointer; display: flex; align-items: center; gap: 8px; opacity: {{ b.op }};">
+                  <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 20px; color: #d4ae62;">{{ b.num }}</span><span style="font-size: 13px;">{{ b.name }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </section>
+
+      <section style="border: 1px solid #2c2922; background: #121212; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; color: #d4ae62; margin-right: auto;">Ultime azioni</span>
+          <button type="button" onClick="{{ undo }}" style="min-height: 40px; padding: 0 12px; border-radius: 7px; border: 1px solid #3a352b; background: transparent; color: #f3efe6; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase;">↶ Annulla</button>
+        </div>
+        <sc-for list="{{ feed }}" as="ev" hint-placeholder-count="5">
+          <div style="display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 4px; border-bottom: 1px solid #1c1b18;">
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 17px; font-variant-numeric: tabular-nums; color: {{ ev.scoreFg }};">{{ ev.score }}</span>
+            <span style="font-size: 14px; line-height: 1.3; color: #cfc9bd;">{{ ev.text }}</span>
+            <span style="font-size: 12px; font-weight: 600; color: {{ ev.tagFg }}; white-space: nowrap;">{{ ev.tag }}</span>
+          </div>
+        </sc-for>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const P = { 7: 'Bianchi', 54: 'Rossi', 67: 'Conti', 11: 'Ferri', 30: 'Gallo', 4: 'Neri', 1: 'Riva', 9: 'Greco', 18: 'Marino', 22: 'Villa', 15: 'Leone', 3: 'Moro' };
+const GOLD = '#d4ae62', RED = '#e08a7c', INK = '#f3efe6';
+const FONDS = { bat: 'Battuta', ric: 'Ricezione', alz: 'Alzata', att: 'Attacco', muro: 'Muro', err: 'Fallo' };
+const ESITI = {
+  bat: [['Ace', 'us'], ['In campo', null], ['Errore', 'them']],
+  ric: [['Perfetta', null], ['Buona', null], ['Scarsa', null], ['Errore', 'them']],
+  alz: [['Buona', null], ['Scarsa', null], ['Errore', 'them']],
+  att: [['Punto', 'us'], ['In campo', null], ['Murato', 'them'], ['Errore', 'them']],
+  muro: [['Punto', 'us'], ['Tocco', null], ['Invasione', 'them']],
+  err: [['Invasione', 'them'], ['Doppia', 'them'], ['Posizione', 'them'], ['Altro', 'them']]
+};
+const OUR_TIPI = [['Ace', 'Ace'], ['Attacco', 'Attacco'], ['Muro', 'Muro'], ['Errore Reno', 'err']];
+const THEIR_TIPI = [['Punto Reno', 'pt'], ['Errore battuta', 'Errore battuta'], ['Errore attacco', 'Errore attacco'], ['Ricezione errata', 'Ricezione errata'], ['Fallo / invasione', 'Fallo']];
+const lbl = n => `#${n} ${P[n]}`;
+
+class Component extends DCLogic {
+  state = {
+    mode: 'semplice', us: 18, them: 15, setsUs: 1, setsThem: 1, setN: 3, serve: 'us',
+    pos: [7, 54, 11, 67, 30, 4], bench: [9, 18, 22, 15, 3], subs: 2, hist: [],
+    feed: [
+      { score: '18–15', side: 'us', text: 'Attacco · #54 Rossi', star: true },
+      { score: '17–15', side: 'us', text: 'Errore Reno · palla semplice' },
+      { score: '16–15', side: 'us', text: 'Muro · #11 Ferri' },
+      { score: '15–15', side: 'them', text: 'Punto Reno' },
+      { score: '15–14', side: 'us', text: 'Ace · #7 Bianchi' }
+    ],
+    sStep: 'idle', sKind: null, lastBy: { Attacco: 54, Muro: 11, Ace: 7 }, star: false, aPlayer: null, aFond: 'bat', subMode: false, subOut: null
+  };
+  snap() { const { us, them, serve, pos, bench, subs, feed, setsUs, setsThem, setN } = this.state; return { us, them, serve, pos, bench, subs, feed, setsUs, setsThem, setN }; }
+  event(side, text, star, incomplete) {
+    this.setState(s => {
+      const hist = [...s.hist, this.snap()].slice(-50);
+      let { us, them, serve, pos } = s;
+      if (side === 'us') { us++; if (serve === 'them') pos = pos.map((_, i) => pos[(i + 1) % 6]); serve = 'us'; }
+      if (side === 'them') { them++; serve = 'them'; }
+      const feed = [{ score: `${us}–${them}`, side, text, star, incomplete }, ...s.feed].slice(0, 30);
+      return { hist, us, them, serve, pos, feed };
+    });
+  }
+  enrich(text, star) { this.setState(s => ({ feed: [{ ...s.feed[0], text, star, incomplete: false }, ...s.feed.slice(1)], sStep: 'idle', star: false })); }
+  renderVals() {
+    const s = this.state;
+    const opt = (label, on, tone) => ({ label, on, fg: tone === 'neg' ? RED : tone === 'pos' ? GOLD : INK, border: tone === 'neg' ? '#5a2f29' : tone === 'pos' ? '#5a4b2c' : '#2c2922' });
+    let sTitle = '', sOpts = [], sShowPlayers = false;
+    if (s.sStep === 'tipoNoi') {
+      sTitle = 'Come è arrivato?';
+      sOpts = OUR_TIPI.map(([l, k]) => opt(l, () => k === 'err' ? this.setState({ sStep: 'errAvv' }) : this.setState({ sStep: 'chi', sKind: k }), 'pos'));
+    } else if (s.sStep === 'tipoLoro') {
+      sTitle = 'Come è arrivato?';
+      sOpts = THEIR_TIPI.map(([l, k]) => opt(l, () => k === 'pt' ? this.enrich('Punto Reno') : this.setState({ sStep: 'chi', sKind: k }), k === 'pt' ? null : 'neg'));
+    } else if (s.sStep === 'errAvv') {
+      sTitle = 'Errore Reno su…';
+      sOpts = [opt('Palla semplice', () => this.enrich('Errore Reno · palla semplice')), opt('Azione', () => this.enrich('Errore Reno · azione'))];
+    } else if (s.sStep === 'chi') {
+      sTitle = `${s.sKind} · chi?`; sShowPlayers = true;
+    }
+    const onCourt = s.sKind === 'Ricezione errata' ? [...s.pos, 1] : s.pos;
+    const last = s.lastBy[s.sKind];
+    const sPlayers = onCourt.map(n => ({ num: n, name: P[n], tag: n === last ? 'ultimo' : '', border: n === last ? '#5a4b2c' : '#2c2922', bg: n === last ? '#1a1813' : '#0f0f10',
+      on: () => { this.enrich(`${s.sKind} · ${lbl(n)}`, s.star); this.setState(st => ({ lastBy: { ...st.lastBy, [s.sKind]: n } })); } }));
+
+    const fonds = Object.entries(FONDS).map(([k, l]) => ({ label: l, on: () => this.setState({ aFond: k }), bg: k === s.aFond ? GOLD : 'transparent', fg: k === s.aFond ? '#0b0b0c' : INK, border: k === s.aFond ? GOLD : '#2c2922' }));
+    const esiti = ESITI[s.aFond].map(([l, pt]) => ({
+      label: l, sub: pt === 'us' ? '+1 CUSBros' : pt === 'them' ? '+1 Reno' : 'continua',
+      fg: pt === 'us' ? '#0b0b0c' : pt === 'them' ? RED : INK, bg: pt === 'us' ? GOLD : '#0f0f10',
+      border: pt === 'us' ? GOLD : pt === 'them' ? '#5a2f29' : '#2c2922',
+      on: () => {
+        if (!s.aPlayer) return;
+        const text = `${FONDS[s.aFond]} ${l.toLowerCase()} · ${lbl(s.aPlayer)}`;
+        if (pt) this.event(pt, text, pt === 'us' && s.star);
+        else this.setState(st => ({ hist: [...st.hist, this.snap()], feed: [{ score: `${st.us}–${st.them}`, side: null, text }, ...st.feed] }));
+        this.setState({ aPlayer: null, star: false });
+      }
+    }));
+
+    const order = [3, 2, 1, 4, 5, 0];
+    const court = order.map(i => {
+      const n = s.pos[i];
+      const picked = s.subMode ? s.subOut === n : (s.mode === 'avanzato' && s.aPlayer === n);
+      return {
+        p: `P${i + 1}`, num: n, name: P[n], serve: i === 0 && s.serve === 'us' ? GOLD : 'transparent',
+        bg: picked ? '#1a1813' : '#0f0f10', border: picked ? GOLD : '#2c2922',
+        on: () => s.subMode ? this.setState({ subOut: n }) : this.setState({ aPlayer: n, mode: s.mode })
+      };
+    });
+    const bench = s.bench.map(n => ({
+      num: n, name: P[n], op: s.subOut ? 1 : 0.5,
+      on: () => {
+        if (!s.subOut) return;
+        this.setState(st => ({
+          hist: [...st.hist, this.snap()],
+          pos: st.pos.map(x => x === st.subOut ? n : x), bench: st.bench.map(x => x === n ? st.subOut : x),
+          subs: st.subs + 1, subMode: false, subOut: null,
+          feed: [{ score: `${st.us}–${st.them}`, side: null, text: `Cambio · entra ${lbl(n)}, esce ${lbl(st.subOut)}` }, ...st.feed]
+        }));
+      }
+    }));
+
+    const target = s.setN === 5 ? 15 : 25;
+    const setOver = (s.us >= target || s.them >= target) && Math.abs(s.us - s.them) >= 2;
+    const feed = s.feed.slice(0, 8).map(e => ({
+      ...e, scoreFg: e.side === 'us' ? GOLD : e.side === 'them' ? INK : '#6f6a60',
+      tag: e.incomplete ? 'da completare' : e.star ? '★' : '', tagFg: e.incomplete ? RED : GOLD
+    }));
+
+    return {
+      ...s, feed, court, bench, fonds, esiti, sTitle, sOpts, sShowPlayers, sPlayers,
+      isSimple: s.mode === 'semplice', isAdv: s.mode === 'avanzato', sIdle: s.sStep === 'idle', sDetail: s.sStep !== 'idle',
+      serveUs: s.serve === 'us' ? GOLD : 'transparent', serveThem: s.serve === 'them' ? INK : 'transparent',
+      modes: [['semplice', 'Semplice'], ['avanzato', 'Avanzato']].map(([k, l]) => ({ label: l, on: () => this.setState({ mode: k, sStep: 'idle' }), bg: s.mode === k ? GOLD : 'transparent', fg: s.mode === k ? '#0b0b0c' : '#a39e93' })),
+      plusUs: () => { this.event('us', 'Punto CUSBros', false, true); this.setState({ sStep: 'tipoNoi' }); },
+      plusThem: () => { this.event('them', 'Punto Reno', false, true); this.setState({ sStep: 'tipoLoro' }); },
+      sSkip: () => this.setState({ sStep: 'idle', star: false }),
+      toggleStar: () => this.setState({ star: !s.star }),
+      starBg: s.star ? GOLD : 'transparent', starFg: s.star ? '#0b0b0c' : '#a39e93', starBorder: s.star ? GOLD : '#3a352b',
+      aPlayerLabel: s.aPlayer ? lbl(s.aPlayer) : 'Tocca un giocatore in campo', aPlayerFg: s.aPlayer ? GOLD : '#6f6a60',
+      oppPoint: () => this.event('them', 'Punto Reno'),
+      oppError: () => this.event('us', 'Errore Reno'),
+      rotate: () => this.setState(st => ({ pos: st.pos.map((_, i) => st.pos[(i + 1) % 6]) })),
+      toggleSub: () => this.setState({ subMode: !s.subMode, subOut: null }),
+      subBtnBg: s.subMode ? GOLD : 'transparent', subBtnFg: s.subMode ? '#0b0b0c' : INK, subBtnBorder: s.subMode ? GOLD : '#3a352b',
+      subHint: s.subOut ? `Esce ${lbl(s.subOut)} · scegli chi entra` : 'Tocca in campo chi esce',
+      courtTitle: s.subMode ? 'Cambio in corso' : 'In campo · rete in alto',
+      selLibero: () => this.setState({ aPlayer: 1 }), liberoBorder: s.aPlayer === 1 ? GOLD : '#3a352b',
+      setOver, setOverLabel: s.us > s.them ? `Set ${s.setN} vinto ${s.us}–${s.them}` : `Set ${s.setN} perso ${s.us}–${s.them}`,
+      closeSet: () => this.setState(st => ({ hist: [...st.hist, this.snap()], setsUs: st.setsUs + (st.us > st.them ? 1 : 0), setsThem: st.setsThem + (st.them > st.us ? 1 : 0), setN: st.setN + 1, us: 0, them: 0, subs: 0 })),
+      undo: () => this.setState(st => st.hist.length ? { ...st.hist[st.hist.length - 1], hist: st.hist.slice(0, -1), sStep: 'idle' } : null)
+    };
+  }
+}
+</script>
+</body>
+</html>

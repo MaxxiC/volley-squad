@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CUSBros — Calendario</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body { margin: 0; background: #0b0b0c; color: #f3efe6; text-wrap: pretty; -webkit-font-smoothing: antialiased; }
+a { color: #d4ae62; text-decoration: none; }
+a:hover { color: #e6c682; }
+:focus-visible { outline: 2px solid #d4ae62; outline-offset: 3px; }
+</style>
+</helmet>
+<div style="min-height: 100vh; font-family: 'Barlow', sans-serif; position: relative; overflow-x: clip;">
+  <nav style="position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 18px clamp(20px, 5vw, 48px); box-sizing: border-box; display: flex; align-items: center; gap: 16px;">
+    <a href="Home.dc.html" style="display: flex; align-items: center; gap: 12px; margin-right: auto; color: #f3efe6;">
+      <img src="assets/logo.png" alt="Logo CUSBros" style="width: 40px; height: 40px; display: block;">
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: 0.08em; text-transform: uppercase;">CUSBros</span>
+    </a>
+    <a href="Home.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 10px 18px; border: 1px solid #3a352b; border-radius: 6px; color: #f3efe6; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center;" style-hover="border-color: #d4ae62; color: #d4ae62;">Home</a>
+  </nav>
+
+  <main style="position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: clamp(20px, 5vw, 48px) clamp(20px, 5vw, 48px) 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: clamp(36px, 6vw, 60px);">
+
+    <header style="display: flex; flex-direction: column; gap: 12px;">
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.28em; text-transform: uppercase; color: #d4ae62;">Stagione 2026/27 · Andata</span>
+      <h1 style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(56px, 13vw, 120px); line-height: 0.88; text-transform: uppercase; margin: 0;">Calendario</h1>
+    </header>
+
+    <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr)); gap: 1px; background: #2c2922; border: 1px solid #2c2922; border-radius: 14px; overflow: hidden;">
+      <div style="background: #121212; padding: 20px 22px; display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 44px; line-height: 1; color: #d4ae62;">2ª</span>
+        <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #a39e93;">In classifica</span>
+      </div>
+      <div style="background: #121212; padding: 20px 22px; display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 44px; line-height: 1;">7</span>
+        <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #a39e93;">Punti</span>
+      </div>
+      <div style="background: #121212; padding: 20px 22px; display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 44px; line-height: 1;">2–1</span>
+        <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #a39e93;">Vinte – perse</span>
+      </div>
+      <div style="background: #121212; padding: 20px 22px; display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 44px; line-height: 1;">8–4</span>
+        <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #a39e93;">Set vinti – persi</span>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 18px;">
+      <div style="display: flex; gap: 4px; padding: 4px; border: 1px solid #2c2922; border-radius: 10px; align-self: flex-start; max-width: 100%; box-sizing: border-box;">
+        <sc-for list="{{ filters }}" as="f" hint-placeholder-count="3">
+          <button type="button" onClick="{{ f.on }}" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.08em; text-transform: uppercase; min-height: 44px; padding: 0 18px; border: none; border-radius: 7px; cursor: pointer; background: {{ f.bg }}; color: {{ f.fg }}; white-space: nowrap;">{{ f.label }}</button>
+        </sc-for>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <sc-for list="{{ matches }}" as="m" hint-placeholder-count="6">
+          <a href="{{ m.href }}" style="display: block; color: inherit;"><article style="border: 1px solid {{ m.border }}; background: #121212; border-radius: 12px; padding: clamp(16px, 3.5vw, 24px); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px 20px; align-items: center;">
+            <div style="display: flex; flex-direction: column; gap: 10px; min-width: 0;">
+              <div style="display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase;">
+                <span style="color: #a39e93;">{{ m.g }}ª · {{ m.date }}</span>
+                <span style="color: {{ m.venueFg }};">{{ m.venue }}</span>
+                <sc-if value="{{ m.isNext }}" hint-placeholder-val="{{ false }}">
+                  <span style="padding: 2px 8px; border-radius: 4px; background: #d4ae62; color: #0b0b0c; font-weight: 700;">Prossima</span>
+                </sc-if>
+              </div>
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: clamp(20px, 4vw, 26px); line-height: 1.05; text-transform: uppercase;"><span style="color: {{ m.homeFg }};">{{ m.home }}</span> <span style="color: #6f6a60; font-weight: 500;">vs</span> <span style="color: {{ m.awayFg }};">{{ m.away }}</span></span>
+              <sc-if value="{{ m.played }}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <sc-for list="{{ m.sets }}" as="s" hint-placeholder-count="3">
+                    <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 15px; font-variant-numeric: tabular-nums; padding: 3px 10px; border-radius: 5px; border: 1px solid {{ s.border }}; color: {{ s.fg }};">{{ s.label }}</span>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ m.upcoming }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size: 14px; color: #a39e93;">{{ m.time }} · {{ m.place }}</span>
+              </sc-if>
+            </div>
+            <sc-if value="{{ m.played }}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(36px, 8vw, 48px); line-height: 0.9; font-variant-numeric: tabular-nums; color: {{ m.scoreFg }};">{{ m.score }}</span>
+                <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: {{ m.scoreFg }};">{{ m.resLabel }}</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{ m.upcoming }}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 10px; border: 1px solid #2c2922;">
+                <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 28px; line-height: 1;">{{ m.day }}</span>
+                <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: #a39e93;">{{ m.month }}</span>
+              </div>
+            </sc-if>
+          </article></a>
+        </sc-for>
+      </div>
+    </section>
+
+    <section id="classifica" style="display: flex; flex-direction: column; gap: 16px;">
+      <h2 style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(36px, 7vw, 56px); line-height: 0.95; text-transform: uppercase; margin: 0;">Classifica</h2>
+      <div style="border: 1px solid #2c2922; background: #121212; border-radius: 14px; padding: clamp(8px, 2vw, 14px); overflow-x: auto;">
+        <div style="display: grid; grid-template-columns: 28px minmax(120px, 1fr) repeat(5, 40px); gap: 8px; padding: 10px 12px; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #a39e93; min-width: 380px;">
+          <span>#</span><span>Squadra</span><span style="text-align: right;">Pt</span><span style="text-align: right;">G</span><span style="text-align: right;">V</span><span style="text-align: right;">P</span><span style="text-align: right;">Set</span>
+        </div>
+        <sc-for list="{{ standings }}" as="r" hint-placeholder-count="8">
+          <div style="display: grid; grid-template-columns: 28px minmax(120px, 1fr) repeat(5, 40px); gap: 8px; align-items: center; padding: 11px 12px; border-radius: 8px; background: {{ r.bg }}; color: {{ r.fg }}; font-weight: {{ r.weight }}; font-size: 15px; font-variant-numeric: tabular-nums; min-width: 380px;">
+            <span style="opacity: 0.7;">{{ r.pos }}</span>
+            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ r.team }}</span>
+            <span style="text-align: right; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 19px;">{{ r.pts }}</span>
+            <span style="text-align: right;">{{ r.g }}</span>
+            <span style="text-align: right;">{{ r.v }}</span>
+            <span style="text-align: right;">{{ r.p }}</span>
+            <span style="text-align: right;">{{ r.set }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+  </main>
+
+  <footer style="position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 24px clamp(20px, 5vw, 48px) 40px; box-sizing: border-box; border-top: 1px solid #1f1d19; font-size: 13px; color: #6f6a60;">CUSBros Volleyball Team · CUSB</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const MATCHES = [
+  { g: 1, d: '2026-10-11', home: 'CUSBros', away: 'Volley Castello', sets: [[25,21],[23,25],[25,19],[25,22]] },
+  { g: 2, d: '2026-10-18', home: 'Pol. Zola', away: 'CUSBros', sets: [[25,23],[21,25],[25,20],[22,25],[15,12]] },
+  { g: 3, d: '2026-10-25', home: 'CUSBros', away: 'Pallavolo Savena', sets: [[25,18],[25,20],[25,16]] },
+  { g: 4, d: '2026-10-31', time: '21:00', home: 'Pallavolo Reno', away: 'CUSBros', place: 'Palestra Reno, Casalecchio di Reno' },
+  { g: 5, d: '2026-11-07', time: '20:30', home: 'CUSBros', away: 'Budrio Volley', place: 'PalaCUS, Bologna' },
+  { g: 6, d: '2026-11-14', time: '21:00', home: 'Vis Imola', away: 'CUSBros', place: 'Palestra Ruggi, Imola' },
+  { g: 7, d: '2026-11-21', time: '20:30', home: 'CUSBros', away: 'Ozzano Volley', place: 'PalaCUS, Bologna' },
+  { g: 8, d: '2026-11-28', time: '18:00', home: 'Volley Castello', away: 'CUSBros', place: 'Palazzetto Castel San Pietro' },
+  { g: 9, d: '2026-12-05', time: '20:30', home: 'CUSBros', away: 'Pol. Zola', place: 'PalaCUS, Bologna' },
+  { g: 10, d: '2026-12-12', time: '21:00', home: 'Pallavolo Savena', away: 'CUSBros', place: 'Palestra Savena, San Lazzaro' }
+];
+const STANDINGS = [
+  ['Pallavolo Reno', 8, 3, 3, 0, '9–3'], ['CUSBros', 7, 3, 2, 1, '8–4'], ['Vis Imola', 6, 3, 2, 1, '7–4'],
+  ['Budrio Volley', 5, 3, 2, 1, '6–6'], ['Pol. Zola', 5, 3, 1, 2, '6–7'], ['Ozzano Volley', 3, 3, 1, 2, '4–7'],
+  ['Pallavolo Savena', 2, 3, 0, 3, '3–9'], ['Volley Castello', 1, 3, 0, 3, '3–9']
+];
+const DAYS = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+const MONTHS = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+const GOLD = '#d4ae62', INK = '#f3efe6';
+
+class Component extends DCLogic {
+  state = { filter: 'tutte' };
+  renderVals() {
+    const nextG = MATCHES.find(m => !m.sets).g;
+    const all = MATCHES.map(m => {
+      const dt = new Date(m.d + 'T12:00:00');
+      const played = !!m.sets;
+      const usHome = m.home === 'CUSBros';
+      const base = {
+        g: m.g, home: m.home, away: m.away, played, upcoming: !played, isNext: m.g === nextG,
+        homeFg: usHome ? GOLD : INK, awayFg: usHome ? INK : GOLD,
+        date: `${DAYS[dt.getDay()]} ${dt.getDate()} ${MONTHS[dt.getMonth()]}`,
+        day: dt.getDate(), month: MONTHS[dt.getMonth()], time: m.time, place: m.place,
+        venue: usHome ? 'Casa' : 'Trasferta', venueFg: usHome ? '#7f9fe0' : '#a39e93',
+        border: m.g === nextG ? GOLD : '#2c2922', href: played ? 'Partita.dc.html' : '#'
+      };
+      if (!played) return base;
+      let us = 0, them = 0;
+      const sets = m.sets.map(([a, b]) => {
+        const [u, t] = usHome ? [a, b] : [b, a];
+        const won = u > t; won ? us++ : them++;
+        return { label: `${u}–${t}`, border: won ? '#5a4b2c' : '#2c2922', fg: won ? GOLD : '#a39e93' };
+      });
+      const win = us > them;
+      return { ...base, sets, score: `${us}–${them}`, resLabel: win ? 'Vinta' : 'Persa', scoreFg: win ? GOLD : '#a39e93' };
+    });
+    const f = this.state.filter;
+    const matches = all.filter(m => f === 'tutte' || (f === 'giocate' ? m.played : m.upcoming));
+    const filters = [['tutte', 'Tutte'], ['giocate', 'Giocate'], ['prossime', 'Da giocare']].map(([k, label]) => ({
+      label, bg: k === f ? GOLD : 'transparent', fg: k === f ? '#0b0b0c' : INK, on: () => this.setState({ filter: k })
+    }));
+    const standings = STANDINGS.map(([team, pts, g, v, p, set], i) => {
+      const us = team === 'CUSBros';
+      return { pos: i + 1, team, pts, g, v, p, set, bg: us ? GOLD : 'transparent', fg: us ? '#0b0b0c' : INK, weight: us ? 700 : 400 };
+    });
+    return { matches, filters, standings };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+/* Token di design e font arrivano nello step 1 (vedi docs/ROADMAP.md). */
+
+body {
+  background: #0b0b0c;
+  color: #f3efe6;
+}

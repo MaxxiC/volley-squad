@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CUSBros Staff — Partite</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body { margin: 0; background: #0b0b0c; color: #f3efe6; -webkit-font-smoothing: antialiased; }
+a { color: #d4ae62; text-decoration: none; }
+a:hover { color: #e6c682; }
+:focus-visible { outline: 2px solid #d4ae62; outline-offset: 3px; }
+input::placeholder { color: #6f6a60; }
+</style>
+</helmet>
+<div style="min-height: 100vh; font-family: 'Barlow', sans-serif;">
+  <header style="position: sticky; top: 0; z-index: 5; background: #0b0b0c; border-bottom: 1px solid #1f1d19;">
+    <div style="max-width: 1100px; margin: 0 auto; padding: 12px clamp(16px, 4vw, 40px) 0; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <img src="assets/logo.png" alt="" style="width: 32px; height: 32px; display: block;">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 0.08em; text-transform: uppercase;">CUSBros</span>
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; color: #d4ae62; margin-right: auto;">Staff</span>
+        <span style="font-size: 13px; color: #a39e93; white-space: nowrap;">Marco R. · Allenatore</span>
+        <a href="Admin Login.dc.html" style="font-size: 13px; font-weight: 600;">Esci</a>
+      </div>
+      <nav style="display: flex; gap: 4px; overflow-x: auto; margin: 0 -8px;">
+        <a href="Admin Partite.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 10px; white-space: nowrap; color: #d4ae62; border-bottom: 2px solid #d4ae62;">Partite</a>
+        <a href="Admin Giocatori.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 10px; white-space: nowrap; color: #a39e93; border-bottom: 2px solid transparent;" style-hover="color: #f3efe6;">Giocatori</a>
+        <a href="Admin Prepara Live.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 10px; white-space: nowrap; color: #a39e93; border-bottom: 2px solid transparent;" style-hover="color: #f3efe6;">Live</a>
+        <a href="Admin Storico.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 10px; white-space: nowrap; color: #a39e93; border-bottom: 2px solid transparent;" style-hover="color: #f3efe6;">Storico live</a>
+      </nav>
+    </div>
+  </header>
+
+  <main style="max-width: 1100px; margin: 0 auto; padding: 28px clamp(16px, 4vw, 40px) 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px;">
+    <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px;">
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 0.24em; text-transform: uppercase; color: #d4ae62;">Stagione 2026/27</span>
+        <h1 style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(40px, 8vw, 64px); line-height: 0.9; text-transform: uppercase; margin: 0;">Partite</h1>
+      </div>
+      <button type="button" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; min-height: 48px; padding: 0 20px; border: none; border-radius: 8px; background: #d4ae62; color: #0b0b0c; cursor: pointer; white-space: nowrap;" style-hover="background: #e6c682;" style-active="background: #b8924a;">+ Nuova partita</button>
+    </div>
+    <p style="margin: 0; font-size: 14px; color: #a39e93;">Le modifiche sono visibili subito su Home e Calendario.</p>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <sc-for list="{{ matches }}" as="m" hint-placeholder-count="8">
+        <article style="border: 1px solid {{ m.border }}; background: #121212; border-radius: 12px; overflow: hidden;">
+          <div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px 16px;">
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 56px; border-radius: 8px; background: #1a1916;">
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 24px; line-height: 1;">{{ m.day }}</span>
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #a39e93;">{{ m.month }}</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0;">
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 19px; text-transform: uppercase; line-height: 1.05; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ m.vsLabel }}</span>
+              <span style="font-size: 13px; color: #a39e93;">{{ m.g }}ª · {{ m.venue }} · {{ m.info }}</span>
+            </div>
+            <button type="button" onClick="{{ m.toggle }}" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; min-height: 44px; padding: 0 14px; border: 1px solid #3a352b; border-radius: 7px; background: transparent; color: #f3efe6; cursor: pointer;" style-hover="border-color: #d4ae62; color: #d4ae62;">{{ m.btn }}</button>
+          </div>
+          <sc-if value="{{ m.open }}" hint-placeholder-val="{{ false }}">
+            <div style="border-top: 1px solid #2c2922; padding: 18px 16px 20px; display: flex; flex-direction: column; gap: 18px; background: #0f0f10;">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 14px;">
+                <label style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93;">Data</span><input type="date" defaultValue="{{ m.d }}" style="font: inherit; font-size: 16px; color: #f3efe6; background: #121212; border: 1px solid #2c2922; border-radius: 8px; padding: 0 12px; min-height: 48px; box-sizing: border-box; color-scheme: dark;"></label>
+                <label style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93;">Ora</span><input type="time" value="{{ m.timeVal }}" onChange="{{ m.onTime }}" style="font: inherit; font-size: 16px; color: #f3efe6; background: #121212; border: 1px solid #2c2922; border-radius: 8px; padding: 0 12px; min-height: 48px; box-sizing: border-box; color-scheme: dark;"></label>
+                <label style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93;">Avversario</span><input type="text" defaultValue="{{ m.opp }}" style="font: inherit; font-size: 16px; color: #f3efe6; background: #121212; border: 1px solid #2c2922; border-radius: 8px; padding: 0 12px; min-height: 48px; box-sizing: border-box;"></label>
+                <div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93;">Campo</span>
+                  <div style="display: flex; gap: 4px; padding: 3px; border: 1px solid #2c2922; border-radius: 8px;">
+                    <span style="flex: 1; display: grid; place-items: center; min-height: 40px; border-radius: 6px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; background: {{ m.casaBg }}; color: {{ m.casaFg }};">Casa</span>
+                    <span style="flex: 1; display: grid; place-items: center; min-height: 40px; border-radius: 6px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; background: {{ m.trasfBg }}; color: {{ m.trasfFg }};">Trasferta</span>
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px;">
+                <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #6f6a60; margin-right: 4px;">Orari frequenti</span>
+                <sc-for list="{{ m.timeChips }}" as="tc" hint-placeholder-count="3">
+                  <button type="button" onClick="{{ tc.on }}" style="min-height: 40px; padding: 0 12px; border-radius: 999px; border: 1px solid {{ tc.border }}; background: transparent; color: {{ tc.fg }}; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 15px; font-variant-numeric: tabular-nums;">{{ tc.t }}</button>
+                </sc-for>
+              </div>
+              <label style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93;">Palestra</span><input type="text" value="{{ m.placeVal }}" onChange="{{ m.onPlace }}" placeholder="Nome e città" list="palestre" style="font: inherit; font-size: 16px; color: #f3efe6; background: #121212; border: 1px solid #2c2922; border-radius: 8px; padding: 0 12px; min-height: 48px; box-sizing: border-box;"></label>
+              <datalist id="palestre"><option value="PalaCUS, Bologna"></option><option value="Palestra Reno, Casalecchio di Reno"></option><option value="Palestra Ruggi, Imola"></option></datalist>
+              <sc-if value="{{ m.home }}" hint-placeholder-val="{{ false }}">
+                <button type="button" onClick="{{ m.usePalaCus }}" style="align-self: flex-start; margin-top: -8px; min-height: 36px; padding: 0 10px; border: none; background: transparent; color: #d4ae62; cursor: pointer; font-size: 14px; font-weight: 600;">Usa PalaCUS, Bologna</button>
+              </sc-if>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93;">Parziali (noi – loro)</span>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px;">
+                  <sc-for list="{{ m.setInputs }}" as="s" hint-placeholder-count="5">
+                    <div style="display: flex; align-items: center; gap: 6px; padding: 6px 8px; border: 1px solid #2c2922; border-radius: 8px; background: #121212;">
+                      <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 13px; color: #6f6a60; width: 18px;">{{ s.n }}</span>
+                      <input type="text" inputMode="numeric" defaultValue="{{ s.u }}" placeholder="–" style="width: 34px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; text-align: center; color: #d4ae62; background: transparent; border: none; min-height: 36px;">
+                      <span style="color: #6f6a60;">–</span>
+                      <input type="text" inputMode="numeric" defaultValue="{{ s.t }}" placeholder="–" style="width: 34px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; text-align: center; color: #f3efe6; background: transparent; border: none; min-height: 36px;">
+                    </div>
+                  </sc-for>
+                </div>
+                <span style="font-size: 13px; color: #6f6a60;">Se la partita viene registrata dal Live, i parziali si compilano da soli.</span>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+                <button type="button" onClick="{{ m.toggle }}" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; min-height: 48px; padding: 0 22px; border: none; border-radius: 8px; background: #d4ae62; color: #0b0b0c; cursor: pointer;" style-hover="background: #e6c682;">Salva</button>
+                <button type="button" onClick="{{ m.toggle }}" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; min-height: 48px; padding: 0 18px; border: 1px solid #3a352b; border-radius: 8px; background: transparent; color: #f3efe6; cursor: pointer;" style-hover="border-color: #f3efe6;">Annulla</button>
+                <button type="button" onClick="{{ m.duplicate }}" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; min-height: 48px; padding: 0 16px; border: 1px solid #5a4b2c; border-radius: 8px; background: transparent; color: #d4ae62; cursor: pointer; white-space: nowrap;" style-hover="border-color: #d4ae62;">Duplica come ritorno</button>
+                <button type="button" style="margin-left: auto; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.1em; text-transform: uppercase; min-height: 48px; padding: 0 12px; border: none; background: transparent; color: #e08a7c; cursor: pointer;" style-hover="color: #f0a597;">Elimina</button>
+              </div>
+            </div>
+          </sc-if>
+        </article>
+      </sc-for>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const MATCHES = [
+  { g: 1, d: '2026-10-11', time: '20:30', home: true, opp: 'Volley Castello', place: 'PalaCUS, Bologna', sets: [[25,21],[23,25],[25,19],[25,22]] },
+  { g: 2, d: '2026-10-18', time: '18:00', home: false, opp: 'Pol. Zola', place: 'Palestra Zola Predosa', sets: [[23,25],[25,21],[20,25],[25,22],[12,15]] },
+  { g: 3, d: '2026-10-25', time: '20:30', home: true, opp: 'Pallavolo Savena', place: 'PalaCUS, Bologna', sets: [[25,18],[25,20],[25,16]] },
+  { g: 4, d: '2026-10-31', time: '21:00', home: false, opp: 'Pallavolo Reno', place: 'Palestra Reno, Casalecchio di Reno' },
+  { g: 5, d: '2026-11-07', time: '20:30', home: true, opp: 'Budrio Volley', place: 'PalaCUS, Bologna' },
+  { g: 6, d: '2026-11-14', time: '21:00', home: false, opp: 'Vis Imola', place: 'Palestra Ruggi, Imola' },
+  { g: 7, d: '2026-11-21', time: '20:30', home: true, opp: 'Ozzano Volley', place: 'PalaCUS, Bologna' },
+  { g: 8, d: '2026-11-28', time: '18:00', home: false, opp: 'Volley Castello', place: 'Palazzetto Castel San Pietro' }
+];
+const MONTHS = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+class Component extends DCLogic {
+  state = { open: 4, list: MATCHES, times: {}, places: {} };
+  renderVals() {
+    const s = this.state;
+    const matches = s.list.map(m => {
+      const dt = new Date((m.d || '2027-01-01') + 'T12:00:00');
+      const timeVal = s.times[m.g] ?? m.time ?? '', placeVal = s.places[m.g] ?? m.place ?? '';
+      const open = this.state.open === m.g;
+      let info = m.time;
+      if (m.sets) {
+        const us = m.sets.filter(([a, b]) => a > b).length;
+        info = `${us}–${m.sets.length - us} · ${us > m.sets.length - us ? 'Vinta' : 'Persa'}`;
+      }
+      const setInputs = [0,1,2,3,4].map(i => ({ n: i + 1, u: m.sets?.[i]?.[0] ?? '', t: m.sets?.[i]?.[1] ?? '' }));
+      return {
+        ...m, open, info, setInputs, timeVal, placeVal, day: m.d ? dt.getDate() : '?', month: m.d ? MONTHS[dt.getMonth()] : 'data',
+        onTime: e => this.setState(st => ({ times: { ...st.times, [m.g]: e.target.value } })),
+        onPlace: e => this.setState(st => ({ places: { ...st.places, [m.g]: e.target.value } })),
+        usePalaCus: () => this.setState(st => ({ places: { ...st.places, [m.g]: 'PalaCUS, Bologna' } })),
+        timeChips: ['18:00', '20:30', '21:00'].map(t => ({ t, fg: timeVal === t ? '#d4ae62' : '#cfc9bd', border: timeVal === t ? '#d4ae62' : '#3a352b', on: () => this.setState(st => ({ times: { ...st.times, [m.g]: t } })) })),
+        duplicate: () => this.setState(st => {
+          const g = Math.max(...st.list.map(x => x.g)) + 1;
+          const copy = { g, d: '', time: m.time, home: !m.home, opp: m.opp, place: !m.home ? 'PalaCUS, Bologna' : '' };
+          return { list: [...st.list, copy], open: g };
+        }),
+        vsLabel: m.home ? `CUSBros vs ${m.opp}` : `${m.opp} vs CUSBros`, venue: m.home ? 'Casa' : 'Trasferta',
+        btn: open ? 'Chiudi' : 'Modifica', border: open ? '#d4ae62' : '#2c2922',
+        casaBg: m.home ? '#d4ae62' : 'transparent', casaFg: m.home ? '#0b0b0c' : '#a39e93',
+        trasfBg: m.home ? 'transparent' : '#d4ae62', trasfFg: m.home ? '#a39e93' : '#0b0b0c',
+        toggle: () => this.setState({ open: open ? null : m.g })
+      };
+    });
+    return { matches };
+  }
+}
+</script>
+</body>
+</html>

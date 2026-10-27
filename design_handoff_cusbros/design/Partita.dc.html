@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CUSBros vs Pallavolo Savena — Riepilogo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body { margin: 0; background: #0b0b0c; color: #f3efe6; text-wrap: pretty; -webkit-font-smoothing: antialiased; }
+a { color: #d4ae62; text-decoration: none; }
+a:hover { color: #e6c682; }
+:focus-visible { outline: 2px solid #d4ae62; outline-offset: 3px; }
+</style>
+</helmet>
+<div style="min-height: 100vh; font-family: 'Barlow', sans-serif; position: relative; overflow-x: clip;">
+  <nav style="max-width: 1000px; margin: 0 auto; padding: 18px clamp(20px, 5vw, 48px); box-sizing: border-box; display: flex; align-items: center; gap: 16px;">
+    <a href="Home.dc.html" style="display: flex; align-items: center; gap: 12px; margin-right: auto; color: #f3efe6;">
+      <img src="assets/logo.png" alt="Logo CUSBros" style="width: 40px; height: 40px; display: block;">
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: 0.08em; text-transform: uppercase;">CUSBros</span>
+    </a>
+    <a href="Calendario.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 10px 18px; border: 1px solid #3a352b; border-radius: 6px; color: #f3efe6; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center;" style-hover="border-color: #d4ae62; color: #d4ae62;">← Calendario</a>
+  </nav>
+
+  <main style="max-width: 1000px; margin: 0 auto; padding: clamp(16px, 4vw, 40px) clamp(20px, 5vw, 48px) 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: clamp(36px, 6vw, 56px);">
+
+    <section style="display: flex; flex-direction: column; gap: 22px;">
+      <div style="display: flex; flex-wrap: wrap; gap: 8px 14px; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.14em; text-transform: uppercase;">
+        <span style="color: #d4ae62;">3ª giornata · Finale</span>
+        <span style="color: #a39e93;">Dom 25 ottobre · PalaCUS, Bologna</span>
+      </div>
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: end; gap: clamp(10px, 3vw, 32px);">
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: clamp(20px, 4.5vw, 36px); line-height: 1; text-transform: uppercase; color: #d4ae62;">CUSBros</span>
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(88px, 24vw, 180px); line-height: 0.8; color: #d4ae62;">3</span>
+        </div>
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.16em; padding: 4px 10px; border-radius: 4px; background: #d4ae62; color: #0b0b0c; margin-bottom: 12px;">VINTA</span>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: clamp(20px, 4.5vw, 36px); line-height: 1; text-transform: uppercase; text-align: right;">Pallavolo Savena</span>
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(88px, 24vw, 180px); line-height: 0.8; color: #6f6a60;">0</span>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: #2c2922; border: 1px solid #2c2922; border-radius: 12px; overflow: hidden;">
+        <sc-for list="{{ sets }}" as="s" hint-placeholder-count="3">
+          <div style="background: #121212; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;">
+            <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #a39e93;">Set {{ s.n }}</span>
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 30px; line-height: 1; font-variant-numeric: tabular-nums;"><span style="color: #d4ae62;">{{ s.u }}</span><span style="color: #6f6a60;">–</span>{{ s.t }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="border: 1px solid #5a4b2c; background: linear-gradient(180deg, #1a1813 0%, #121212 100%); border-radius: 14px; padding: clamp(20px, 4vw, 32px); display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 20px; align-items: center;">
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(72px, 16vw, 112px); line-height: 0.8; color: #d4ae62;">54</span>
+      <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0;">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.24em; text-transform: uppercase; color: #d4ae62;">MVP della partita</span>
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: clamp(28px, 6vw, 40px); line-height: 1; text-transform: uppercase;">Marco Rossi</span>
+        <span style="font-size: 15px; color: #cfc9bd;">Schiacciatore · 16 punti · 62% in attacco · ★ 3</span>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 16px;">
+      <h2 style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(30px, 6vw, 44px); line-height: 0.95; text-transform: uppercase; margin: 0;">Come abbiamo fatto punto</h2>
+      <div style="display: flex; height: 14px; border-radius: 999px; overflow: hidden; gap: 3px;">
+        <sc-for list="{{ split }}" as="p" hint-placeholder-count="4">
+          <span style="flex: {{ p.v }}; background: {{ p.c }};"></span>
+        </sc-for>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 10px;">
+        <sc-for list="{{ split }}" as="p" hint-placeholder-count="4">
+          <div style="border: 1px solid #2c2922; background: #121212; border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;">
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #a39e93;"><span style="width: 10px; height: 10px; border-radius: 50%; background: {{ p.c }};"></span>{{ p.l }}</span>
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 36px; line-height: 1;">{{ p.v }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 16px;">
+      <h2 style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(30px, 6vw, 44px); line-height: 0.95; text-transform: uppercase; margin: 0;">I migliori</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 10px;">
+        <sc-for list="{{ tops }}" as="t" hint-placeholder-count="4">
+          <div style="border: 1px solid #2c2922; background: #121212; border-radius: 12px; padding: 16px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 14px; align-items: center;">
+            <span style="grid-column: 1 / -1; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; color: #d4ae62;">{{ t.cat }}</span>
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 44px; line-height: 1; color: #d4ae62;">{{ t.num }}</span>
+            <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+              <span style="font-weight: 600; font-size: 16px;">{{ t.name }}</span>
+              <span style="font-size: 14px; color: #a39e93;">{{ t.val }}</span>
+            </span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 16px;">
+      <h2 style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(30px, 6vw, 44px); line-height: 0.95; text-transform: uppercase; margin: 0;">Squadra a confronto</h2>
+      <div style="border: 1px solid #2c2922; background: #121212; border-radius: 14px; padding: clamp(16px, 3vw, 24px); display: flex; flex-direction: column; gap: 18px;">
+        <div style="display: flex; justify-content: space-between; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase;">
+          <span style="color: #d4ae62;">CUSBros</span><span style="color: #a39e93;">Savena</span>
+        </div>
+        <sc-for list="{{ compare }}" as="c" hint-placeholder-count="5">
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) 48px; align-items: baseline; gap: 8px;">
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 22px; color: #d4ae62; font-variant-numeric: tabular-nums;">{{ c.u }}</span>
+              <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; text-align: center; color: #cfc9bd;">{{ c.l }}</span>
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 22px; text-align: right; color: #a39e93; font-variant-numeric: tabular-nums;">{{ c.t }}</span>
+            </div>
+            <div style="display: flex; height: 6px; gap: 3px;">
+              <span style="flex: {{ c.u }}; border-radius: 999px; background: #d4ae62;"></span>
+              <span style="flex: {{ c.t }}; border-radius: 999px; background: #3a352b;"></span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+  </main>
+
+  <footer style="max-width: 1000px; margin: 0 auto; padding: 24px clamp(20px, 5vw, 48px) 40px; box-sizing: border-box; border-top: 1px solid #1f1d19; font-size: 13px; color: #6f6a60;">CUSBros Volleyball Team · CUSB</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      sets: [{ n: 1, u: 25, t: 18 }, { n: 2, u: 25, t: 20 }, { n: 3, u: 25, t: 16 }],
+      split: [
+        { l: 'Attacco', v: 41, c: '#d4ae62' }, { l: 'Muro', v: 9, c: '#e6c682' },
+        { l: 'Ace', v: 7, c: '#7f9fe0' }, { l: 'Errori avversari', v: 18, c: '#6f6a60' }
+      ],
+      tops: [
+        { cat: 'Attacco', num: 54, name: 'Marco Rossi', val: '14 punti · 62%' },
+        { cat: 'Muro', num: 11, name: 'Davide Ferri', val: '4 punti' },
+        { cat: 'Battuta', num: 7, name: 'Luca Bianchi', val: '3 ace · 0 errori' },
+        { cat: 'Ricezione', num: 1, name: 'Giorgio Riva', val: '71% positiva' }
+      ],
+      compare: [
+        { l: 'Punti attacco', u: 41, t: 29 }, { l: 'Muri', u: 9, t: 4 }, { l: 'Ace', u: 7, t: 3 },
+        { l: 'Errori battuta', u: 6, t: 11 }, { l: 'Errori totali', u: 14, t: 18 }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

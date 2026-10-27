@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CUSBros — Accesso staff</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body { margin: 0; background: #0b0b0c; color: #f3efe6; -webkit-font-smoothing: antialiased; }
+a { color: #d4ae62; text-decoration: none; }
+a:hover { color: #e6c682; }
+:focus-visible { outline: 2px solid #d4ae62; outline-offset: 3px; }
+input::placeholder { color: #6f6a60; }
+</style>
+</helmet>
+<div style="min-height: 100vh; font-family: 'Barlow', sans-serif; display: grid; place-items: center; padding: 32px 20px; box-sizing: border-box;">
+  <div style="width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 32px;">
+    <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 18px;">
+      <img src="assets/logo.png" alt="Logo CUSBros" style="width: 72px; height: 72px; display: block;">
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 0.28em; text-transform: uppercase; color: #d4ae62;">Area staff</span>
+        <h1 style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 48px; line-height: 0.9; text-transform: uppercase; margin: 0;">Accedi</h1>
+      </div>
+    </div>
+    <form style="display: flex; flex-direction: column; gap: 18px;">
+      <label style="display: flex; flex-direction: column; gap: 8px;">
+        <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93;">Email</span>
+        <input type="email" placeholder="nome@cusbros.it" autocomplete="username" style="font: inherit; font-size: 17px; color: #f3efe6; background: #121212; border: 1px solid #2c2922; border-radius: 8px; padding: 14px 16px; min-height: 52px; box-sizing: border-box; outline: none;" style-focus="border-color: #d4ae62;">
+      </label>
+      <label style="display: flex; flex-direction: column; gap: 8px;">
+        <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93;">Password</span>
+        <input type="password" placeholder="••••••••" autocomplete="current-password" style="font: inherit; font-size: 17px; color: #f3efe6; background: #121212; border: 1px solid #2c2922; border-radius: 8px; padding: 14px 16px; min-height: 52px; box-sizing: border-box; outline: none;" style-focus="border-color: #d4ae62;">
+      </label>
+      <a href="Admin Partite.dc.html" style="margin-top: 8px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 0.12em; text-transform: uppercase; min-height: 54px; display: flex; align-items: center; justify-content: center; background: #d4ae62; color: #0b0b0c; border-radius: 8px;" style-hover="background: #e6c682; color: #0b0b0c;" style-active="background: #b8924a;">Entra</a>
+      <a href="#" style="font-size: 14px; align-self: flex-start;">Password dimenticata?</a>
+    </form>
+    <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #6f6a60;">Accesso riservato a staff e statistici. I permessi dipendono dal ruolo assegnato.</p>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

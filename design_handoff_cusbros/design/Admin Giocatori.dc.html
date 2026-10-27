@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CUSBros Staff — Giocatori</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body { margin: 0; background: #0b0b0c; color: #f3efe6; -webkit-font-smoothing: antialiased; }
+a { color: #d4ae62; text-decoration: none; }
+a:hover { color: #e6c682; }
+:focus-visible { outline: 2px solid #d4ae62; outline-offset: 3px; }
+</style>
+</helmet>
+<div style="min-height: 100vh; font-family: 'Barlow', sans-serif;">
+  <header style="position: sticky; top: 0; z-index: 5; background: #0b0b0c; border-bottom: 1px solid #1f1d19;">
+    <div style="max-width: 1100px; margin: 0 auto; padding: 12px clamp(16px, 4vw, 40px) 0; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <img src="assets/logo.png" alt="" style="width: 32px; height: 32px; display: block;">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 0.08em; text-transform: uppercase;">CUSBros</span>
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; color: #d4ae62; margin-right: auto;">Staff</span>
+        <span style="font-size: 13px; color: #a39e93; white-space: nowrap;">Marco R. · Allenatore</span>
+        <a href="Admin Login.dc.html" style="font-size: 13px; font-weight: 600;">Esci</a>
+      </div>
+      <nav style="display: flex; gap: 4px; overflow-x: auto; margin: 0 -8px;">
+        <a href="Admin Partite.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 10px; white-space: nowrap; color: #a39e93; border-bottom: 2px solid transparent;" style-hover="color: #f3efe6;">Partite</a>
+        <a href="Admin Giocatori.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 10px; white-space: nowrap; color: #d4ae62; border-bottom: 2px solid #d4ae62;">Giocatori</a>
+        <a href="Admin Prepara Live.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 10px; white-space: nowrap; color: #a39e93; border-bottom: 2px solid transparent;" style-hover="color: #f3efe6;">Live</a>
+        <a href="Admin Storico.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 10px; white-space: nowrap; color: #a39e93; border-bottom: 2px solid transparent;" style-hover="color: #f3efe6;">Storico live</a>
+      </nav>
+    </div>
+  </header>
+
+  <main style="max-width: 1100px; margin: 0 auto; padding: 28px clamp(16px, 4vw, 40px) 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px;">
+    <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px;">
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 0.24em; text-transform: uppercase; color: #d4ae62;">Rosa · 12 giocatori</span>
+        <h1 style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(40px, 8vw, 64px); line-height: 0.9; text-transform: uppercase; margin: 0;">Giocatori</h1>
+      </div>
+      <button type="button" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; min-height: 48px; padding: 0 20px; border: none; border-radius: 8px; background: #d4ae62; color: #0b0b0c; cursor: pointer; white-space: nowrap;" style-hover="background: #e6c682;">+ Giocatore</button>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 20px; align-items: start;">
+      <div style="display: flex; flex-direction: column; gap: 6px; max-height: 760px; overflow-y: auto; overflow-x: hidden; padding-right: 6px;">
+        <sc-for list="{{ players }}" as="p" hint-placeholder-count="12">
+          <button type="button" onClick="{{ p.select }}" style="display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 14px; border-radius: 10px; border: 1px solid {{ p.border }}; background: {{ p.bg }}; color: #f3efe6; cursor: pointer; text-align: left; font: inherit; min-height: 60px; width: 100%; box-sizing: border-box;" style-hover="border-color: #5a4b2c;">
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 28px; line-height: 1; color: #d4ae62; font-variant-numeric: tabular-nums;">{{ p.num }}</span>
+            <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+              <span style="font-weight: 600; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ p.name }}</span>
+              <span style="font-size: 13px; color: #a39e93;">{{ p.role }}</span>
+            </span>
+            <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 14px; color: #a39e93; white-space: nowrap;">
+              <span style="color: #d4ae62;">★ {{ p.stars }}</span>
+              <span>{{ p.pres }} pres.</span>
+            </span>
+          </button>
+        </sc-for>
+      </div>
+
+      <section style="border: 1px solid #2c2922; background: #121212; border-radius: 14px; padding: clamp(18px, 4vw, 28px); display: flex; flex-direction: column; gap: 24px; min-width: 0;">
+        <div style="display: flex; align-items: center; gap: 18px; flex-wrap: wrap;">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 76px; line-height: 0.85; color: #d4ae62;">{{ sel.num }}</span>
+          <div style="display: flex; flex-direction: column; gap: 4px; margin-right: auto;">
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 30px; line-height: 1; text-transform: uppercase;">{{ sel.name }}</span>
+            <span style="font-size: 14px; color: #a39e93;">{{ sel.role }}</span>
+          </div>
+          <button type="button" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; min-height: 44px; padding: 0 14px; border: 1px solid #3a352b; border-radius: 7px; background: transparent; color: #f3efe6; cursor: pointer;" style-hover="border-color: #d4ae62; color: #d4ae62;">Modifica</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: #2c2922; border: 1px solid #2c2922; border-radius: 10px; overflow: hidden;">
+          <div style="background: #0f0f10; padding: 14px; display: flex; flex-direction: column; gap: 4px;"><span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 30px; line-height: 1;">{{ sel.pres }}</span><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93;">Presenze</span></div>
+          <div style="background: #0f0f10; padding: 14px; display: flex; flex-direction: column; gap: 4px;"><span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 30px; line-height: 1; color: #d4ae62;">★ {{ sel.stars }}</span><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93;">Stelline</span></div>
+          <div style="background: #0f0f10; padding: 14px; display: flex; flex-direction: column; gap: 4px;"><span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 30px; line-height: 1;">{{ sel.mvp }}</span><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93;">MVP</span></div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; color: #d4ae62;">Efficienza per fondamentale · stagione</span>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+            <sc-for list="{{ sel.tiles }}" as="t" hint-placeholder-count="4">
+              <div style="border: 1px solid #2c2922; border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 6px;">
+                <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #a39e93;">{{ t.label }}</span>
+                <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 34px; line-height: 1; color: {{ t.color }};">{{ t.eff }}</span>
+                <span style="font-size: 13px; line-height: 1.4; color: #cfc9bd;">{{ t.detail }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; color: #d4ae62;">Andamento · ultime 12 partite</span>
+            <div style="display: flex; gap: 4px; padding: 3px; border: 1px solid #2c2922; border-radius: 8px; overflow-x: auto; max-width: 100%;">
+              <sc-for list="{{ chart.tabs }}" as="c" hint-placeholder-count="4">
+                <button type="button" onClick="{{ c.on }}" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 0.06em; text-transform: uppercase; min-height: 36px; padding: 0 10px; border: none; border-radius: 6px; background: {{ c.bg }}; color: {{ c.fg }}; cursor: pointer; white-space: nowrap;">{{ c.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <svg viewBox="0 0 640 240" style="width: 100%; height: auto; display: block;" role="img" aria-label="Andamento efficienza">
+            <rect x="{{ chart.best.x }}" y="16" width="{{ chart.best.w }}" height="184" rx="8" fill="#d4ae62" fill-opacity="0.12"></rect>
+            <rect x="{{ chart.worst.x }}" y="16" width="{{ chart.worst.w }}" height="184" rx="8" fill="#e08a7c" fill-opacity="0.12"></rect>
+            <line x1="{{ chart.divX }}" x2="{{ chart.divX }}" y1="16" y2="200" stroke="#3a352b" stroke-dasharray="4 4"></line>
+            <text x="{{ chart.divLabelX }}" y="30" fill="#6f6a60" font-size="12" font-family="Barlow">2026/27</text>
+            <sc-for list="{{ chart.grid }}" as="g" hint-placeholder-count="3">
+              <line x1="40" x2="620" y1="{{ g.y }}" y2="{{ g.y }}" stroke="#1f1d19"></line>
+              <text x="32" y="{{ g.ty }}" fill="#6f6a60" font-size="12" text-anchor="end" font-family="Barlow">{{ g.label }}</text>
+            </sc-for>
+            <path d="{{ chart.path }}" fill="none" stroke="#d4ae62" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path>
+            <sc-for list="{{ chart.pts }}" as="pt" hint-placeholder-count="12">
+              <circle cx="{{ pt.x }}" cy="{{ pt.y }}" r="5" fill="#0b0b0c" stroke="#d4ae62" stroke-width="2.5"></circle>
+              <text x="{{ pt.x }}" y="222" fill="#6f6a60" font-size="12" text-anchor="middle" font-family="Barlow">{{ pt.label }}</text>
+            </sc-for>
+          </svg>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 13px; color: #cfc9bd;">
+            <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border-radius: 4px; background: rgba(212, 174, 98, 0.35);"></span>Periodo migliore: {{ chart.bestLabel }}</span>
+            <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border-radius: 4px; background: rgba(224, 138, 124, 0.35);"></span>Periodo peggiore: {{ chart.worstLabel }}</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const ROSTER = [
+  [7, 'Luca Bianchi', 'Palleggiatore'], [54, 'Marco Rossi', 'Schiacciatore'], [67, 'Andrea Conti', 'Opposto'],
+  [11, 'Davide Ferri', 'Centrale'], [30, 'Matteo Gallo', 'Schiacciatore'], [4, 'Simone Neri', 'Centrale'],
+  [1, 'Giorgio Riva', 'Libero'], [9, 'Paolo Greco', 'Schiacciatore'], [18, 'Fabio Marino', 'Palleggiatore'],
+  [22, 'Nicola Villa', 'Centrale'], [15, 'Tommaso Leone', 'Opposto'], [3, 'Stefano Moro', 'Libero']
+];
+const FOND = { bat: 'Battuta', ric: 'Ricezione', att: 'Attacco', muro: 'Muro', alz: 'Alzata' };
+const BY_ROLE = {
+  Palleggiatore: ['alz', 'bat', 'muro'], Schiacciatore: ['att', 'ric', 'bat', 'muro'], Opposto: ['att', 'bat', 'muro'],
+  Centrale: ['att', 'muro', 'bat'], Libero: ['ric']
+};
+const LABELS = ['G13', 'G14', 'G15', 'G16', 'G17', 'G18', 'G19', 'G20', 'G21', 'G1', 'G2', 'G3'];
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function makePlayer([num, name, role], i) {
+  const r = rng(num * 97 + 13);
+  const series = {};
+  for (const k of BY_ROLE[role]) {
+    let v = 30 + r() * 25; series[k] = LABELS.map(() => (v = Math.max(5, Math.min(85, v + (r() - 0.45) * 18))));
+  }
+  return { num, name, role, keys: BY_ROLE[role], series, stars: Math.floor(r() * 7), mvp: Math.floor(r() * 3), pres: i === 8 || i === 11 ? 2 : 3 };
+}
+const PLAYERS = ROSTER.map(makePlayer);
+const DETAIL = {
+  bat: (r) => `Ace ${2 + Math.floor(r() * 6)} · In campo ${30 + Math.floor(r() * 20)} · Errori ${3 + Math.floor(r() * 8)}`,
+  ric: (r) => `Perfette ${10 + Math.floor(r() * 15)} · Buone ${12 + Math.floor(r() * 10)} · Scarse ${4 + Math.floor(r() * 8)}`,
+  att: (r) => `Punti ${15 + Math.floor(r() * 25)} · Murati ${2 + Math.floor(r() * 6)} · Errori ${3 + Math.floor(r() * 7)}`,
+  muro: (r) => `Punti ${2 + Math.floor(r() * 10)} · Tocchi ${5 + Math.floor(r() * 12)}`,
+  alz: (r) => `Buone ${60 + Math.floor(r() * 40)} · Errori ${2 + Math.floor(r() * 6)}`
+};
+
+class Component extends DCLogic {
+  state = { sel: 54, fond: null };
+  renderVals() {
+    const p = PLAYERS.find(x => x.num === this.state.sel);
+    const fond = p.keys.includes(this.state.fond) ? this.state.fond : p.keys[0];
+    const players = PLAYERS.map(x => {
+      const on = x.num === p.num;
+      return { ...x, pres: `${x.pres}/3`, bg: on ? '#1a1813' : '#121212', border: on ? '#d4ae62' : '#2c2922', select: () => this.setState({ sel: x.num }) };
+    });
+    const r = rng(p.num);
+    const tiles = p.keys.map(k => {
+      const last3 = p.series[k].slice(-3); const eff = Math.round(last3.reduce((a, b) => a + b, 0) / 3);
+      return { label: FOND[k], eff: `${eff}%`, color: eff >= 50 ? '#d4ae62' : eff < 30 ? '#e08a7c' : '#f3efe6', detail: DETAIL[k](r) };
+    });
+    const s = p.series[fond];
+    const X = i => 56 + i * (556 / 11), Y = v => 200 - (v / 100) * 184;
+    const pts = s.map((v, i) => ({ x: X(i).toFixed(1), y: Y(v).toFixed(1), label: LABELS[i] }));
+    const path = pts.map((q, i) => `${i ? 'L' : 'M'}${q.x} ${q.y}`).join(' ');
+    let best = 0, worst = 0, bv = -1, wv = 1e9;
+    for (let i = 0; i <= s.length - 3; i++) { const m = s[i] + s[i + 1] + s[i + 2]; if (m > bv) { bv = m; best = i; } if (m < wv) { wv = m; worst = i; } }
+    const band = i => ({ x: (X(i) - 20).toFixed(1), w: (X(i + 2) - X(i) + 40).toFixed(1) });
+    const chart = {
+      path, pts, best: band(best), worst: band(worst),
+      bestLabel: `${LABELS[best]}–${LABELS[best + 2]} (${Math.round(bv / 3)}%)`, worstLabel: `${LABELS[worst]}–${LABELS[worst + 2]} (${Math.round(wv / 3)}%)`,
+      divX: ((X(8) + X(9)) / 2).toFixed(1), divLabelX: ((X(8) + X(9)) / 2 + 8).toFixed(1),
+      grid: [0, 50, 100].map(v => ({ y: Y(v), ty: Y(v) + 4, label: `${v}%` })),
+      tabs: p.keys.map(k => ({ label: FOND[k], bg: k === fond ? '#d4ae62' : 'transparent', fg: k === fond ? '#0b0b0c' : '#a39e93', on: () => this.setState({ fond: k }) }))
+    };
+    return { players, sel: { ...p, pres: `${p.pres}/3`, tiles }, chart };
+  }
+}
+</script>
+</body>
+</html>

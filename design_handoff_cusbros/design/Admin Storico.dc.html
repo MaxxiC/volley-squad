@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CUSBros Staff — Storico live</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body { margin: 0; background: #0b0b0c; color: #f3efe6; -webkit-font-smoothing: antialiased; }
+a { color: #d4ae62; text-decoration: none; }
+a:hover { color: #e6c682; }
+:focus-visible { outline: 2px solid #d4ae62; outline-offset: 3px; }
+select { color-scheme: dark; }
+</style>
+</helmet>
+<div style="min-height: 100vh; font-family: 'Barlow', sans-serif;">
+  <header style="position: sticky; top: 0; z-index: 5; background: #0b0b0c; border-bottom: 1px solid #1f1d19;">
+    <div style="max-width: 1100px; margin: 0 auto; padding: 12px clamp(16px, 4vw, 40px) 0; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <img src="assets/logo.png" alt="" style="width: 32px; height: 32px; display: block;">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 0.08em; text-transform: uppercase;">CUSBros</span>
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; color: #d4ae62; margin-right: auto;">Staff</span>
+        <span style="font-size: 13px; color: #a39e93; white-space: nowrap;">Giulia T. · Statistica</span>
+        <a href="Admin Login.dc.html" style="font-size: 13px; font-weight: 600;">Esci</a>
+      </div>
+      <nav style="display: flex; gap: 4px; overflow-x: auto; margin: 0 -8px;">
+        <a href="Admin Partite.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 10px; white-space: nowrap; color: #a39e93; border-bottom: 2px solid transparent;" style-hover="color: #f3efe6;">Partite</a>
+        <a href="Admin Giocatori.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 10px; white-space: nowrap; color: #a39e93; border-bottom: 2px solid transparent;" style-hover="color: #f3efe6;">Giocatori</a>
+        <a href="Admin Prepara Live.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 10px; white-space: nowrap; color: #a39e93; border-bottom: 2px solid transparent;" style-hover="color: #f3efe6;">Live</a>
+        <a href="Admin Storico.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 10px; white-space: nowrap; color: #d4ae62; border-bottom: 2px solid #d4ae62;">Storico live</a>
+      </nav>
+    </div>
+  </header>
+
+  <main style="max-width: 1100px; margin: 0 auto; padding: 28px clamp(16px, 4vw, 40px) 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px;">
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 0.24em; text-transform: uppercase; color: #d4ae62;">Correggi i dati registrati</span>
+      <h1 style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(40px, 8vw, 64px); line-height: 0.9; text-transform: uppercase; margin: 0;">Storico live</h1>
+    </div>
+
+    <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;">
+      <sc-for list="{{ matchTabs }}" as="mt" hint-placeholder-count="3">
+        <button type="button" onClick="{{ mt.on }}" style="flex: none; text-align: left; min-height: 64px; padding: 10px 14px; border-radius: 10px; border: 1px solid {{ mt.border }}; background: {{ mt.bg }}; color: #f3efe6; cursor: pointer; display: flex; flex-direction: column; gap: 2px;">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 17px; text-transform: uppercase; white-space: nowrap;">{{ mt.label }}</span>
+          <span style="font-size: 13px; color: #a39e93; white-space: nowrap;">{{ mt.sub }}</span>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
+      <div style="display: flex; gap: 4px; padding: 3px; border: 1px solid #2c2922; border-radius: 8px;">
+        <sc-for list="{{ setTabs }}" as="st" hint-placeholder-count="4">
+          <button type="button" onClick="{{ st.on }}" style="min-height: 40px; padding: 0 12px; border: none; border-radius: 6px; background: {{ st.bg }}; color: {{ st.fg }}; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap;">{{ st.label }}</button>
+        </sc-for>
+      </div>
+      <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+        <sc-for list="{{ filters }}" as="fl" hint-placeholder-count="3">
+          <button type="button" onClick="{{ fl.on }}" style="min-height: 40px; padding: 0 12px; border-radius: 999px; border: 1px solid {{ fl.border }}; background: {{ fl.bg }}; color: {{ fl.fg }}; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap;">{{ fl.label }}</button>
+        </sc-for>
+      </div>
+      <span style="font-size: 14px; color: #a39e93; margin-right: auto;">{{ count }} azioni</span>
+      <button type="button" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.1em; text-transform: uppercase; min-height: 44px; padding: 0 16px; border: 1px solid #5a4b2c; border-radius: 8px; background: transparent; color: #d4ae62; cursor: pointer;" style-hover="border-color: #d4ae62;">+ Aggiungi azione</button>
+    </div>
+
+    <div style="border: 1px solid #2c2922; background: #121212; border-radius: 14px; overflow: hidden;">
+      <sc-for list="{{ events }}" as="e" hint-placeholder-count="10">
+        <div style="border-bottom: 1px solid #1c1b18; background: {{ e.rowBg }};">
+          <button type="button" onClick="{{ e.toggle }}" style="width: 100%; display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 16px; min-height: 56px; border: none; background: transparent; color: #f3efe6; cursor: pointer; text-align: left; font: inherit;" style-hover="background: #161512;">
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; font-variant-numeric: tabular-nums; color: {{ e.scoreFg }};">{{ e.score }}</span>
+            <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+              <span style="font-size: 15px; color: #f3efe6;">{{ e.title }}</span>
+              <span style="font-size: 13px; color: #a39e93;">{{ e.who }}</span>
+            </span>
+            <span style="display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; white-space: nowrap;">
+              <span style="color: {{ e.tagFg }};">{{ e.tag }}</span>
+              <span style="color: #6f6a60;">{{ e.chev }}</span>
+            </span>
+          </button>
+          <sc-if value="{{ e.open }}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 4px 16px 18px; display: flex; flex-direction: column; gap: 14px;">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); gap: 12px;">
+                <label style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93;">Giocatore</span>
+                  <select defaultValue="{{ e.player }}" style="font: inherit; font-size: 16px; color: #f3efe6; background: #0f0f10; border: 1px solid #2c2922; border-radius: 8px; padding: 0 12px; min-height: 48px;">
+                    <sc-for list="{{ playerOpts }}" as="po" hint-placeholder-count="6"><option value="{{ po.v }}">{{ po.l }}</option></sc-for>
+                  </select>
+                </label>
+                <label style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93;">Fondamentale</span>
+                  <select defaultValue="{{ e.fond }}" style="font: inherit; font-size: 16px; color: #f3efe6; background: #0f0f10; border: 1px solid #2c2922; border-radius: 8px; padding: 0 12px; min-height: 48px;">
+                    <sc-for list="{{ fondOpts }}" as="fo" hint-placeholder-count="6"><option value="{{ fo }}">{{ fo }}</option></sc-for>
+                  </select>
+                </label>
+                <label style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93;">Esito</span>
+                  <select defaultValue="{{ e.esito }}" style="font: inherit; font-size: 16px; color: #f3efe6; background: #0f0f10; border: 1px solid #2c2922; border-radius: 8px; padding: 0 12px; min-height: 48px;">
+                    <sc-for list="{{ esitoOpts }}" as="eo" hint-placeholder-count="6"><option value="{{ eo }}">{{ eo }}</option></sc-for>
+                  </select>
+                </label>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
+                <button type="button" onClick="{{ e.toggleStar }}" style="min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid {{ e.starBorder }}; background: {{ e.starBg }}; color: {{ e.starFg }}; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.06em; text-transform: uppercase;">★ Meritevole</button>
+                <span style="flex: 1;"></span>
+                <button type="button" onClick="{{ e.remove }}" style="min-height: 44px; padding: 0 12px; border: none; background: transparent; color: #e08a7c; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase;">Elimina</button>
+                <button type="button" onClick="{{ e.toggle }}" style="min-height: 44px; padding: 0 20px; border: none; border-radius: 8px; background: #d4ae62; color: #0b0b0c; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.1em; text-transform: uppercase;">Salva</button>
+                <button type="button" onClick="{{ e.saveNext }}" style="min-height: 44px; padding: 0 16px; border: 1px solid #5a4b2c; border-radius: 8px; background: transparent; color: #d4ae62; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap;">Salva e prossima →</button>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+    <span style="font-size: 13px; color: #6f6a60;">Modificare un'azione che assegna un punto ricalcola il punteggio delle azioni successive e le statistiche dei giocatori.</span>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const P = { 7: 'Bianchi', 54: 'Rossi', 67: 'Conti', 11: 'Ferri', 30: 'Gallo', 4: 'Neri', 1: 'Riva' };
+const MATCHES = [
+  { id: 3, label: 'vs Pallavolo Savena', sub: '25 ott · 3–0', sets: 3 },
+  { id: 2, label: 'Pol. Zola', sub: '18 ott · 2–3', sets: 5 },
+  { id: 1, label: 'vs Volley Castello', sub: '11 ott · 3–1', sets: 4 }
+];
+const BASE = [
+  ['us', 'Battuta', 'Ace', 7, true], [null, 'Ricezione', 'Perfetta', 1], ['us', 'Attacco', 'Punto', 54, true], ['them', 'Avversario', 'Punto', null],
+  [null, 'Ricezione', 'Buona', 30], ['us', 'Attacco', 'Punto', 67], ['us', 'Errore avv.', 'Palla semplice', null], ['them', 'Battuta', 'Errore', 11],
+  ['us', 'Muro', 'Punto', 4, true], [null, 'Alzata', 'Buona', 7], ['them', 'Attacco', 'Murato', 30], ['us', 'Attacco', 'Punto', 54],
+  [null, 'Ricezione', 'Scarsa', 54], ['them', 'Ricezione', 'Errore', 30], ['us', 'Battuta', 'Ace', 11]
+];
+class Component extends DCLogic {
+  state = { match: 3, set: 1, open: 13, removed: [], stars: {}, filter: 'all', done: [] };
+  renderVals() {
+    const s = this.state;
+    let u = 0, t = 0;
+    const events = BASE.map((b, i) => ({ i, side: b[0], fond: b[1], esito: b[2], player: b[3], star: s.stars[i] ?? !!b[4], incomplete: [6, 13].includes(i) && !s.done.includes(i) }))
+      .filter(e => !s.removed.includes(e.i))
+      .map(e => {
+        if (e.side === 'us') u++; if (e.side === 'them') t++;
+        const open = s.open === e.i;
+        return {
+          ...e, open, score: `${u}–${t}`, scoreFg: e.side === 'us' ? '#d4ae62' : e.side === 'them' ? '#f3efe6' : '#6f6a60',
+          title: `${e.fond} · ${e.esito}`, who: e.player ? `#${e.player} ${P[e.player]}` : 'Squadra avversaria',
+          tag: e.incomplete ? 'da completare' : e.star ? '★' : e.side === 'us' ? '+1 noi' : e.side === 'them' ? '+1 loro' : '', tagFg: e.incomplete ? '#e08a7c' : e.star || e.side === 'us' ? '#d4ae62' : '#a39e93',
+          chev: open ? '▲' : '▼', rowBg: open ? '#161512' : 'transparent',
+          starBg: e.star ? '#d4ae62' : 'transparent', starFg: e.star ? '#0b0b0c' : '#a39e93', starBorder: e.star ? '#d4ae62' : '#3a352b',
+          toggle: () => this.setState({ open: open ? null : e.i }),
+          toggleStar: () => this.setState(st => ({ stars: { ...st.stars, [e.i]: !e.star } })),
+          remove: () => this.setState(st => ({ removed: [...st.removed, e.i], open: null }))
+        };
+      }).reverse();
+    const all = events;
+    const shown = all.filter(e => s.filter === 'all' || (s.filter === 'todo' ? e.incomplete : e.star));
+    shown.forEach((e, k) => {
+      e.saveNext = () => this.setState(st => {
+        const done = e.incomplete ? [...st.done, e.i] : st.done;
+        const pool = st.filter === 'todo' ? shown.filter(x => x.i !== e.i) : shown.slice(k + 1);
+        return { done, open: pool.length ? (st.filter === 'todo' ? pool[0].i : pool[0].i) : null };
+      });
+    });
+    const todoCount = all.filter(e => e.incomplete).length;
+    const filters = [['all', 'Tutte'], ['todo', `Da completare · ${todoCount}`], ['star', 'Solo ★']].map(([k, label]) => ({
+      label, on: () => this.setState({ filter: k, open: k === 'todo' ? (all.find(e => e.incomplete)?.i ?? null) : null }),
+      bg: s.filter === k ? '#d4ae62' : 'transparent', fg: s.filter === k ? '#0b0b0c' : (k === 'todo' && todoCount ? '#e08a7c' : '#a39e93'), border: s.filter === k ? '#d4ae62' : '#3a352b'
+    }));
+    const m = MATCHES.find(x => x.id === s.match);
+    return {
+      events: shown, count: shown.length, filters,
+      matchTabs: MATCHES.map(x => ({ ...x, on: () => this.setState({ match: x.id, set: 1, open: null }), bg: x.id === s.match ? '#1a1813' : '#121212', border: x.id === s.match ? '#d4ae62' : '#2c2922' })),
+      setTabs: Array.from({ length: m.sets }, (_, i) => ({ label: `Set ${i + 1}`, on: () => this.setState({ set: i + 1, open: null }), bg: s.set === i + 1 ? '#d4ae62' : 'transparent', fg: s.set === i + 1 ? '#0b0b0c' : '#a39e93' })),
+      playerOpts: [{ v: '', l: 'Avversario' }, ...Object.entries(P).map(([n, name]) => ({ v: n, l: `#${n} ${name}` }))],
+      fondOpts: ['Battuta', 'Ricezione', 'Alzata', 'Attacco', 'Muro', 'Fallo', 'Errore avv.', 'Avversario'],
+      esitoOpts: ['Ace', 'Punto', 'In campo', 'Perfetta', 'Buona', 'Scarsa', 'Murato', 'Tocco', 'Errore', 'Palla semplice', 'Azione']
+    };
+  }
+}
+</script>
+</body>
+</html>

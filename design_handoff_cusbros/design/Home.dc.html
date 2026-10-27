@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CUSBros — Volleyball Team</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body { margin: 0; background: #0b0b0c; color: #f3efe6; text-wrap: pretty; -webkit-font-smoothing: antialiased; }
+a { color: #d4ae62; text-decoration: none; }
+a:hover { color: #e6c682; }
+:focus-visible { outline: 2px solid #d4ae62; outline-offset: 3px; }
+</style>
+</helmet>
+<div style="min-height: 100vh; font-family: 'Barlow', sans-serif; position: relative; overflow-x: clip;">
+  <img src="assets/logo.png" alt="" style="position: absolute; right: -18vw; top: -10vw; width: clamp(420px, 70vw, 900px); opacity: 0.06; filter: grayscale(1); pointer-events: none; z-index: 0;">
+
+  <nav style="position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 18px clamp(20px, 5vw, 48px); box-sizing: border-box; display: flex; align-items: center; gap: 16px;">
+    <a href="Home.dc.html" style="display: flex; align-items: center; gap: 12px; margin-right: auto; color: #f3efe6;">
+      <img src="assets/logo.png" alt="Logo CUSBros" style="width: 40px; height: 40px; display: block;">
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: 0.08em; text-transform: uppercase;">CUSBros</span>
+    </a>
+    <a href="Calendario.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; padding: 10px 18px; border: 1px solid #3a352b; border-radius: 6px; color: #f3efe6; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center;" style-hover="border-color: #d4ae62; color: #d4ae62;">Calendario</a>
+  </nav>
+
+  <main style="position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: clamp(24px, 6vw, 64px) clamp(20px, 5vw, 48px) 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: clamp(48px, 8vw, 88px);">
+
+    <section style="display: flex; flex-wrap: wrap; align-items: center; gap: clamp(24px, 5vw, 56px);">
+      <img src="assets/logo.png" alt="Logo CUSBros Volleyball Team" style="width: clamp(140px, 30vw, 260px); height: auto; display: block; filter: drop-shadow(0 12px 40px rgba(212, 174, 98, 0.18));">
+      <div style="display: flex; flex-direction: column; gap: 14px; min-width: 0;">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.32em; text-transform: uppercase; color: #d4ae62;">Volleyball Team · CUSB</span>
+        <h1 style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(76px, 18vw, 200px); line-height: 0.85; letter-spacing: -0.01em; text-transform: uppercase; margin: 0;">CUS<span style="color: #d4ae62;">Bros</span></h1>
+        <span style="font-size: 16px; color: #a39e93;">Stagione 2026/27</span>
+      </div>
+    </section>
+
+    <section style="border: 1px solid #2c2922; background: linear-gradient(180deg, #151412 0%, #0f0f10 100%); border-radius: 14px; overflow: hidden;">
+      <div style="height: 4px; background: #d4ae62;"></div>
+      <div style="padding: clamp(22px, 5vw, 44px); display: flex; flex-direction: column; gap: clamp(24px, 4vw, 36px);">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.24em; text-transform: uppercase; color: #d4ae62;">Prossima partita</span>
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; color: #a39e93; white-space: nowrap;">4ª giornata · Trasferta</span>
+        </div>
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: clamp(10px, 3vw, 32px);">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: clamp(26px, 6vw, 56px); line-height: 0.95; text-transform: uppercase;">Pallavolo Reno</span>
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: clamp(16px, 2.5vw, 22px); color: #6f6a60; letter-spacing: 0.1em;">VS</span>
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: clamp(26px, 6vw, 56px); line-height: 0.95; text-transform: uppercase; text-align: right; color: #d4ae62;">CUSBros</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px 20px; font-size: 16px; color: #cfc9bd;">
+          <span>Sabato 31 ottobre · 21:00</span>
+          <span style="color: #a39e93;">Palestra Reno, Casalecchio di Reno</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: #2c2922; border: 1px solid #2c2922; border-radius: 10px; overflow: hidden; max-width: 560px;">
+          <sc-for list="{{ cd }}" as="u" hint-placeholder-count="4">
+            <div style="background: #0b0b0c; padding: clamp(12px, 3vw, 18px) 8px; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: clamp(32px, 8vw, 52px); line-height: 1; font-variant-numeric: tabular-nums; color: #f3efe6;">{{ u.v }}</span>
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #a39e93;">{{ u.l }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 20px; align-items: start;">
+      <div style="border: 1px solid #2c2922; background: #121212; border-radius: 14px; padding: clamp(22px, 4vw, 32px); display: flex; flex-direction: column; gap: 18px;">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.24em; text-transform: uppercase; color: #d4ae62;">Ultimo risultato</span>
+        <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(56px, 12vw, 76px); line-height: 0.9; font-variant-numeric: tabular-nums;">3<span style="color: #6f6a60;">–</span>0</span>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 22px; text-transform: uppercase; line-height: 1.05;">vs Pallavolo Savena</span>
+            <span style="display: flex; gap: 8px; align-items: center; font-size: 14px; color: #a39e93;"><span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.1em; padding: 2px 8px; border-radius: 4px; background: #d4ae62; color: #0b0b0c;">V</span>Dom 25 ottobre · In casa</span>
+          </div>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 17px; font-variant-numeric: tabular-nums; padding: 6px 14px; border-radius: 6px; background: #1c1b18; border: 1px solid #2c2922;">25–18</span>
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 17px; font-variant-numeric: tabular-nums; padding: 6px 14px; border-radius: 6px; background: #1c1b18; border: 1px solid #2c2922;">25–20</span>
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 17px; font-variant-numeric: tabular-nums; padding: 6px 14px; border-radius: 6px; background: #1c1b18; border: 1px solid #2c2922;">25–16</span>
+        </div>
+      </div>
+
+      <div style="border: 1px solid #2c2922; background: #121212; border-radius: 14px; padding: clamp(22px, 4vw, 32px); display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px;">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.24em; text-transform: uppercase; color: #d4ae62;">Classifica</span>
+          <a href="Calendario.dc.html#classifica" style="font-size: 14px; font-weight: 600;">Completa →</a>
+        </div>
+        <div style="display: flex; flex-direction: column;">
+          <sc-for list="{{ table }}" as="t" hint-placeholder-count="5">
+            <div style="display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 11px 12px; border-radius: 8px; background: {{ t.bg }}; color: {{ t.fg }}; font-weight: {{ t.weight }};">
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 17px; font-variant-numeric: tabular-nums; opacity: 0.7;">{{ t.pos }}</span>
+              <span style="font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ t.team }}</span>
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; font-variant-numeric: tabular-nums;">{{ t.pts }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <a href="Calendario.dc.html" style="align-self: flex-start; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 0.12em; text-transform: uppercase; padding: 14px 28px; min-height: 52px; box-sizing: border-box; display: inline-flex; align-items: center; gap: 10px; white-space: nowrap; background: #d4ae62; color: #0b0b0c; border-radius: 8px;" style-hover="background: #e6c682; color: #0b0b0c;" style-active="background: #b8924a;">Calendario e risultati →</a>
+  </main>
+
+  <footer style="position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 24px clamp(20px, 5vw, 48px) 40px; box-sizing: border-box; border-top: 1px solid #1f1d19; font-size: 13px; color: #6f6a60;">CUSBros Volleyball Team · CUSB</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { now: Date.now() };
+  componentDidMount() { this.t = setInterval(() => this.setState({ now: Date.now() }), 1000); }
+  componentWillUnmount() { clearInterval(this.t); }
+  renderVals() {
+    const target = new Date('2026-10-31T21:00:00').getTime();
+    const s = Math.max(0, Math.floor((target - this.state.now) / 1000));
+    const p = n => String(n).padStart(2, '0');
+    const cd = [
+      { v: p(Math.floor(s / 86400)), l: 'Giorni' }, { v: p(Math.floor(s % 86400 / 3600)), l: 'Ore' },
+      { v: p(Math.floor(s % 3600 / 60)), l: 'Min' }, { v: p(s % 60), l: 'Sec' }
+    ];
+    const rows = [['Pallavolo Reno', 8], ['CUSBros', 7], ['Vis Imola', 6], ['Budrio Volley', 5], ['Pol. Zola', 5]];
+    const table = rows.map(([team, pts], i) => {
+      const us = team === 'CUSBros';
+      return { pos: i + 1, team, pts, bg: us ? '#d4ae62' : 'transparent', fg: us ? '#0b0b0c' : '#f3efe6', weight: us ? 700 : 400 };
+    });
+    return { cd, table };
+  }
+}
+</script>
+</body>
+</html>
