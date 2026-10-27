@@ -37,6 +37,13 @@ export function forfeitSets(won: boolean) {
   return Array.from({ length: SETS_TO_WIN }, () => (won ? { us: 25, them: 0 } : { us: 0, them: 25 }));
 }
 
+/** Nome avversario breve per bottoni e tabellone: "Ghedauto Iveco Volley CUSB" → "Ghedauto". */
+export function shortTeamName(name: string) {
+  if (name.length <= 14) return name;
+  const first = name.split(/\s+/)[0];
+  return first.length >= 4 ? first : name;
+}
+
 export const PHASE_LABEL = { andata: "Andata", ritorno: "Ritorno" } as const;
 
 /** "Andata 2ª", "Ritorno 11ª" */

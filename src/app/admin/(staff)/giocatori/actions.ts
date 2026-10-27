@@ -3,6 +3,7 @@
 import { and, eq, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
+import { isForeignKeyViolation } from "@/db/errors";
 import { players } from "@/db/schema";
 import { invalid, type ActionResult } from "@/lib/actions";
 import { requireStaff } from "@/lib/auth-guard";
@@ -56,12 +57,4 @@ export async function deletePlayer(id: number): Promise<PlayerResult> {
   }
   revalidatePath("/admin/giocatori");
   return { ok: true, id };
-}
-
-/** Postgres 23503: la riga è ancora referenziata (presenze, formazioni, eventi del Live). */
-function isForeignKeyViolation(err: unknown): boolean {
-  for (let e: unknown = err; e; e = (e as { cause?: unknown }).cause) {
-    if ((e as { code?: string }).code === "23503") return true;
-  }
-  return false;
 }
