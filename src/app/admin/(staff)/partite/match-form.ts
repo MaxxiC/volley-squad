@@ -1,10 +1,12 @@
 // Tipi e validazione del form partita, condivisi tra client (editor) e server (actions).
 import { z } from "zod";
 
-/** Partita come la vede l'editor: date e ore già nel formato degli input, ora di Bologna. */
+/** Partita come la vede l'editor: date e ore già nel formato degli input, ora italiana. */
 export type AdminMatch = {
   id: number;
+  phase: "andata" | "ritorno";
   round: number;
+  number: number | null;
   date: string;
   time: string;
   home: boolean;
@@ -23,6 +25,13 @@ const score = (s: string) => (/^\d{1,2}$/.test(s) ? Number(s) : null);
 export const MatchFormSchema = z
   .object({
     id: z.number().int().positive().optional(),
+    phase: z.enum(["andata", "ritorno"]),
+    round: z.string().trim().regex(/^[1-9]\d?$/, "Inserisci la giornata (1–99)").transform(Number),
+    number: z
+      .string()
+      .trim()
+      .regex(/^\d{0,4}$/, "Numero gara non valido")
+      .transform((s) => (s ? Number(s) : null)),
     date: z.union([z.literal(""), z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data non valida")]),
     time: z.union([z.literal(""), z.string().regex(/^\d{2}:\d{2}$/, "Ora non valida")]),
     home: z.boolean(),
@@ -61,7 +70,18 @@ export const MatchFormSchema = z
       sets.push({ us, them });
     }
 
-    return { id: f.id, date: f.date, time: f.time, home: f.home, opponent: f.opponent, venue: f.venue, sets };
+    return {
+      id: f.id,
+      phase: f.phase,
+      round: f.round,
+      number: f.number,
+      date: f.date,
+      time: f.time,
+      home: f.home,
+      opponent: f.opponent,
+      venue: f.venue,
+      sets,
+    };
   });
 
 export type MatchFormInput = z.input<typeof MatchFormSchema>;

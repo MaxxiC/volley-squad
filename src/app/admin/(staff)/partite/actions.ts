@@ -1,6 +1,6 @@
 "use server";
 
-import { eq, max } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
@@ -9,7 +9,7 @@ import { requireStaff } from "@/lib/auth-guard";
 import { getCurrentSeason } from "@/lib/data";
 import { fromRomeInput } from "@/lib/format";
 import { findOrCreateTeam } from "@/lib/teams";
-import { HOME_VENUE } from "@/lib/venues";
+import { HOME_VENUE } from "@/lib/club";
 import { MatchFormSchema, type MatchFormInput } from "./match-form";
 
 export type ActionResult = { ok: true; id: number } | { ok: false; error: string };
@@ -18,11 +18,6 @@ function revalidateMatches() {
   revalidatePath("/");
   revalidatePath("/calendario");
   revalidatePath("/admin/partite");
-}
-
-async function nextRound(seasonId: number) {
-  const [row] = await db.select({ value: max(matches.round) }).from(matches).where(eq(matches.seasonId, seasonId));
-  return (row?.value ?? 0) + 1;
 }
 
 export async function saveMatch(input: MatchFormInput): Promise<ActionResult> {
@@ -38,6 +33,9 @@ export async function saveMatch(input: MatchFormInput): Promise<ActionResult> {
   const won = form.sets.filter((s) => s.us > s.them).length;
   const finished = won === 3 || form.sets.length - won === 3;
   const fields = {
+    phase: form.phase,
+    round: form.round,
+    number: form.number,
     startsAt: form.date ? fromRomeInput(form.date, form.time) : null,
     home: form.home,
     opponentId,
@@ -56,7 +54,7 @@ export async function saveMatch(input: MatchFormInput): Promise<ActionResult> {
     const season = await getCurrentSeason();
     const [created] = await db
       .insert(matches)
-      .values({ ...fields, seasonId: season.id, round: await nextRound(season.id), status: finished ? "finished" : "scheduled" })
+      .values({ ...fields, seasonId: season.id, status: finished ? "finished" : "scheduled" })
       .returning({ id: matches.id });
     matchId = created.id;
   }
@@ -81,7 +79,10 @@ export async function deleteMatch(id: number): Promise<ActionResult> {
   return { ok: true, id };
 }
 
-/** Crea il ritorno: stesso avversario, casa/trasferta invertite, data da definire. */
+/**
+ * Crea il ritorno: stessa giornata nell'altra fase (andata 2ª → ritorno 2ª), stesso avversario,
+ * casa/trasferta invertite, data e numero gara da definire.
+ */
 export async function duplicateAsReturn(id: number): Promise<ActionResult> {
   await requireStaff();
   const source = await db.query.matches.findFirst({ where: eq(matches.id, id) });
@@ -92,7 +93,8 @@ export async function duplicateAsReturn(id: number): Promise<ActionResult> {
     .insert(matches)
     .values({
       seasonId: source.seasonId,
-      round: await nextRound(source.seasonId),
+      phase: source.phase === "andata" ? "ritorno" : "andata",
+      round: source.round,
       startsAt: null,
       home,
       opponentId: source.opponentId,

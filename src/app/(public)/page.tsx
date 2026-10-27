@@ -5,7 +5,7 @@ import { PublicShell } from "@/components/public/public-shell";
 import { Kicker } from "@/components/ui/kicker";
 import { getCurrentSeason, getSeasonMatches, getStandings, getUsTeam } from "@/lib/data";
 import { formatDayMonth, formatLongDate, formatTime } from "@/lib/format";
-import { findLastResult, findNextMatch, matchScore, matchSides } from "@/lib/matches";
+import { PHASE_LABEL, findLastResult, findNextMatch, matchScore, matchSides } from "@/lib/matches";
 import type { MatchWithDetails, Team } from "@/lib/types";
 
 // "Prossima partita" dipende dalla data: rigenera la pagina periodicamente.
@@ -32,7 +32,7 @@ function NextMatchCard({ match, us }: { match: MatchWithDetails; us: Team }) {
         <div className="flex flex-wrap items-center justify-between gap-2.5">
           <Kicker>Prossima partita</Kicker>
           <span className="font-display text-sm font-semibold tracking-[.12em] whitespace-nowrap text-muted uppercase">
-            {match.round}ª giornata · {match.home ? "Casa" : "Trasferta"}
+            {PHASE_LABEL[match.phase]} · {match.round}ª giornata · {match.home ? "Casa" : "Trasferta"}
           </span>
         </div>
         <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-[clamp(10px,3vw,32px)]">

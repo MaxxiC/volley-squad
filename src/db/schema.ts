@@ -20,6 +20,7 @@ import {
 
 export const userRole = pgEnum("user_role", ["admin", "coach"]);
 export const matchStatus = pgEnum("match_status", ["scheduled", "live", "finished"]);
+export const matchPhase = pgEnum("match_phase", ["andata", "ritorno"]);
 export const playerRole = pgEnum("player_role", ["P", "S", "O", "C", "L"]);
 export const eventKind = pgEnum("event_kind", ["action", "sub", "rotation", "set_end"]);
 export const eventSkill = pgEnum("event_skill", [
@@ -76,7 +77,11 @@ export const matches = pgTable(
     seasonId: integer()
       .notNull()
       .references(() => seasons.id),
+    /** Giornata dentro la fase: "Ritorno — 1ª giornata" = phase ritorno, round 1. */
+    phase: matchPhase().notNull().default("andata"),
     round: smallint().notNull(),
+    /** Numero gara del calendario ufficiale (es. "n. 8"). */
+    number: smallint(),
     /** null = data da definire (es. "Duplica come ritorno") */
     startsAt: timestamp({ withTimezone: true }),
     /** true = giochiamo in casa */

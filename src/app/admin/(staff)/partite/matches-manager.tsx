@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { BTN_PRIMARY } from "@/components/admin/styles";
+import { roundLabel } from "@/lib/matches";
 import type { AdminMatch } from "./match-form";
 import { MatchEditor } from "./match-editor";
 
@@ -15,9 +16,9 @@ type Props = {
   timeChips: string[];
 };
 
-/** Riga info: "4ª · Trasferta · 21:00" oppure "3ª · Casa · 3–0 · Vinta". */
+/** Riga info: "Andata 2ª · n. 8 · Casa · 21:30" oppure "Andata 1ª · n. 3 · Casa · 3–0 · Vinta". */
 function infoLine(m: AdminMatch) {
-  const parts = [`${m.round}ª`, m.home ? "Casa" : "Trasferta"];
+  const parts = [roundLabel(m), ...(m.number ? [`n. ${m.number}`] : []), m.home ? "Casa" : "Trasferta"];
   if (m.status === "finished") {
     const won = m.sets.filter((s) => s.us > s.them).length;
     const lost = m.sets.length - won;

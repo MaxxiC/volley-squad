@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { CalendarMatches, type MatchCardData } from "@/components/public/calendar-matches";
 import { PublicShell } from "@/components/public/public-shell";
+import { COMPETITION_NAME, OFFICIAL_CALENDAR_URL } from "@/lib/club";
 import { getCurrentSeason, getSeasonMatches, getStandings, getUsTeam } from "@/lib/data";
 import { dateBox, formatShortDate, formatTime } from "@/lib/format";
-import { findNextMatch, matchScore, matchSides } from "@/lib/matches";
+import { PHASE_LABEL, findLastResult, findNextMatch, matchScore, matchSides, roundLabel } from "@/lib/matches";
 import type { StandingRow } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Calendario" };
@@ -16,13 +17,15 @@ export default async function CalendarioPage() {
   const [season, us] = await Promise.all([getCurrentSeason(), getUsTeam()]);
   const [matches, standings] = await Promise.all([getSeasonMatches(season.id), getStandings(season.id)]);
   const next = findNextMatch(matches);
+  // Fase in corso: quella della prossima partita, a fine stagione quella dell'ultima.
+  const current = next ?? findLastResult(matches);
 
   const cards: MatchCardData[] = matches.map((m) => {
     const [homeTeam, awayTeam] = matchSides(m, us);
     const score = matchScore(m.sets);
     return {
       id: m.id,
-      round: m.round,
+      roundLabel: roundLabel(m),
       dateLabel: formatShortDate(m.startsAt),
       home: m.home,
       homeName: homeTeam.name,
@@ -44,9 +47,21 @@ export default async function CalendarioPage() {
       <main className="relative z-1 mx-auto flex max-w-[1000px] flex-col gap-[clamp(36px,6vw,60px)] px-gutter pt-[clamp(20px,5vw,48px)] pb-18">
         <header className="flex flex-col gap-3">
           <span className="font-display text-[15px] font-semibold tracking-[.28em] text-gold uppercase">
-            Stagione {season.name} · Andata
+            Stagione {season.name}
+            {current ? ` · ${PHASE_LABEL[current.phase]}` : ""}
           </span>
           <h1 className="font-display text-[clamp(56px,13vw,120px)] leading-[.88] font-extrabold uppercase">Calendario</h1>
+          <p className="flex flex-wrap items-center gap-x-3 text-[15px] text-muted">
+            <span>{COMPETITION_NAME}</span>
+            <a
+              href={OFFICIAL_CALENDAR_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-11 items-center font-semibold"
+            >
+              Calendario ufficiale ↗
+            </a>
+          </p>
         </header>
 
         <SeasonSummary standings={standings} />

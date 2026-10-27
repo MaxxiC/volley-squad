@@ -24,3 +24,10 @@ export function findLastResult(matches: MatchWithDetails[]) {
 export function matchSides(match: MatchWithDetails, us: Team): [Team, Team] {
   return match.home ? [us, match.opponent] : [match.opponent, us];
 }
+
+export const PHASE_LABEL = { andata: "Andata", ritorno: "Ritorno" } as const;
+
+/** "Andata 2ª", "Ritorno 11ª" */
+export function roundLabel(match: { phase: keyof typeof PHASE_LABEL; round: number }) {
+  return `${PHASE_LABEL[match.phase]} ${match.round}ª`;
+}

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { BTN_DANGER, BTN_GOLD_OUTLINE, BTN_PRIMARY, BTN_SECONDARY, INPUT, LABEL } from "@/components/admin/styles";
-import { HOME_VENUE } from "@/lib/venues";
+import { HOME_VENUE } from "@/lib/club";
 import { deleteMatch, duplicateAsReturn, saveMatch } from "./actions";
 import { SET_SLOTS, type AdminMatch, type SetSlot } from "./match-form";
 
@@ -16,6 +16,38 @@ type Props = {
 
 const SEGMENT = "flex-1 min-h-11 cursor-pointer rounded-chip px-1 font-display text-sm font-bold tracking-[.04em] uppercase";
 
+/** Scelta tra due opzioni (Casa/Trasferta, Andata/Ritorno). */
+function Segmented<T extends string | boolean>({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: T;
+  onChange: (value: T) => void;
+  options: { value: T; label: string }[];
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className={LABEL}>{label}</span>
+      <div role="group" aria-label={label} className="flex gap-1 rounded-btn border border-line p-0.5">
+        {options.map((opt) => (
+          <button
+            key={opt.label}
+            type="button"
+            aria-pressed={value === opt.value}
+            onClick={() => onChange(opt.value)}
+            className={`${SEGMENT} ${value === opt.value ? "bg-gold text-bg" : "bg-transparent text-muted"}`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function initialSlots(match?: AdminMatch): SetSlot[] {
   return Array.from({ length: SET_SLOTS }, (_, i) => {
     const s = match?.sets[i];
@@ -24,6 +56,9 @@ function initialSlots(match?: AdminMatch): SetSlot[] {
 }
 
 export function MatchEditor({ match, timeChips, onClose, onDuplicated }: Props) {
+  const [phase, setPhase] = useState<"andata" | "ritorno">(match?.phase ?? "andata");
+  const [round, setRound] = useState(match ? String(match.round) : "");
+  const [number, setNumber] = useState(match?.number ? String(match.number) : "");
   const [date, setDate] = useState(match?.date ?? "");
   const [time, setTime] = useState(match?.time ?? "");
   const [opponent, setOpponent] = useState(match?.opponent ?? "");
@@ -44,7 +79,7 @@ export function MatchEditor({ match, timeChips, onClose, onDuplicated }: Props) 
   };
 
   const save = () =>
-    run(() => saveMatch({ id: match?.id, date, time, home, opponent, venue, slots }), onClose);
+    run(() => saveMatch({ id: match?.id, phase, round, number, date, time, home, opponent, venue, slots }), onClose);
 
   const setSlot = (i: number, side: keyof SetSlot, value: string) =>
     setSlots((prev) => prev.map((s, j) => (j === i ? { ...s, [side]: value.replace(/\D/g, "").slice(0, 2) } : s)));
@@ -71,24 +106,47 @@ export function MatchEditor({ match, timeChips, onClose, onDuplicated }: Props) 
             className={INPUT}
           />
         </label>
-        <div className="flex flex-col gap-1.5">
-          <span className={LABEL}>Campo</span>
-          <div role="group" aria-label="Campo" className="flex gap-1 rounded-btn border border-line p-0.5">
-            {[
-              { value: true, label: "Casa" },
-              { value: false, label: "Trasferta" },
-            ].map((opt) => (
-              <button
-                key={opt.label}
-                type="button"
-                aria-pressed={home === opt.value}
-                onClick={() => setHome(opt.value)}
-                className={`${SEGMENT} ${home === opt.value ? "bg-gold text-bg" : "bg-transparent text-muted"}`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
+        <Segmented
+          label="Campo"
+          value={home}
+          onChange={setHome}
+          options={[
+            { value: true, label: "Casa" },
+            { value: false, label: "Trasferta" },
+          ]}
+        />
+        <Segmented
+          label="Fase"
+          value={phase}
+          onChange={setPhase}
+          options={[
+            { value: "andata", label: "Andata" },
+            { value: "ritorno", label: "Ritorno" },
+          ]}
+        />
+        <div className="grid grid-cols-2 gap-3.5">
+          <label className="flex flex-col gap-1.5">
+            <span className={LABEL}>Giornata</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={round}
+              onChange={(e) => setRound(e.target.value.replace(/\D/g, "").slice(0, 2))}
+              placeholder="es. 2"
+              className={`${INPUT} tabular-nums`}
+            />
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className={LABEL}>N. gara</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={number}
+              onChange={(e) => setNumber(e.target.value.replace(/\D/g, "").slice(0, 4))}
+              placeholder="es. 8"
+              className={`${INPUT} tabular-nums`}
+            />
+          </label>
         </div>
       </div>
 

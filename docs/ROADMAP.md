@@ -56,6 +56,9 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [ ] Pagina pubblica `/partite/[id]`: score, parziali, MVP, come abbiamo fatto punto, migliori, confronto
 
 ## 💡 Idee future
+- [ ] **Import dal calendario ufficiale** (SportAdmin): bottone in admin che rilegge calendario, risultati e classifica del girone e propone gli aggiornamenti.
+- [ ] **Giornate di riposo** nel Calendario pubblico ("Riposa CUSBros", 7ª andata e ritorno), come sul sito ufficiale.
+- [ ] **Loghi delle squadre** accanto ai nomi (come sul sito ufficiale).
 - [ ] **Animazioni leggere tra le pagine:** transizioni morbide (fade/slide brevi) senza librerie pesanti, es. View Transitions API del browser o CSS puro; rispettare `prefers-reduced-motion`.
 
 ## 6 · PWA + deploy
@@ -70,9 +73,11 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] **Neon:** progetto creato, `.env` compilato.
 - [ ] **Utenti staff:** crea te stesso (`admin`) e i 2 allenatori (`coach`) con `npm run user:create`.
 - [ ] **Classifica:** decidere se inserita a mano o calcolata. Il DB ha già la tabella `standings` (va bene per entrambe le strade).
-- [ ] **"Andata" nel Calendario:** decidere se aggiungere la fase del campionato al modello dati.
+- [x] **"Andata" nel Calendario:** aggiunta la fase (andata/ritorno) e il numero gara ufficiale.
+- [ ] **Rosa vera:** nel DB ci sono ancora i 12 giocatori finti dei prototipi; serve elenco con numero, nome, cognome, ruolo (P/S/O/C/L).
 
 ## Note e decisioni aperte
+- **Campionato reale:** Libertas Cup Mix 2027, girone Challenge (Rimini). Fonte: [calendario ufficiale SportAdmin](https://sportadmin.net/s/libertas-volley-comitato-provinciale-rimini). I dati dei prototipi (Bologna, PalaCUS, squadre) erano inventati e sono stati sostituiti il 27/10/2026.
 - **Classifica:** probabilmente inserita a mano (le partite delle altre squadre non le registriamo). Vedi "Da fare".
 - **npm audit:** 2 avvisi su `postcss` interno a Next 15 (solo build-time). La "fix" proposta è passare a Next 16: non applicata, si rivaluta quando esce una patch 15.x. Altri avvisi `esbuild` arrivano da `drizzle-kit` (solo CLI in locale, non va in produzione).
 - **Auth.js v5** è ancora in beta: versione bloccata a `5.0.0-beta.32`, aggiornare solo di proposito.

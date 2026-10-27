@@ -6,7 +6,8 @@ import { useState } from "react";
 /** Dati di una card partita già pronti per la UI (calcolati lato server). */
 export type MatchCardData = {
   id: number;
-  round: number;
+  /** "Andata 2ª" */
+  roundLabel: string;
   dateLabel: string;
   home: boolean;
   homeName: string;
@@ -74,7 +75,7 @@ function MatchCard({ match: m }: { match: MatchCardData }) {
       <div className="flex min-w-0 flex-col gap-2.5">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-display text-sm font-semibold tracking-[.1em] uppercase">
           <span className="text-muted">
-            {m.round}ª · {m.dateLabel}
+            {m.roundLabel} · {m.dateLabel}
           </span>
           <span className={m.home ? "text-blue" : "text-muted"}>{m.home ? "Casa" : "Trasferta"}</span>
           {m.isNext && <span className="rounded-badge bg-gold px-2 py-0.5 font-bold text-bg">Prossima</span>}
