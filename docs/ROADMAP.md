@@ -24,14 +24,14 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] Date/ore formattate in `Europe/Rome`
 
 ## 2 · Database + autenticazione
-- [ ] Progetto Neon (free), `DATABASE_URL` in `.env.local`
-- [ ] Drizzle: schema completo (users, seasons, teams, matches, match_sets, standings, players, match_players, lineups, events) + migrazioni
-- [ ] Seed: stagione, squadre, calendario, classifica, rosa, utenti admin/coach
-- [ ] Home e Calendario leggono dal DB (Server Components + `revalidate`)
-- [ ] Auth.js v5 Credentials (bcrypt), JWT con `role`, scadenza 30 giorni
-- [ ] `middleware.ts` su `/admin/**` → `/admin/login`
-- [ ] Pagina Admin Login + shell admin (header, tab)
-- [ ] ❓ Decisione: classifica inserita a mano o calcolata
+- [ ] Progetto Neon (free), `DATABASE_URL` in `.env.local` → vedi "Da fare (Max)"
+- [x] Drizzle: schema completo (users, seasons, teams, matches, match_sets, standings, players, match_players, lineups, events) + migrazione `0000_init`
+- [x] Seed: stagione, squadre, calendario, classifica, rosa (`npm run db:seed`); utenti con `npm run user:create`
+- [x] Home e Calendario leggono dal DB (Server Components + `revalidate`)
+- [x] Auth.js v5 Credentials (bcrypt), JWT con `role`, scadenza 30 giorni
+- [x] `middleware.ts` su `/admin/**` → `/admin/login`
+- [x] Pagina Admin Login + shell admin (header, tab, Esci) con segnaposto delle 4 sezioni
+- [ ] Verifica end-to-end su Neon reale (migrate, seed, login vero, build)
 
 ## 3 · Admin Partite + Giocatori
 - [ ] Partite: lista, form espandibile, parziali, crea/modifica/elimina con conferma
@@ -64,12 +64,16 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 ---
 
 ## 📌 Da fare (Max)
+- [ ] **Neon:** crea account e progetto su neon.tech (piano Free, regione Europe/Frankfurt), copia la connection string in `.env.local` come `DATABASE_URL`; genera `AUTH_SECRET` con `npx auth secret`.
+- [ ] **Utenti staff:** crea te stesso (`admin`) e i 2 allenatori (`coach`) con `npm run user:create`.
 - [ ] **Classifica:** decidere se inserita a mano o calcolata. Il DB ha già la tabella `standings` (va bene per entrambe le strade).
 - [ ] **"Andata" nel Calendario:** decidere se aggiungere la fase del campionato al modello dati.
 
 ## Note e decisioni aperte
 - **Classifica:** probabilmente inserita a mano (le partite delle altre squadre non le registriamo). Vedi "Da fare".
-- **npm audit:** 2 avvisi su `postcss` interno a Next 15 (solo build-time). La "fix" proposta è passare a Next 16: non applicata, si rivaluta quando esce una patch 15.x.
+- **npm audit:** 2 avvisi su `postcss` interno a Next 15 (solo build-time). La "fix" proposta è passare a Next 16: non applicata, si rivaluta quando esce una patch 15.x. Altri avvisi `esbuild` arrivano da `drizzle-kit` (solo CLI in locale, non va in produzione).
+- **Auth.js v5** è ancora in beta: versione bloccata a `5.0.0-beta.32`, aggiornare solo di proposito.
+- **Login:** nessun limite di tentativi per ora (uso interno, 3 utenti). Da rivalutare prima del deploy.
 - **Password dimenticata:** per ora solo messaggio "contatta l'admin".
 - **"Andata" nel Calendario:** testo fisso; il modello dati non ha la fase del campionato. Da decidere se aggiungerla.
 - **`/partite/[id]`:** le card giocate ci linkano già; finché la pagina non esiste (step 5) danno 404.
