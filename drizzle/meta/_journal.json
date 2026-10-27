@@ -29,6 +29,13 @@
       "when": 1793134271105,
       "tag": "0003_battuta_iniziale_set",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793137188317,
+      "tag": "0004_eventi_libero_timeout_correzione_formazione",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,6 @@
 // Testo leggibile di un evento per il feed "Ultime azioni" (e in futuro per lo Storico).
 import { TEAM_NAME } from "../club";
-import { shortName } from "../players";
+import { ROLE_LABEL, shortName } from "../players";
 import { BALL_TYPE_LABEL, SKILL_LABEL, outcomeOf, type Skill } from "./skills";
 import type { LiveEvent, LivePlayer } from "./types";
 
@@ -10,8 +10,26 @@ export function playerLabel(p: LivePlayer | undefined) {
 
 export function describeEvent(e: LiveEvent, playerOf: (id: number) => LivePlayer | undefined, opponent: string) {
   const who = e.playerId ? ` · ${playerLabel(playerOf(e.playerId))}` : "";
-  if (e.kind === "rotation") return e.detail?.dir === -1 ? "Rotazione indietro" : "Rotazione manuale";
-  if (e.kind === "set_end") return "Fine set";
+  const d = e.detail ?? {};
+  const team = (side: "us" | "them" | null | undefined) => (side === "us" ? TEAM_NAME : opponent);
+  switch (e.kind) {
+    case "rotation":
+      return d.dir === -1 ? "Rotazione indietro" : "Rotazione manuale";
+    case "set_end":
+      return "Fine set";
+    case "lineup":
+      return `Formazione set ${e.setN}`;
+    case "timeout":
+      return `Timeout ${team(d.side)}`;
+    case "correction":
+      return `Correzione punteggio: ${d.delta === -1 ? "−1" : "+1"} ${team(e.point)}`;
+    case "sub": {
+      const role = d.role ? ` (${ROLE_LABEL[d.role]})` : "";
+      return `Cambio · entra ${playerLabel(playerOf(d.in ?? 0))}${role}, esce ${playerLabel(playerOf(d.out ?? 0))}`;
+    }
+    case "libero":
+      return `Libero · entra ${playerLabel(playerOf(d.in ?? 0))}, esce ${playerLabel(playerOf(d.out ?? 0))}`;
+  }
   if (e.skill === "opp_point") return `Punto ${opponent}`;
   if (e.skill === "opp_error") {
     const ball = e.detail?.ballType ? ` · ${BALL_TYPE_LABEL[e.detail.ballType]}` : "";

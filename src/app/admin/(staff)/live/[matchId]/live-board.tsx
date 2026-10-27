@@ -10,11 +10,13 @@ import { LIVE_MODE_KEY, type LiveMode } from "../prepare-form";
 import { AdvancedInput } from "./advanced-input";
 import { Court } from "./court";
 import { PANEL, PANEL_TITLE, SMALL_BTN } from "./live-ui";
+import { MatchTools } from "./match-tools";
+import { MatchEnd, NextSetLineup } from "./set-panels";
 import { SimpleInput } from "./simple-input";
 import { useLiveEvents, type SyncStatus } from "./use-live-events";
 
 type Props = {
-  match: { id: number; title: string; opponent: string };
+  match: { id: number; title: string; opponent: string; finished: boolean };
   players: LivePlayer[];
   lineups: LiveLineup[];
   initialEvents: LiveEvent[];
@@ -50,9 +52,15 @@ export function LiveBoard({ match, players, lineups, initialEvents }: Props) {
     }
   };
 
-  const base = { setN: live.setN, kind: "action" as const };
+  const setN = live.setN;
+  const base = { setN, kind: "action" as const };
   const court = live.rotation.map(playerOf).filter((p): p is LivePlayer => Boolean(p));
   const libero = live.liberoId ? playerOf(live.liberoId) : undefined;
+  const roleOf = (id: number) => live.roles[id] ?? byId.get(id)?.role ?? "S";
+  // Panchina per i cambi: presenti fuori dal campo, esclusi i liberi e chi è sostituito dal libero.
+  const bench = players.filter(
+    (p) => !live.rotation.includes(p.id) && p.id !== live.liberoId && p.id !== live.liberoFor && roleOf(p.id) !== "L",
+  );
 
   /** Ultimo giocatore usato per quel tipo di punto, in tutta la partita. */
   const lastFor = (type: SimpleType) => {
@@ -64,7 +72,9 @@ export function LiveBoard({ match, players, lineups, initialEvents }: Props) {
     return found?.playerId ?? null;
   };
 
-  const finished = live.sets.us === 3 || live.sets.them === 3;
+  // Set nuovo senza ancora la formazione confermata (dal 2° set in poi).
+  const needLineup = !live.matchOver && setN > 1 && live.setNotStarted && !live.timeline.some((t) => t.event.kind === "lineup");
+  const playing = !live.matchOver && !needLineup && !match.finished;
 
   return (
     <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,380px),1fr))] items-start gap-4">
@@ -72,63 +82,89 @@ export function LiveBoard({ match, players, lineups, initialEvents }: Props) {
         <Scoreboard live={live} opponent={match.opponent} />
         <QuickBar onUndo={undo} onRedo={redo} canUndo={canUndo} canRedo={canRedo} sync={sync} />
 
-        <div role="group" aria-label="Modalità" className="grid grid-cols-2 gap-1 rounded-tile border border-line p-1">
-          {(["semplice", "avanzato"] as const).map((m) => (
-            <button
-              key={m}
-              type="button"
-              aria-pressed={mode === m}
-              onClick={() => changeMode(m)}
-              className={`min-h-11.5 cursor-pointer rounded-seg font-display text-[17px] font-bold tracking-[.1em] uppercase ${mode === m ? "bg-gold text-bg" : "text-muted"}`}
-            >
-              {m === "semplice" ? "Semplice" : "Avanzato"}
-            </button>
-          ))}
-        </div>
-
-        {live.setWinner && !finished && (
-          <div className="flex flex-wrap items-center gap-3 rounded-card border border-gold bg-surface-sel p-4">
-            <span className="mr-auto font-display text-xl font-bold uppercase">
-              Set {live.setN} {live.setWinner === "us" ? "vinto" : "perso"} {live.score.us}–{live.score.them}
-            </span>
-            <button
-              type="button"
-              onClick={() => add({ setN: live.setN, kind: "set_end" })}
-              className="min-h-12 cursor-pointer rounded-btn bg-gold px-4.5 font-display text-base font-bold tracking-[.1em] text-bg uppercase hover:bg-gold-hover"
-            >
-              Chiudi set
-            </button>
-          </div>
-        )}
-        {finished && (
-          <p className="rounded-card border border-gold bg-surface-sel p-4 font-display text-xl font-bold uppercase">
-            Partita {live.sets.us > live.sets.them ? "vinta" : "persa"} {live.sets.us}–{live.sets.them}
+        {match.finished && (
+          <p className="rounded-card border border-gold-line bg-surface-sel p-4 text-sm text-ink-2">
+            Partita conclusa: risultato e MVP sono già pubblicati. Le azioni si correggono dallo Storico live.
           </p>
         )}
 
-        {mode === "semplice" ? (
-          <SimpleInput
+        {live.matchOver && !match.finished && (
+          <MatchEnd matchId={match.id} live={live} players={players} pendingSync={sync.pending} />
+        )}
+
+        {needLineup && (
+          <NextSetLineup
+            key={setN}
+            live={live}
             opponent={match.opponent}
-            eventOf={(id) => events.get(id)}
-            onPoint={(side) => add({ ...base, point: side, incomplete: true })}
-            onComplete={update}
-            court={court}
-            libero={libero}
-            serverId={live.rotation[0] ?? null}
-            lastFor={lastFor}
+            players={players}
+            onStart={(detail) => add({ setN, kind: "lineup", detail })}
           />
-        ) : (
-          <AdvancedInput
-            opponent={match.opponent}
-            player={selected ? playerOf(selected) : undefined}
-            onClearPlayer={() => setSelected(null)}
-            onAction={(fields) => {
-              add({ ...base, ...fields });
-              setSelected(null);
-            }}
-            onOppPoint={() => add({ ...base, skill: "opp_point", point: "them" })}
-            onOppError={() => add({ ...base, skill: "opp_error", point: "us" })}
-          />
+        )}
+
+        {playing && (
+          <>
+            <div role="group" aria-label="Modalità" className="grid grid-cols-2 gap-1 rounded-tile border border-line p-1">
+              {(["semplice", "avanzato"] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  aria-pressed={mode === m}
+                  onClick={() => changeMode(m)}
+                  className={`min-h-11.5 cursor-pointer rounded-seg font-display text-[17px] font-bold tracking-[.1em] uppercase ${mode === m ? "bg-gold text-bg" : "text-muted"}`}
+                >
+                  {m === "semplice" ? "Semplice" : "Avanzato"}
+                </button>
+              ))}
+            </div>
+
+            {live.setWinner && (
+              <div className="flex flex-wrap items-center gap-3 rounded-card border border-gold bg-surface-sel p-4">
+                <span className="mr-auto font-display text-xl font-bold uppercase">
+                  Set {setN} {live.setWinner === "us" ? "vinto" : "perso"} {live.score.us}–{live.score.them}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => add({ setN, kind: "set_end" })}
+                  className="min-h-12 cursor-pointer rounded-btn bg-gold px-4.5 font-display text-base font-bold tracking-[.1em] text-bg uppercase hover:bg-gold-hover"
+                >
+                  Chiudi set
+                </button>
+              </div>
+            )}
+
+            {mode === "semplice" ? (
+              <SimpleInput
+                opponent={match.opponent}
+                eventOf={(id) => events.get(id)}
+                onPoint={(side) => add({ ...base, point: side, incomplete: true })}
+                onComplete={update}
+                court={court}
+                libero={libero}
+                serverId={live.rotation[0] ?? null}
+                lastFor={lastFor}
+              />
+            ) : (
+              <AdvancedInput
+                opponent={match.opponent}
+                player={selected ? playerOf(selected) : undefined}
+                onClearPlayer={() => setSelected(null)}
+                onAction={(fields) => {
+                  add({ ...base, ...fields });
+                  setSelected(null);
+                }}
+                onOppPoint={() => add({ ...base, skill: "opp_point", point: "them" })}
+                onOppError={() => add({ ...base, skill: "opp_error", point: "us" })}
+              />
+            )}
+
+            <MatchTools
+              live={live}
+              opponent={match.opponent}
+              onTimeout={(side) => add({ setN, kind: "timeout", detail: { side } })}
+              onCorrect={(side, delta) => add({ setN, kind: "correction", point: side, detail: { delta } })}
+            />
+          </>
         )}
       </div>
 
@@ -136,9 +172,14 @@ export function LiveBoard({ match, players, lineups, initialEvents }: Props) {
         <Court
           live={live}
           playerOf={playerOf}
+          bench={bench}
+          roleOf={roleOf}
           selected={mode === "avanzato" ? selected : null}
-          onSelect={mode === "avanzato" ? setSelected : undefined}
-          onRotate={() => add({ setN: live.setN, kind: "rotation", detail: { dir: 1 } })}
+          onSelect={mode === "avanzato" && playing ? setSelected : undefined}
+          onRotate={() => add({ setN, kind: "rotation", detail: { dir: 1 } })}
+          onSub={(out, inn, role) => add({ setN, kind: "sub", detail: { out, in: inn, role } })}
+          onLibero={(inn, out) => add({ setN, kind: "libero", detail: { in: inn, out } })}
+          readOnly={!playing}
         />
         <Feed live={live} describe={(e) => describeEvent(e, playerOf, match.opponent)} />
       </div>
@@ -162,7 +203,9 @@ function Scoreboard({ live, opponent }: { live: LiveState; opponent: string }) {
         <span className={`${score} text-gold`}>{live.score.us}</span>
       </div>
       <div className="flex flex-col items-center gap-1 px-1">
-        <span className="font-display text-[13px] font-semibold tracking-[.16em] text-muted uppercase">Set {live.setN}</span>
+        <span className="font-display text-[13px] font-semibold tracking-[.16em] text-muted uppercase">
+          {live.matchOver ? "Finale" : `Set ${live.setN}`}
+        </span>
         <span className="font-display text-[26px] leading-none font-bold tabular-nums">
           {live.sets.us}–{live.sets.them}
         </span>
@@ -218,7 +261,9 @@ function Feed({ live, describe }: { live: LiveState; describe: (e: LiveEvent) =>
   return (
     <section className={`${PANEL} gap-2`}>
       <span className={PANEL_TITLE}>Ultime azioni</span>
-      {items.length === 0 && <p className="text-sm text-faint">Ancora nessuna azione in questo set.</p>}
+      {items.length === 0 && (
+        <p className="text-sm text-faint">{live.matchOver ? "Partita finita." : "Ancora nessuna azione in questo set."}</p>
+      )}
       {items.map(({ event: e, score }) => (
         <div key={e.id} className="grid grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-2.5 border-b border-chip px-1 py-2">
           <span

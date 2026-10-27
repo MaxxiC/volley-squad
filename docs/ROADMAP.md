@@ -43,8 +43,8 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 ## 4 · Live 🌿 `feat/live`
 - [x] Prepara Live: wizard Presenti (con ruolo di partita) → Formazione (avviso donne) → Inizio (+ scorciatoie); salva presenze, formazione set 1 e chi batte, partita "in corso"
 - [x] Live online: tabellone, Semplice / Avanzato, campo, rotazione automatica + manuale, Annulla/Ripeti (stato sempre ricalcolato dal registro eventi)
-- [ ] Cambi (n/6), fine set (25/15 con +2), fine partita + MVP
-- [ ] Feed ultime azioni + undo illimitato nel set, eventi `incomplete`
+- [x] Cambi (n/6, ruolo di chi entra, avviso rientro), libero (non conta come cambio, esce da solo in P4), timeout, correzione punteggio, formazione set successivo, fine set (25/15 con +2), fine partita + MVP (parziali ricalcolati sul server)
+- [x] Feed ultime azioni + Annulla/Ripeti, eventi `incomplete` ("da completare")
 - [x] API `POST /api/matches/[id]/events` batch idempotente (uuid client), coda di invio con nuovi tentativi
 - [ ] Offline: IndexedDB come coda, UI ottimistica, sync su `online` + retry, indicatore stato
 - [ ] Service worker (`@serwist/next`): precache shell `/admin/live/*`, font, logo

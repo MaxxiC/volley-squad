@@ -6,8 +6,9 @@ import { useState, useTransition } from "react";
 import { PageHeader } from "@/components/admin/page-header";
 import { INPUT, LABEL } from "@/components/admin/styles";
 import { TEAM_NAME } from "@/lib/club";
-import { COURT_ORDER, EMPTY_SLOTS, MIN_WOMEN, fillInOrder, womenOnCourt, type Slots } from "@/lib/lineup";
-import { PLAYER_ROLES, ROLE_LABEL, fullName, shortName, type PlayerRole } from "@/lib/players";
+import { LineupField, LineupPool, WomenWarning, lineupHint, useLineup } from "@/components/admin/lineup-picker";
+import { EMPTY_SLOTS, MIN_WOMEN, fillInOrder, womenOnCourt } from "@/lib/lineup";
+import { PLAYER_ROLES, ROLE_LABEL, fullName, type PlayerRole } from "@/lib/players";
 import { startMatch } from "./actions";
 import { LIVE_MODE_KEY, type LiveMode, type PreparePlayer, type PrepareSetup } from "./prepare-form";
 
@@ -43,18 +44,20 @@ export function PrepareWizard({ match, choices, roster, current, last }: Props) 
   const [step, setStep] = useState(1);
   const [roles, setRoles] = useState<Roles>(() => (current ? rolesFrom(current, roster) : allRoles()));
   const [editingRole, setEditingRole] = useState<number | null>(null);
-  const [slots, setSlots] = useState<Slots>(() => (current ? keep(current.slots) : EMPTY_SLOTS));
-  const [libero, setLibero] = useState<number | null>(() => (current?.liberoId && byId.has(current.liberoId) ? current.liberoId : null));
-  const [target, setTarget] = useState<number | "libero">(0);
+  const lineup = useLineup(
+    current ? keep(current.slots) : EMPTY_SLOTS,
+    current?.liberoId && byId.has(current.liberoId) ? current.liberoId : null,
+  );
+  const { slots, libero, filled } = lineup;
   const [serveFirst, setServeFirst] = useState<"us" | "them" | null>(null);
   const [mode, setMode] = useState<LiveMode>("semplice");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   const present = roster.filter((p) => roles[p.id]);
-  const filled = slots.filter((x) => x !== null).length;
   const valid = [present.length >= 6, filled === 6, serveFirst !== null];
-  const women = womenOnCourt(slots.filter((x): x is number => x !== null), (id) => byId.get(id)?.gender ?? null);
+  const onCourt = slots.filter((x): x is number => x !== null);
+  const genderOf = (id: number) => byId.get(id)?.gender ?? null;
 
   // --- Presenti ---------------------------------------------------------------------------
   const togglePresent = (id: number) => {
@@ -65,38 +68,22 @@ export function PrepareWizard({ match, choices, roster, current, last }: Props) 
       return next;
     });
     // Chi non è presente esce anche da formazione e libero.
-    setSlots((s) => s.map((x) => (x === id && roles[id] ? null : x)));
-    if (libero === id && roles[id]) setLibero(null);
+    if (roles[id]) lineup.set(slots.map((x) => (x === id ? null : x)), libero === id ? null : libero);
     if (editingRole === id) setEditingRole(null);
   };
 
   // --- Formazione ---------------------------------------------------------------------------
-  const place = (id: number) => {
-    if (target === "libero") {
-      setSlots((s) => s.map((x) => (x === id ? null : x)));
-      setLibero(id);
-      setTarget(Math.max(0, slots.findIndex((x) => x === null)));
-      return;
-    }
-    const next = slots.map((x) => (x === id ? null : x));
-    next[target] = id;
-    setSlots(next);
-    if (libero === id) setLibero(null);
-    const empty = next.findIndex((x) => x === null);
-    if (empty >= 0) setTarget(empty);
-  };
-
   const fromLast = () => {
     if (!last) return;
-    setSlots(keep(last.slots).map((id) => (id !== null && roles[id] ? id : null)));
-    setLibero(last.liberoId && roles[last.liberoId] ? last.liberoId : null);
-    setTarget(0);
+    lineup.set(
+      keep(last.slots).map((id) => (id !== null && roles[id] ? id : null)),
+      last.liberoId && roles[last.liberoId] ? last.liberoId : null,
+    );
   };
 
   const fill = () => {
     const res = fillInOrder(slots, libero, present.map((p) => ({ id: p.id, role: roles[p.id] })));
-    setSlots(res.slots);
-    setLibero(res.libero);
+    lineup.set(res.slots, res.libero);
   };
 
   // --- Avvio --------------------------------------------------------------------------------
@@ -190,8 +177,7 @@ export function PrepareWizard({ match, choices, roster, current, last }: Props) 
               className={CHIP}
               onClick={() => {
                 setRoles({});
-                setSlots(EMPTY_SLOTS);
-                setLibero(null);
+                lineup.set(EMPTY_SLOTS, null);
               }}
             >
               Nessuno
@@ -273,74 +259,14 @@ export function PrepareWizard({ match, choices, roster, current, last }: Props) 
         <section className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,340px),1fr))] items-start gap-4.5">
           <div className="flex flex-col gap-3">
             <h2 className={H2}>Formazione set 1</h2>
-            <span className="text-sm text-muted">
-              {target === "libero" ? "Scegli il libero tra i presenti" : `Tocca un presente per metterlo in P${target + 1}`}
-            </span>
-            <div className="flex flex-col gap-2 rounded-panel border border-line bg-surface p-3">
-              <span className="text-center text-[11px] font-semibold tracking-[.16em] text-faint uppercase">Rete</span>
-              <div className="grid grid-cols-3 gap-1.5 border-t-3 border-ink-2 pt-2">
-                {COURT_ORDER.map((i) => {
-                  const id = slots[i];
-                  const p = id !== null ? byId.get(id) : undefined;
-                  const active = target === i;
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => setTarget(i)}
-                      aria-pressed={active}
-                      aria-label={`Posizione P${i + 1}${p ? `: ${fullName(p)}` : ", vuota"}`}
-                      className={`relative flex min-h-20 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-tile text-ink ${active ? "border border-gold bg-surface-sel" : p ? "border border-line bg-surface-2" : "border border-dashed border-line-strong bg-surface-2"}`}
-                    >
-                      <span className="absolute top-1.5 left-2 text-[11px] font-semibold text-faint">P{i + 1}</span>
-                      <span className={`font-display text-[30px] leading-none font-extrabold tabular-nums ${p ? "text-gold" : "text-faint"}`}>
-                        {p ? p.number : "+"}
-                      </span>
-                      <span className="max-w-full truncate px-1 text-xs text-ink-2">{p ? shortName(p) : "vuoto"}</span>
-                    </button>
-                  );
-                })}
-              </div>
-              <button
-                type="button"
-                onClick={() => setTarget("libero")}
-                aria-pressed={target === "libero"}
-                className={`flex min-h-12 cursor-pointer items-center gap-2.5 rounded-btn border border-dashed px-3 text-sm text-ink-2 ${target === "libero" ? "border-gold" : "border-line-strong"}`}
-              >
-                <span className="font-display text-[13px] font-bold tracking-[.12em] text-blue uppercase">Libero</span>
-                <span className="font-display text-xl font-extrabold text-gold tabular-nums">{libero ? byId.get(libero)?.number : "+"}</span>
-                {libero ? fullName(byId.get(libero)!) : "Nessuno"}
-              </button>
-            </div>
-            {filled === 6 && women.warn && (
-              <p role="status" className="rounded-btn border border-red-line px-3 py-2.5 text-sm text-red">
-                {women.women + women.unknown < MIN_WOMEN
-                  ? `In campo ${women.women === 1 ? "c'è 1 donna" : `ci sono ${women.women} donne`}: il regolamento ne chiede almeno ${MIN_WOMEN}.`
-                  : `Verifica le donne in campo (almeno ${MIN_WOMEN}): sesso non indicato per ${women.unknown} ${women.unknown === 1 ? "giocatore" : "giocatori"}.`}
-              </p>
-            )}
+            <span className="text-sm text-muted">{lineupHint(lineup)}</span>
+            <LineupField lineup={lineup} playerOf={(id) => byId.get(id)} />
+            {filled === 6 && <WomenWarning ids={onCourt} genderOf={genderOf} />}
           </div>
 
           <div className="flex flex-col gap-3">
             <h2 className={H2}>Presenti</h2>
-            <div className="flex flex-wrap gap-1.5">
-              {present.map((p) => {
-                const pos = slots.indexOf(p.id);
-                const used = pos >= 0 || libero === p.id;
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => place(p.id)}
-                    className={`flex min-h-12 cursor-pointer items-center gap-2 rounded-btn border bg-surface-2 px-3 text-ink ${used ? "border-line opacity-45" : "border-line-strong"}`}
-                  >
-                    <span className="font-display text-xl font-extrabold text-gold tabular-nums">{p.number}</span>
-                    <span className="text-[13px]">{shortName(p)}</span>
-                    <span className="text-[11px] text-faint">{libero === p.id ? "L" : pos >= 0 ? `P${pos + 1}` : roles[p.id]}</span>
-                  </button>
-                );
-              })}
-            </div>
+            <LineupPool lineup={lineup} players={present} tagOf={(p) => roles[p.id]} />
             <div className="flex flex-wrap gap-2">
               <button type="button" className={CHIP} disabled={!last} onClick={fromLast}>
                 Come ultima partita
@@ -351,11 +277,7 @@ export function PrepareWizard({ match, choices, roster, current, last }: Props) 
               <button
                 type="button"
                 className={CHIP}
-                onClick={() => {
-                  setSlots(EMPTY_SLOTS);
-                  setLibero(null);
-                  setTarget(0);
-                }}
+                onClick={() => lineup.set(EMPTY_SLOTS, null)}
               >
                 Svuota
               </button>
@@ -427,7 +349,9 @@ export function PrepareWizard({ match, choices, roster, current, last }: Props) 
               Batte: {serveFirst === "us" ? TEAM_NAME : serveFirst === "them" ? match.opponent : "da scegliere"} · Modalità:{" "}
               {mode === "semplice" ? "Semplice" : "Avanzato"}
             </span>
-            {women.warn && <span className="text-red">Attenzione: meno di {MIN_WOMEN} donne in campo (o sesso non indicato).</span>}
+            {womenOnCourt(onCourt, genderOf).warn && (
+              <span className="text-red">Attenzione: meno di {MIN_WOMEN} donne in campo (o sesso non indicato).</span>
+            )}
           </div>
 
           {error && (

@@ -3,9 +3,11 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db, runBatch } from "@/db";
-import { events, lineups, matchPlayers, matches, players } from "@/db/schema";
+import { events, lineups, matchPlayers, matchSets, matches, players } from "@/db/schema";
 import { invalid, revalidatePublicPages, type ActionResult } from "@/lib/actions";
 import { requireStaff } from "@/lib/auth-guard";
+import { loadLiveLog } from "@/lib/live/db";
+import { computeLive } from "@/lib/live/state";
 import type { StartMatchInput } from "./prepare-form";
 import { StartMatchSchema } from "./prepare-schema";
 
@@ -39,5 +41,39 @@ export async function startMatch(input: StartMatchInput): Promise<ActionResult<{
   revalidatePublicPages();
   revalidatePath("/admin/partite");
   revalidatePath("/admin/live");
+  return { ok: true, id: matchId };
+}
+
+/**
+ * Chiude la partita: parziali ricalcolati dagli eventi salvati sul server (non da ciò che dice il
+ * telefono), MVP e stato "finita". Le pagine pubbliche si aggiornano subito.
+ */
+export async function finishMatch(matchId: number, mvpId: number | null): Promise<ActionResult<{ id: number }>> {
+  await requireStaff();
+  const match = await db.query.matches.findFirst({ where: eq(matches.id, matchId) });
+  if (!match) return { ok: false, error: "Partita non trovata, ricarica la pagina" };
+
+  const log = await loadLiveLog(matchId);
+  const live = computeLive(log.lineups, log.events);
+  if (!live?.matchOver) {
+    return { ok: false, error: "Sul server la partita non risulta finita: aspetta che le azioni siano salvate e riprova" };
+  }
+  if (mvpId !== null) {
+    const present = await db.query.matchPlayers.findFirst({
+      where: and(eq(matchPlayers.matchId, matchId), eq(matchPlayers.playerId, mvpId)),
+    });
+    if (!present) return { ok: false, error: "L'MVP deve essere tra i presenti" };
+  }
+
+  await runBatch([
+    db.delete(matchSets).where(eq(matchSets.matchId, matchId)),
+    db.insert(matchSets).values(live.finishedSets.map((s) => ({ matchId, n: s.n, us: s.us, them: s.them }))),
+    db.update(matches).set({ status: "finished", forfeit: false, mvpPlayerId: mvpId }).where(eq(matches.id, matchId)),
+  ]);
+
+  revalidatePublicPages();
+  revalidatePath("/admin/partite");
+  revalidatePath("/admin/live");
+  revalidatePath("/admin/giocatori");
   return { ok: true, id: matchId };
 }

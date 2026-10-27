@@ -17,6 +17,7 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
+import { EVENT_KINDS } from "../lib/live/types";
 import { PLAYER_GENDERS, PLAYER_ROLES } from "../lib/players";
 
 export const userRole = pgEnum("user_role", ["admin", "coach"]);
@@ -25,7 +26,7 @@ export const matchStatus = pgEnum("match_status", ["scheduled", "live", "finishe
 export const matchPhase = pgEnum("match_phase", ["andata", "ritorno"]);
 export const playerRole = pgEnum("player_role", PLAYER_ROLES);
 export const playerGender = pgEnum("player_gender", PLAYER_GENDERS);
-export const eventKind = pgEnum("event_kind", ["action", "sub", "rotation", "set_end"]);
+export const eventKind = pgEnum("event_kind", EVENT_KINDS);
 export const eventSkill = pgEnum("event_skill", [
   "serve",
   "reception",
