@@ -41,7 +41,7 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] Giocatori: lista + form (numero, nome, cognome, ruolo, attivo), scheda base con presenze/stelline/MVP; numero unico tra gli attivi; eliminazione solo senza dati di partita (altrimenti si disattiva)
 
 ## 4 · Live 🌿 `feat/live`
-- [ ] Prepara Live: wizard Presenti → Formazione → Inizio (+ scorciatoie)
+- [x] Prepara Live: wizard Presenti (con ruolo di partita) → Formazione (avviso donne) → Inizio (+ scorciatoie); salva presenze, formazione set 1 e chi batte, partita "in corso"
 - [ ] Live online: tabellone, Semplice / Avanzato, campo, rotazione automatica + manuale
 - [ ] Cambi (n/6), fine set (25/15 con +2), fine partita + MVP
 - [ ] Feed ultime azioni + undo illimitato nel set, eventi `incomplete`
@@ -80,13 +80,10 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 ## ✅ Decisioni sul gioco (27/10/2026)
 - **Ruoli variabili:** ruolo principale in anagrafica; **ruolo per partita** scelto in Prepara Live (proposto quello dell'anagrafica); nei **cambi** si indica in che ruolo entra (proposto quello di chi esce). Variabili: Capelli, Claudio (anche adattatore), Clementi, Placucci, Kevi, Botticelli, Fish.
 - **Misto:** almeno **2 donne** in campo → solo **avviso a schermo**, mai blocco. Serve il sesso in anagrafica (facoltativo, impostato a mano).
-- **Libero:** regole ufficiali, non batte (dettaglio da chiarire, vedi sotto). Due liberi in rosa (Federici, Casadei); le entrate/uscite del libero non contano come cambi.
+- **Libero:** non può essere il primo a battere nel suo turno: quando la rotazione lo porta in battuta rientra il centrale e batte; **dalla battuta successiva** il libero può prendere il suo posto anche in battuta. Due liberi in rosa (Federici, Casadei); le entrate/uscite del libero non contano come cambi.
 - **Nel Live (step 4):** timeout (2 per set), correzione manuale del punteggio, **indietro/avanti** sui tocchi (avanti solo finché non si fa una nuova azione), stato sempre ricalcolato dal registro eventi così non si rompe a metà.
 - **Partite:** stati **rinviata** e **a tavolino** (vinta/persa 3–0).
 - Già previsti dal regolamento e da gestire come avvisi: max 6 cambi per set, rientro del titolare solo al posto di chi l'ha sostituito, alternanza di chi batte a inizio set (5° set a sorteggio).
-
-## ❓ Da chiarire
-- **Libero e battuta:** "non può battere, ma dopo che il centrale rientrato ha fatto almeno una battuta può andare a battere e fare la seconda" → da capire con un esempio (vedi chat).
 
 ## Note e decisioni aperte
 - **Campionato reale:** Libertas Cup Mix 2027, girone Challenge (Rimini). Fonte: [calendario ufficiale SportAdmin](https://sportadmin.net/s/libertas-volley-comitato-provinciale-rimini). I dati dei prototipi (Bologna, PalaCUS, squadre) erano inventati e sono stati sostituiti il 27/10/2026.

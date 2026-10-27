@@ -22,6 +22,13 @@
       "when": 1793133226134,
       "tag": "0002_stati_partita_sesso_ruolo_partita",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793134271105,
+      "tag": "0003_battuta_iniziale_set",
+      "breakpoints": true
     }
   ]
 }

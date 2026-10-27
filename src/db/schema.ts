@@ -182,6 +182,8 @@ export const lineups = pgTable(
       .notNull()
       .references(() => players.id),
     liberoId: integer().references(() => players.id),
+    /** Chi batte per primo in questo set. */
+    serveFirst: pointSide().notNull(),
   },
   (t) => [uniqueIndex("lineups_match_set").on(t.matchId, t.setN)],
 );
