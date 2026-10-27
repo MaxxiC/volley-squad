@@ -34,10 +34,10 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] Verifica end-to-end su Neon reale (migrate, seed, build, login vero, Esci)
 
 ## 3 · Admin Partite + Giocatori
-- [ ] Partite: lista, form espandibile, parziali, crea/modifica/elimina con conferma
-- [ ] Scorciatoie: orari frequenti, autocompletamento palestra, "Usa PalaCUS", "Duplica come ritorno"
-- [ ] Gestione classifica (tabella editabile)
-- [ ] `revalidateTag` delle pagine pubbliche dopo ogni modifica
+- [x] Partite: lista, form espandibile, parziali validati, crea/modifica/elimina con conferma
+- [x] Scorciatoie: orari frequenti (i 3 più usati), autocompletamento palestra e avversario, "Usa PalaCUS", "Duplica come ritorno"
+- [x] Gestione classifica (`/admin/partite/classifica`, G = V + P calcolato)
+- [x] `revalidatePath` di Home e Calendario dopo ogni modifica
 - [ ] Giocatori: lista + form (numero, nome, cognome, ruolo, attivo), scheda base
 
 ## 4 · Live 🌿 `feat/live`

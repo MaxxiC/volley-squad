@@ -1,13 +1,14 @@
 "use server";
 
-import { eq, max, sql } from "drizzle-orm";
+import { eq, max } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
-import { matchSets, matches, teams } from "@/db/schema";
+import { matchSets, matches } from "@/db/schema";
 import { requireStaff } from "@/lib/auth-guard";
 import { getCurrentSeason } from "@/lib/data";
 import { fromRomeInput } from "@/lib/format";
+import { findOrCreateTeam } from "@/lib/teams";
 import { HOME_VENUE } from "@/lib/venues";
 import { MatchFormSchema, type MatchFormInput } from "./match-form";
 
@@ -17,15 +18,6 @@ function revalidateMatches() {
   revalidatePath("/");
   revalidatePath("/calendario");
   revalidatePath("/admin/partite");
-}
-
-/** Id dell'avversario per nome (senza distinguere maiuscole); lo crea se non esiste. */
-async function resolveOpponent(name: string): Promise<number | null> {
-  const find = () => db.query.teams.findFirst({ where: sql`lower(${teams.name}) = lower(${name})` });
-  const existing = await find();
-  if (existing) return existing.isUs ? null : existing.id;
-  await db.insert(teams).values({ name }).onConflictDoNothing();
-  return (await find())?.id ?? null;
 }
 
 async function nextRound(seasonId: number) {
@@ -39,8 +31,9 @@ export async function saveMatch(input: MatchFormInput): Promise<ActionResult> {
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Dati non validi" };
   const form = parsed.data;
 
-  const opponentId = await resolveOpponent(form.opponent);
-  if (opponentId === null) return { ok: false, error: "L'avversario non può essere CUSBros" };
+  const opponent = await findOrCreateTeam(form.opponent);
+  if (opponent.isUs) return { ok: false, error: "L'avversario non può essere CUSBros" };
+  const opponentId = opponent.id;
 
   const won = form.sets.filter((s) => s.us > s.them).length;
   const finished = won === 3 || form.sets.length - won === 3;
