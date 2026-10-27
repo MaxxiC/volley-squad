@@ -13,15 +13,15 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] `.env.example`, `.gitignore`, `.gitattributes` (LF)
 - [x] README di progetto, branch `main` / `dev`
 
-## 1 · Fondamenta UI + pagine pubbliche (dati finti)
-- [ ] Token di design in `@theme` (`globals.css`), radius, focus oro, `tabular-nums`
-- [ ] Font `next/font`: Barlow Condensed (500–800) + Barlow (400–600)
-- [ ] Logo in `public/`, favicon da logo
-- [ ] Layout pubblico: Nav + Footer (max-w 1200 Home / 1000 Calendario)
-- [ ] `src/lib/mock-data.ts` strutturato come il modello dati
-- [ ] Home: hero, prossima partita + **Countdown** (client), ultimo risultato, classifica top 5, CTA
-- [ ] Calendario: riepilogo, filtro segmentato, card partite, classifica completa `#classifica`
-- [ ] Date/ore formattate in `Europe/Rome`
+## 1 · Fondamenta UI + pagine pubbliche (dati finti) ✅
+- [x] Token di design in `@theme` (`globals.css`), radius, focus oro, `tabular-nums`
+- [x] Font `next/font`: Barlow Condensed (500–800) + Barlow (400–600)
+- [x] Logo in `public/`, favicon da logo
+- [x] Layout pubblico: Nav + Footer (max-w 1200 Home / 1000 Calendario)
+- [x] `src/lib/mock-data.ts` strutturato come il modello dati, letto da `src/lib/data.ts`
+- [x] Home: hero, prossima partita + **Countdown** (client), ultimo risultato, classifica top 5, CTA
+- [x] Calendario: riepilogo, filtro segmentato, card partite, classifica completa `#classifica`
+- [x] Date/ore formattate in `Europe/Rome`
 
 ## 2 · Database + autenticazione
 - [ ] Progetto Neon (free), `DATABASE_URL` in `.env.local`
@@ -67,3 +67,5 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - **Classifica:** probabilmente inserita a mano (le partite delle altre squadre non le registriamo). Da confermare prima dello step 2.
 - **npm audit:** 2 avvisi su `postcss` interno a Next 15 (solo build-time). La "fix" proposta è passare a Next 16: non applicata, si rivaluta quando esce una patch 15.x.
 - **Password dimenticata:** per ora solo messaggio "contatta l'admin".
+- **"Andata" nel Calendario:** testo fisso; il modello dati non ha la fase del campionato. Da decidere se aggiungerla.
+- **`/partite/[id]`:** le card giocate ci linkano già; finché la pagina non esiste (step 5) danno 404.
