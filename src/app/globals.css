@@ -1,8 +1,73 @@
 @import "tailwindcss";
 
-/* Token di design e font arrivano nello step 1 (vedi docs/ROADMAP.md). */
+/* Token di design (design_handoff_cusbros/README.md → Design Tokens).
+   Le palette di default di Tailwind sono azzerate: si usano solo questi colori. */
+@theme {
+  --color-*: initial;
+  --color-bg: #0b0b0c;
+  --color-surface: #121212;
+  --color-surface-2: #0f0f10;
+  --color-surface-sel: #1a1813;
+  --color-surface-hover: #161512;
+  --color-chip: #1c1b18;
+  --color-line: #2c2922;
+  --color-line-strong: #3a352b;
+  --color-line-soft: #1f1d19;
+  --color-ink: #f3efe6;
+  --color-ink-2: #cfc9bd;
+  --color-muted: #a39e93;
+  --color-faint: #6f6a60;
+  --color-gold: #d4ae62;
+  --color-gold-hover: #e6c682;
+  --color-gold-active: #b8924a;
+  --color-gold-line: #5a4b2c;
+  --color-blue: #7f9fe0;
+  --color-red: #e08a7c;
+  --color-red-line: #5a2f29;
 
-body {
-  background: #0b0b0c;
-  color: #f3efe6;
+  --radius-*: initial;
+  --radius-badge: 4px;
+  --radius-chip: 6px;
+  --radius-seg: 7px;
+  --radius-btn: 8px;
+  --radius-tile: 10px;
+  --radius-card: 12px;
+  --radius-panel: 14px;
+  --radius-pill: 999px;
+}
+
+/* Font caricati con next/font nel root layout. */
+@theme inline {
+  --font-sans: var(--font-barlow), sans-serif;
+  --font-display: var(--font-barlow-condensed), sans-serif;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-bg font-sans text-ink antialiased;
+    text-wrap: pretty;
+  }
+
+  a {
+    color: var(--color-gold);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--color-gold-hover);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 3px;
+  }
+}
+
+/* Margine laterale delle pagine pubbliche. */
+@utility px-gutter {
+  padding-inline: clamp(20px, 5vw, 48px);
 }
