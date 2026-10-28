@@ -21,11 +21,13 @@ type Props = {
   match: { id: number; title: string; opponent: string; finished: boolean };
   players: LivePlayer[];
   lineups: LiveLineup[];
+  /** Id di questo Live (formazione del 1° set): la copia del telefono di un Live precedente si scarta. */
+  startId: number | null;
   initialEvents: LiveEvent[];
 };
 
-export function LiveBoard({ match, players, lineups, initialEvents }: Props) {
-  const { events, add, update, undo, redo, canUndo, canRedo, sync } = useLiveEvents(match.id, initialEvents);
+export function LiveBoard({ match, players, lineups, startId, initialEvents }: Props) {
+  const { events, add, update, undo, redo, canUndo, canRedo, sync } = useLiveEvents(match.id, startId, initialEvents);
   const byId = useMemo(() => new Map(players.map((p) => [p.id, p])), [players]);
   // Con i ruoli il libero entra ed esce da solo sui centrali in seconda linea.
   const live = useMemo(() => computeLive(lineups, events.values(), (id) => byId.get(id)?.role), [lineups, events, byId]);

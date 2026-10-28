@@ -52,7 +52,8 @@ async function post(matchId: number, events: LiveEvent[]): Promise<PostResult> {
   return { kind: "error", message };
 }
 
-export function useLiveEvents(matchId: number, initial: LiveEvent[]) {
+/** start: id del Live (formazione del 1° set) per non riprendere la copia locale di un Live precedente. */
+export function useLiveEvents(matchId: number, start: number | null, initial: LiveEvent[]) {
   // Il ref è la fonte di verità (letture sempre aggiornate anche tra due tocchi rapidi);
   // lo state serve solo a ridisegnare.
   const eventsRef = useRef(new Map(initial.map((e) => [e.id, e])));
@@ -130,7 +131,7 @@ export function useLiveEvents(matchId: number, initial: LiveEvent[]) {
   // All'apertura: copia locale + registro del server; ciò che non era arrivato al server riparte.
   useEffect(() => {
     let cancelled = false;
-    void loadLocalLog(matchId).then((local) => {
+    void loadLocalLog(matchId, start).then((local) => {
       if (cancelled) return;
       setSync((s) => ({ ...s, restoring: false }));
       if (local.length === 0) return;
@@ -146,7 +147,7 @@ export function useLiveEvents(matchId: number, initial: LiveEvent[]) {
     return () => {
       cancelled = true;
     };
-  }, [matchId, scheduleFlush]);
+  }, [matchId, start, scheduleFlush]);
 
   // Appena torna la rete (o si torna sull'app) si riprova subito.
   useEffect(() => {
@@ -175,14 +176,14 @@ export function useLiveEvents(matchId: number, initial: LiveEvent[]) {
       next.set(version.id, version);
       eventsRef.current = next;
       setEvents(next);
-      void saveLocal(matchId, version);
+      void saveLocal(matchId, start, version);
       queue.current.set(version.id, version);
       // Una nuova versione di un evento scartato riprova a passare.
       rejected.current.delete(version.id);
       setSync((s) => ({ ...s, pending: queue.current.size, rejected: rejectedStatus(rejected.current) }));
       scheduleFlush();
     },
-    [matchId, scheduleFlush],
+    [matchId, start, scheduleFlush],
   );
 
   const setHistoryBoth = (h: History) => {

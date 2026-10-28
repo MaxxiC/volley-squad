@@ -12,6 +12,24 @@ export const COURT_ORDER = [3, 2, 1, 4, 5, 0] as const;
 /** "Riempi in ordine": ruoli proposti da P1 a P6 (README → Scorciatoie admin). */
 export const FILL_ROLE_ORDER: PlayerRole[] = ["P", "S", "C", "O", "S", "C"];
 
+/**
+ * Ruolo che ogni posto ha nello schema normale (P S C O S C a partire dall'alzatore), per chi in
+ * formazione sta al posto di un altro ruolo (es. un centrale al posto della banda): id → ruolo del posto.
+ * Vuoto se la formazione non è completa o non c'è un solo alzatore.
+ */
+export function roleMismatches(slots: Slots, roleOf: (id: number) => PlayerRole | undefined) {
+  const result = new Map<number, PlayerRole>();
+  if (slots.some((x) => x === null)) return result;
+  const setters = slots.flatMap((id, i) => (roleOf(id as number) === "P" ? [i] : []));
+  if (setters.length !== 1) return result;
+  slots.forEach((id, i) => {
+    const expected = FILL_ROLE_ORDER[(i - setters[0] + 6) % 6];
+    const role = roleOf(id as number);
+    if (role && role !== "L" && role !== expected) result.set(id as number, expected);
+  });
+  return result;
+}
+
 /** Minimo di donne in campo nel campionato misto (solo avviso). */
 export const MIN_WOMEN = 2;
 
