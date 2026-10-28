@@ -20,7 +20,7 @@ import {
 } from "./db-snapshot";
 
 export default async function globalSetup(config: FullConfig) {
-  const baseURL = config.projects[0]?.use.baseURL ?? "http://localhost:3000";
+  const baseURL = config.projects[0]?.use.baseURL ?? "http://localhost:3001";
   const left = pendingSnapshots();
   if (left.length) {
     throw new Error(`C'è una copia del DB di un test interrotto (${left[0]}): controlla con "npm run test:restore" prima di rilanciare`);

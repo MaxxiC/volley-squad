@@ -13,7 +13,7 @@ export default defineConfig({
   expect: { timeout: 20_000 },
   reporter: [["list"]],
   use: {
-    baseURL: process.env.E2E_BASE_URL ?? "http://localhost:3000",
+    baseURL: process.env.E2E_BASE_URL ?? "http://localhost:3001",
     ...devices["Pixel 7"],
     // Stessa larghezza del telefono di riferimento del design.
     viewport: { width: 390, height: 844 },
