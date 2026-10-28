@@ -47,8 +47,9 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] Feed ultime azioni + Annulla/Ripeti, eventi `incomplete` ("da completare")
 - [x] API `POST /api/matches/[id]/events` batch idempotente (uuid client), coda di invio con nuovi tentativi
 - [x] Test nel repo: `npm test` (logica del Live, validazioni partite/eventi/Prepara Live, date, formazione) e `npm run test:e2e` (Playwright: Prepara Live → Live → 3 set → MVP su partita temporanea, copia e ripristino verificato del DB), `npm run test:restore` per i test interrotti
-- [ ] Offline: IndexedDB come coda, UI ottimistica, sync su `online` + retry, indicatore stato
-- [ ] Service worker (`@serwist/next`): precache shell `/admin/live/*`, font, logo
+- [x] Offline: copia locale del registro su IndexedDB (`src/lib/live/local-log.ts`, ogni azione salvata subito, `pending` finché il server non conferma), unione con il registro del server all'apertura (`merge.ts`), invio su `online` / ritorno sull'app + nuovi tentativi, indicatore "Offline · N azioni in coda" / "Sincronizzato"; "Concludi partita" chiede la rete
+- [x] Service worker scritto a mano (`public/sw.js`, solo in produzione) invece di `@serwist/next` (che richiede webpack, la build usa Turbopack): pagina `/admin/live/<id>` prima dalla rete (attesa max 4 s) poi dalla copia salvata, file statici di Next/font/logo dalla cache. Verificato con `tests/e2e/offline.spec.ts` sulla build di produzione
+- Limiti noti dell'offline: un solo telefono per partita (due telefoni offline sulla stessa partita creerebbero eventi in conflitto); la cache dei file statici cresce a ogni deploy (si azzera cambiando `VERSION` in `sw.js`); le pagine diverse dal Live non si aprono offline.
 - Limiti noti del Live (da valutare): scambio tra i due liberi durante un set (oggi il libero si sceglie per set), MVP obbligatorio per chiudere la partita, la pila Annulla/Ripeti si azzera ricaricando la pagina (gli eventi restano tutti).
 
 ## 5 · Storico, statistiche, riepilogo pubblico
@@ -97,4 +98,4 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - **Login:** nessun limite di tentativi per ora (uso interno, 3 utenti). Da rivalutare prima del deploy.
 - **Password dimenticata:** per ora solo messaggio "contatta l'admin".
 - **`/partite/[id]`:** le card giocate ci linkano già; finché la pagina non esiste (step 5) danno 404.
-- **Stato al 28/10/2026:** step 0–3 completati su `dev`; step 4 su `feat/live` (Prepara Live, Live online, cambi/libero/timeout/fine partita fatti; manca l'offline). Il dev server si avvia con `npm run dev`.
+- **Stato al 28/10/2026:** step 0–3 completati su `dev`; step 4 su `feat/live` (Prepara Live, Live online, cambi/libero/timeout/fine partita, test nel repo e offline fatti; manca la chiusura: verifica su telefono e merge su `dev`). Il dev server si avvia con `npm run dev`.

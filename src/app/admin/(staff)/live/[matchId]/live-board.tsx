@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { TEAM_NAME } from "@/lib/club";
 import { describeEvent } from "@/lib/live/describe";
+import { keepLivePageOffline } from "@/lib/live/offline-page";
 import type { SimpleType } from "@/lib/live/skills";
 import { computeLive, type LiveState } from "@/lib/live/state";
 import type { LiveEvent, LiveLineup, LivePlayer } from "@/lib/live/types";
@@ -30,6 +31,11 @@ export function LiveBoard({ match, players, lineups, initialEvents }: Props) {
 
   const [mode, setMode] = useState<LiveMode>("semplice");
   const [selected, setSelected] = useState<number | null>(null);
+
+  // Dopo il primo caricamento online la pagina si riapre anche senza rete.
+  useEffect(() => {
+    void keepLivePageOffline();
+  }, []);
 
   // Modalità scelta in Prepara Live (preferenza locale del telefono).
   useEffect(() => {
@@ -89,7 +95,7 @@ export function LiveBoard({ match, players, lineups, initialEvents }: Props) {
         )}
 
         {live.matchOver && !match.finished && (
-          <MatchEnd matchId={match.id} live={live} players={players} pendingSync={sync.pending} />
+          <MatchEnd matchId={match.id} live={live} players={players} pendingSync={sync.pending} offline={sync.offline} />
         )}
 
         {needLineup && (
@@ -235,11 +241,14 @@ function QuickBar({
   canRedo: boolean;
   sync: SyncStatus;
 }) {
-  const status = sync.error
-    ? { dot: "bg-red", text: `Non salvato · ${sync.pending} in coda, riprovo` }
-    : sync.pending > 0
-      ? { dot: "bg-muted", text: "Salvataggio…" }
-      : { dot: "bg-green", text: "Salvato" };
+  const queued = `${sync.pending} ${sync.pending === 1 ? "azione" : "azioni"} in coda`;
+  const status = sync.offline
+    ? { dot: "bg-red", text: sync.pending > 0 ? `Offline · ${queued}` : "Offline" }
+    : sync.error
+      ? { dot: "bg-red", text: `Non salvato (${sync.error}) · ${queued}, riprovo` }
+      : sync.pending > 0
+        ? { dot: "bg-muted", text: "Salvataggio…" }
+        : { dot: "bg-green", text: "Sincronizzato" };
   return (
     <div className="flex items-center gap-2">
       <button type="button" onClick={onUndo} disabled={!canUndo} className={SMALL_BTN}>

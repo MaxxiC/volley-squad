@@ -7,6 +7,7 @@ import { TEAM_NAME } from "@/lib/club";
 import type { Side } from "@/lib/live/skills";
 import type { LiveState } from "@/lib/live/state";
 import type { EventDetail, LivePlayer } from "@/lib/live/types";
+import { clearLocalLog } from "@/lib/live/local-log";
 import { shortName } from "@/lib/players";
 import { finishMatch } from "../actions";
 import { PANEL } from "./live-ui";
@@ -86,12 +87,15 @@ export function MatchEnd({
   live,
   players,
   pendingSync,
+  offline,
 }: {
   matchId: number;
   live: LiveState;
   players: LivePlayer[];
   /** Azioni non ancora salvate: si chiude solo quando il server ha tutto. */
   pendingSync: number;
+  /** Senza rete non si può chiudere (i parziali si ricalcolano sul server). */
+  offline: boolean;
 }) {
   const router = useRouter();
   const [mvp, setMvp] = useState<number | null>(null);
@@ -102,9 +106,11 @@ export function MatchEnd({
   const close = () =>
     startTransition(async () => {
       setError(null);
-      const res = await finishMatch(matchId, mvp);
-      if (res.ok) router.push("/admin/partite");
-      else setError(res.error);
+      // Se la rete cade proprio adesso la server action fallisce: si riprova a mano.
+      const res = await finishMatch(matchId, mvp).catch(() => ({ ok: false as const, error: "Rete non disponibile: riprova tra poco" }));
+      if (!res.ok) return setError(res.error);
+      void clearLocalLog(matchId);
+      router.push("/admin/partite");
     });
 
   return (
@@ -135,8 +141,8 @@ export function MatchEnd({
           {error}
         </p>
       )}
-      <button type="button" disabled={pending || pendingSync > 0 || mvp === null} onClick={close} className={PRIMARY}>
-        {pendingSync > 0 ? "Salvataggio azioni…" : pending ? "Chiusura…" : mvp === null ? "Scegli l'MVP" : "Concludi partita"}
+      <button type="button" disabled={pending || offline || pendingSync > 0 || mvp === null} onClick={close} className={PRIMARY}>
+        {offline ? "Serve la rete per concludere" : pendingSync > 0 ? "Salvataggio azioni…" : pending ? "Chiusura…" : mvp === null ? "Scegli l'MVP" : "Concludi partita"}
       </button>
       <span className="text-[13px] text-faint">
         Dopo la chiusura il risultato compare su Home e Calendario. Gli errori si correggono dallo Storico live.

@@ -49,6 +49,8 @@ Modificare lo schema: cambia `src/db/schema.ts` → `npm run db:generate` → co
 - **E2E** (`tests/e2e/`, Playwright, Chromium a 390×844): serve il dev server già avviato (`npm run dev`); se gira su un'altra porta `E2E_BASE_URL=http://localhost:3001 npm run test:e2e`. La prima volta: `npx playwright install chromium`.
   - Prima del test si copiano le tabelle (anche su file in `tests/.snapshots/`, ignorato da git), si crea un utente temporaneo e una **partita temporanea** (le partite vere non si toccano).
   - Alla fine, anche se il test fallisce, il DB torna identico alla copia, si verifica rileggendo tutto e il file si elimina. Se il ripristino non è identico il comando fallisce e il file resta.
+  - `offline.spec.ts` in sviluppo verifica coda, chiusura dell'app e sincronizzazione; il **service worker** (riapertura del Live senza rete) è attivo solo in produzione: `npm run build`, poi `AUTH_TRUST_HOST=true npx next start -p 3005` e `E2E_BASE_URL=http://localhost:3005 npm run test:e2e`. In locale `next start` vuole `AUTH_TRUST_HOST=true` (su Vercel non serve).
+  - Mai contro il sito pubblicato: le pagine pubbliche in cache potrebbero mostrare per qualche minuto la partita temporanea.
   - Se il test si interrompe a metà, il successivo non parte finché c'è un file di copia: `npm run test:restore` mostra le differenze, `npm run test:restore -- --apply` ripristina. Attenzione: riporta le tabelle a com'erano prima del test, annullando anche modifiche fatte dopo.
 
 ## Git

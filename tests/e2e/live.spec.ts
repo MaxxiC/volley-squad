@@ -7,30 +7,21 @@ import { TEAM_NAME } from "@/lib/club";
 import { playerLabel } from "@/lib/live/describe";
 import { shortTeamName } from "@/lib/matches";
 import { fullName, shortName } from "@/lib/players";
-import { E2E_EMAIL, openDb } from "./db-snapshot";
+import { openDb } from "./db-snapshot";
+import { esc, login, saved, score } from "./helpers";
 
 const matchId = Number(process.env.E2E_MATCH_ID);
 const opponentFull = process.env.E2E_OPPONENT ?? "";
 const opponent = shortTeamName(opponentFull);
 
-const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 type P = { id: number; number: number; firstName: string; lastName: string; role: "P" | "S" | "O" | "C" | "L"; gender: "F" | "M" | null };
 /** Bottone "numero + nome" (presenti, panchina, scelta del giocatore, MVP). */
 const numbered = (p: P, name = shortName(p)) => new RegExp(`^${p.number}\\s*${esc(name)}`);
-
-async function score(page: Page) {
-  const board = page.getByRole("region", { name: "Punteggio" });
-  const cols = board.locator(":scope > div");
-  const num = async (i: number) => Number(await cols.nth(i).locator(":scope > span").last().innerText());
-  return { us: await num(0), them: await num(2), sets: (await cols.nth(1).locator(":scope > span").last().innerText()).trim() };
-}
 
 const feedTop = (page: Page) =>
   page.getByText("Ultime azioni", { exact: true }).locator("..").locator(":scope > div.grid").first();
 
 const pos = (page: Page, n: number) => page.locator(`[aria-label^='P${n}:']`);
-
-const saved = (page: Page) => expect(page.getByRole("status").filter({ hasText: "Salvato" })).toBeVisible({ timeout: 30_000 });
 
 test("Live completo sul DB reale (con ripristino)", async ({ page }) => {
   expect(matchId, "partita temporanea creata da global-setup").toBeGreaterThan(0);
@@ -41,10 +32,7 @@ test("Live completo sul DB reale (con ripristino)", async ({ page }) => {
   page.on("pageerror", (e) => errors.push(e.message));
 
   await test.step("login e Prepara Live", async () => {
-    await page.goto(`/admin/login?callbackUrl=${encodeURIComponent(`/admin/live?partita=${matchId}`)}`);
-    await page.fill("input[name=email]", E2E_EMAIL);
-    await page.fill("input[name=password]", process.env.E2E_PASSWORD ?? "");
-    await page.click("button[type=submit]");
+    await login(page, `/admin/live?partita=${matchId}`);
     await expect(page.getByRole("heading", { name: "Chi è presente?" })).toBeVisible({ timeout: 60_000 });
     await expect(page.locator("h1")).toContainText(opponentFull);
 

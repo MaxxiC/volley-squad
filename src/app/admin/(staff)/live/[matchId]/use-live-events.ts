@@ -1,17 +1,23 @@
 "use client";
 
 // Registro eventi del Live sul client: aggiunta/modifica, Annulla/Ripeti e coda di invio al server.
-// Ogni cambiamento produce la versione completa di un evento, che va in coda e viene salvata per id
+// Ogni cambiamento produce la versione completa di un evento, che si salva subito sul telefono
+// (IndexedDB, sopravvive alla chiusura dell'app) e va in coda per il server, dove si salva per id
 // (upsert idempotente): reinviare non crea doppioni.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { EMPTY_HISTORY, record, redo as redoOp, undo as undoOp, type History } from "@/lib/live/history";
+import { loadLocalLog, markSynced, saveLocal } from "@/lib/live/local-log";
+import { mergeLogs } from "@/lib/live/merge";
 import type { LiveEvent } from "@/lib/live/types";
 import { uuid } from "@/lib/uuid";
 
-export type SyncStatus = { pending: number; error: string | null };
+/** offline = rete assente (le azioni restano in coda); error = il server ha risposto con un errore. */
+export type SyncStatus = { pending: number; offline: boolean; error: string | null };
 
 const RETRY_MS = 4000;
 const FLUSH_DELAY_MS = 250;
+
+class ServerError extends Error {}
 
 export function useLiveEvents(matchId: number, initial: LiveEvent[]) {
   // Il ref è la fonte di verità (letture sempre aggiornate anche tra due tocchi rapidi);
@@ -24,7 +30,7 @@ export function useLiveEvents(matchId: number, initial: LiveEvent[]) {
   const queue = useRef(new Map<string, LiveEvent>());
   const inFlight = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [sync, setSync] = useState<SyncStatus>({ pending: 0, error: null });
+  const [sync, setSync] = useState<SyncStatus>({ pending: 0, offline: false, error: null });
 
   const flush = useCallback(async () => {
     if (inFlight.current || queue.current.size === 0) return;
@@ -35,16 +41,19 @@ export function useLiveEvents(matchId: number, initial: LiveEvent[]) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ events: batch }),
-      });
+      }).catch(() => null);
+      if (!res) throw new Error("offline");
       if (!res.ok) {
         const body = (await res.json().catch(() => null)) as { error?: string } | null;
-        throw new Error(body?.error ?? `Errore ${res.status}`);
+        throw new ServerError(body?.error ?? `Errore ${res.status}`);
       }
       // Tolgo dalla coda solo le versioni inviate: se nel frattempo un evento è cambiato, resta in coda.
       for (const e of batch) if (queue.current.get(e.id) === e) queue.current.delete(e.id);
-      setSync({ pending: queue.current.size, error: null });
+      void markSynced(batch);
+      setSync({ pending: queue.current.size, offline: false, error: null });
     } catch (err) {
-      setSync({ pending: queue.current.size, error: err instanceof Error ? err.message : "Rete non disponibile" });
+      const offline = !(err instanceof ServerError);
+      setSync({ pending: queue.current.size, offline, error: offline ? null : (err as Error).message });
       timer.current = setTimeout(() => {
         timer.current = null;
         void flush();
@@ -63,12 +72,42 @@ export function useLiveEvents(matchId: number, initial: LiveEvent[]) {
     }, FLUSH_DELAY_MS);
   }, [flush]);
 
-  // Appena torna la rete si riprova subito.
+  // All'apertura: copia locale + registro del server; ciò che non era arrivato al server riparte.
   useEffect(() => {
-    const onOnline = () => void flush();
-    window.addEventListener("online", onOnline);
+    let cancelled = false;
+    void loadLocalLog(matchId).then((local) => {
+      if (cancelled || local.length === 0) return;
+      const { events: merged, toSend } = mergeLogs([...eventsRef.current.values()], local);
+      // Azioni fatte nel frattempo (già in coda) hanno la precedenza.
+      for (const e of queue.current.values()) merged.set(e.id, e);
+      eventsRef.current = merged;
+      setEvents(merged);
+      for (const e of toSend) if (!queue.current.has(e.id)) queue.current.set(e.id, e);
+      setSync((s) => ({ ...s, pending: queue.current.size }));
+      if (queue.current.size > 0) scheduleFlush();
+    });
     return () => {
-      window.removeEventListener("online", onOnline);
+      cancelled = true;
+    };
+  }, [matchId, scheduleFlush]);
+
+  // Appena torna la rete (o si torna sull'app) si riprova subito.
+  useEffect(() => {
+    const retry = () => {
+      if (document.visibilityState !== "visible") return;
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = null;
+      void flush();
+    };
+    const onOffline = () => setSync((s) => ({ ...s, offline: true }));
+    if (!navigator.onLine) onOffline();
+    window.addEventListener("online", retry);
+    window.addEventListener("offline", onOffline);
+    document.addEventListener("visibilitychange", retry);
+    return () => {
+      window.removeEventListener("online", retry);
+      window.removeEventListener("offline", onOffline);
+      document.removeEventListener("visibilitychange", retry);
       if (timer.current) clearTimeout(timer.current);
     };
   }, [flush]);
@@ -79,11 +118,12 @@ export function useLiveEvents(matchId: number, initial: LiveEvent[]) {
       next.set(version.id, version);
       eventsRef.current = next;
       setEvents(next);
+      void saveLocal(matchId, version);
       queue.current.set(version.id, version);
       setSync((s) => ({ ...s, pending: queue.current.size }));
       scheduleFlush();
     },
-    [scheduleFlush],
+    [matchId, scheduleFlush],
   );
 
   const setHistoryBoth = (h: History) => {
