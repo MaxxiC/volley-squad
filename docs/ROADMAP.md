@@ -71,6 +71,14 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [ ] **iPhone:** Safari cancella cache e dati di un sito non aperto da 7 giorni se non è installato sulla Home → installazione PWA consigliata per chi registra il Live; in ogni caso aprire il Live con la rete prima della partita
 - [ ] Merge finale `dev` → `main`
 
+## 🔒 Sicurezza (sito online)
+- [x] Controllo del 28/10/2026: middleware su `/admin/**` + controllo in pagine, server action e API; login con bcrypt, messaggio e tempi uguali per email sconosciuta o password sbagliata, redirect solo interni; segreti solo in `.env`; area staff `noindex`.
+- [x] Utente eliminato → accesso finito subito (prima restava valido il JWT fino a 30 giorni): `currentStaff()` ricontrolla l'utente nel DB, `/admin/sessione-scaduta` chiude la sessione senza giri di redirect.
+- [x] Intestazioni di sicurezza su tutte le pagine (`X-Frame-Options`, CSP `frame-ancestors 'none'`/`form-action 'self'`/`object-src 'none'`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`), niente `X-Powered-By`.
+- [x] Test: `tests/e2e/security.spec.ts` (accesso, API, intestazioni, noindex, login, redirect, utente eliminato) e `tests/unit/security.test.ts` (redirect del login).
+- [ ] **Limite ai tentativi di accesso** (es. 5 errori in 15 minuti per email/IP → attesa): serve una tabella nel DB, su Vercel la memoria del server non resta tra le richieste. Da decidere (Max).
+- [ ] CSP completa anche per script e stili: richiede i nonce di Next, da valutare solo se serve.
+
 ## 💡 Idee future
 - [ ] **Import dal calendario ufficiale** (SportAdmin): bottone in admin che rilegge calendario, risultati e classifica del girone e propone gli aggiornamenti.
 - [ ] **Giornate di riposo** nel Calendario pubblico ("Riposa CUSBros", 7ª andata e ritorno), come sul sito ufficiale.
@@ -102,6 +110,6 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - **Classifica:** oggi inserita a mano da Admin Partite → Classifica (le partite delle altre squadre non le registriamo). Decisione definitiva in "Da fare".
 - **npm audit:** 2 avvisi su `postcss` interno a Next 15 (solo build-time). La "fix" proposta è passare a Next 16: non applicata, si rivaluta quando esce una patch 15.x. Altri avvisi `esbuild` arrivano da `drizzle-kit` (solo CLI in locale, non va in produzione).
 - **Auth.js v5** è ancora in beta: versione bloccata a `5.0.0-beta.32`, aggiornare solo di proposito.
-- **Login:** nessun limite di tentativi per ora (uso interno, 3 utenti). Da rivalutare prima del deploy.
+- **Login:** nessun limite di tentativi per ora (uso interno, 3 utenti): il sito è online, vedi la sezione Sicurezza.
 - **Password dimenticata:** per ora solo messaggio "contatta l'admin".
 - **Stato al 28/10/2026:** step 0–4 completati (step 4 su `feat/live`, merge a cura di Max); step 5.1 Storico live fatto su `feat/storico`; step 5 completato su `feat/storico` (Storico, statistiche, andamento, riepilogo pubblico), E2E verdi il 28/10/2026; merge su `dev`/`main` a cura di Max. Il dev server si avvia con `npm run dev` (porta 3001).

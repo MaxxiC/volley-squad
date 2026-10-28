@@ -24,17 +24,20 @@ Next.js 15 App Router + TypeScript · Tailwind v4 (token in `@theme` dentro `src
 
 ## Architettura (dove stanno le cose)
 - `src/lib/`: logica condivisa, senza dipendenze dal server dove possibile.
-  - `club.ts` costanti (TEAM_NAME, palestra di casa, link ufficiale) · `matches.ts` punteggi/titoli/fasi · `players.ts` ruoli e nomi · `lineup.ts` formazione · `format.ts` date · `data.ts` letture per le pagine pubbliche · `actions.ts` `ActionResult`, `invalid()`, `revalidatePublicPages()` · `auth-guard.ts` `requireStaff()`.
+  - `club.ts` costanti (TEAM_NAME, palestra di casa, link ufficiale) · `matches.ts` punteggi/titoli/fasi · `players.ts` ruoli e nomi · `lineup.ts` formazione (anche `roleMismatches`) · `format.ts` date · `data.ts` letture per le pagine pubbliche · `actions.ts` `ActionResult`, `invalid()`, `revalidatePublicPages()` (home, calendario, `/partite/[id]`) · `auth-guard.ts` `currentStaff()` / `requireStaff()` (sessione **e** utente ancora esistente).
+  - `stats.ts` statistiche giocatori (conteggi, efficienza con le formule del README, card per ruolo, ruolo di partita, finestre migliore/peggiore, `formatPct`) · `match-report.ts` riepilogo pubblico (come abbiamo fatto punto, i migliori, confronto, riga MVP).
   - `live/`: **il Live è event-sourced**. `state.ts` (`computeLive`) ricostruisce punteggio, battuta, rotazione, cambi, libero, timeout e set **solo dal registro eventi** (nessun punteggio salvato a parte). `history.ts` Annulla/Ripeti, `skills.ts` fondamentali ed esiti, `describe.ts` testi del feed, `types.ts` tipi ed `EVENT_KINDS`, `db.ts` lettura del registro, `event-schema.ts` validazione.
-    - **Offline:** `local-log.ts` copia del registro su IndexedDB (salvata a ogni azione, `pending` fino alla conferma del server), `merge.ts` unione server + locale all'apertura, `offline-page.ts` registra `public/sw.js` (solo in produzione; in dev non c'è service worker). Il service worker tocca solo `/admin/live/<id>` e i file statici: se si cambia cosa mette in cache, aumentare `VERSION` in `sw.js`.
+    - `storico.ts` correzioni dello Storico (modifica di un'azione con il punto ricavato dall'esito, righe di un set col punteggio, posizione di un'azione aggiunta, `finishedIssue`: partita ancora finita e set chiusi validi). Il libero entra ed esce da solo sui centrali quando `computeLive` riceve i ruoli (`baseRole`).
+    - **Offline:** `local-log.ts` copia del registro su IndexedDB (salvata a ogni azione, `pending` fino alla conferma del server, legata al Live in corso con l'id della formazione del 1° set: quella di un Live precedente si scarta), `merge.ts` unione server + locale all'apertura, `offline-page.ts` registra `public/sw.js` (solo in produzione; in dev non c'è service worker). Il service worker tocca solo `/admin/live/<id>` e i file statici: se si cambia cosa mette in cache, aumentare `VERSION` in `sw.js`.
 - `src/db/`: `schema.ts` (Drizzle), `index.ts` (`db`, `runBatch` = transazione), `seed.ts` (dati reali), `errors.ts`.
-- `src/app/(public)/`: Home e Calendario (Server Components con `revalidate`).
-- `src/app/admin/(staff)/`: Partite (+ Classifica), Giocatori, Live (`/admin/live` Prepara Live, `/admin/live/[matchId]` il Live), Storico (da fare).
-- `src/app/api/matches/[id]/events`: upsert idempotente degli eventi del Live (base dell'offline).
+- `src/app/(public)/`: Home, Calendario e riepilogo `/partite/[id]` (solo partite concluse; Server Components con `revalidate`).
+- `src/app/admin/(staff)/`: Partite (+ Classifica), Giocatori (scheda con efficienza e grafico Andamento), Live (`/admin/live` Prepara Live con "Azzera il Live", `/admin/live/[matchId]` il Live), Storico (`/admin/storico`, solo partite concluse: ogni modifica ricalcola sul server tutta la partita e i parziali). `/admin/sessione-scaduta` chiude la sessione di un utente non più esistente.
+- `src/app/api/matches/[id]/events`: upsert idempotente degli eventi del Live (base dell'offline); rifiuta (422) le partite concluse.
 - `src/components/`: `ui/` (comuni), `public/`, `admin/` (stili condivisi, `PageHeader`, `SegmentedField`, `lineup-picker`).
 
 ## Convenzioni di codice
-- Ogni server action: `requireStaff()` → validazione zod → scrittura → `revalidate…` → `ActionResult`.
+- Ogni server action: `requireStaff()` → validazione zod → scrittura → `revalidate…` → `ActionResult`. Pagine e route staff: `currentStaff()`.
+- Sicurezza: intestazioni in `next.config.ts` (niente cornici, nosniff, referrer, permissions); non aggiungere redirect presi dall'utente senza controllo (vedi `admin/login/safe-redirect.ts`).
 - **zod solo sul server**: per ogni form c'è `*-form.ts` (tipi e costanti, importabile dal client) e `*-schema.ts` (zod, importato solo dalle action). Non importare file con zod nei componenti client (finisce nel bundle del telefono).
 - Più scritture insieme → `runBatch([...])`.
 - Non duplicare: prima cercare in `src/lib` e `src/components/admin` (es. `matchScore`, `matchTitle`, `shortTeamName`, `fullName`, `SegmentedField`, `PageHeader`).
@@ -44,7 +47,7 @@ Next.js 15 App Router + TypeScript · Tailwind v4 (token in `@theme` dentro `src
 ## Verifiche prima di ogni commit
 `npx tsc --noEmit` · `npm run lint` · `npm test` · prova nel browser (dev server su http://localhost:3001, porta fissa nello script) e, se si tocca il Live, `npm run test:e2e`; a fine step `npm run build` (fermare prima il dev server: usano la stessa cartella `.next`).
 
-**Test:** logica in `tests/unit/` (`node:test` via `tsx`, niente DB); E2E in `tests/e2e/` (Playwright). Nuove regole del Live o delle validazioni → nuovo caso in `tests/unit/`.
+**Test:** logica in `tests/unit/` (`node:test` via `tsx`, niente DB); E2E in `tests/e2e/` (Playwright: `live` percorso completo fino a Storico e riepilogo pubblico, `offline`, `sync`, `security`). Nuove regole del Live, dello Storico, delle statistiche o delle validazioni → nuovo caso in `tests/unit/`. Prove al volo: script temporanei in `tests/e2e/_*.ts` (per gli import `@/`), da eliminare subito, con copia e verifica del DB; per le prove si può usare anche una partita reale futura (non la prossima) purché torni identica.
 
 **Test sul DB reale (Neon):** sempre con **copia delle tabelle prima e ripristino identico dopo**, verificato (in passato un test ha cancellato un giocatore e cambiato date: recuperati). Negli E2E lo fa già `tests/e2e/global-setup.ts` (copia anche su file, partita e utente temporanei, ripristino in transazione, verifica); usare quello anche per nuovi E2E. Script a parte: stessa regola, con utente temporaneo via `npm run user:create` + `NEW_USER_PASSWORD`, eliminato alla fine.
 - **Mai E2E mentre qualcuno usa l'app sul DB reale** (es. Max che prova dal telefono): il ripristino riporta il DB a com'era all'avvio del test e cancellerebbe le sue azioni. Chiedere prima.
