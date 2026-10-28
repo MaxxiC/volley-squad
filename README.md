@@ -37,8 +37,19 @@ Area staff: http://localhost:3000/admin (non linkata dal sito pubblico).
 | `npm run db:studio` | interfaccia web per vedere/modificare i dati |
 | `npm run db:seed` | carica stagione, calendario, classifica e rosa iniziali (non tocca un DB già popolato) |
 | `npm run user:create -- <email> "<nome>" <admin\|coach>` | crea un utente staff o ne aggiorna nome/ruolo/password |
+| `npm test` | test della logica (Live, validazioni, date, formazione): pochi secondi, non usa il DB |
+| `npm run test:e2e` | E2E Playwright del Live sul **DB reale**, con copia e ripristino verificato (vedi sotto) |
+| `npm run test:restore` | dopo un E2E interrotto: mostra le differenze dalla copia; con `-- --apply` ripristina |
 
 Modificare lo schema: cambia `src/db/schema.ts` → `npm run db:generate` → controlla l'SQL in `drizzle/` → `npm run db:migrate`.
+
+## Test
+
+- **Logica** (`tests/unit/`, runner integrato di Node via `tsx`): `npm test`.
+- **E2E** (`tests/e2e/`, Playwright, Chromium a 390×844): serve il dev server già avviato (`npm run dev`); se gira su un'altra porta `E2E_BASE_URL=http://localhost:3001 npm run test:e2e`. La prima volta: `npx playwright install chromium`.
+  - Prima del test si copiano le tabelle (anche su file in `tests/.snapshots/`, ignorato da git), si crea un utente temporaneo e una **partita temporanea** (le partite vere non si toccano).
+  - Alla fine, anche se il test fallisce, il DB torna identico alla copia, si verifica rileggendo tutto e il file si elimina. Se il ripristino non è identico il comando fallisce e il file resta.
+  - Se il test si interrompe a metà, il successivo non parte finché c'è un file di copia: `npm run test:restore` mostra le differenze, `npm run test:restore -- --apply` ripristina. Attenzione: riporta le tabelle a com'erano prima del test, annullando anche modifiche fatte dopo.
 
 ## Git
 

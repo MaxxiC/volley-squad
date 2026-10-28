@@ -11,7 +11,10 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx scripts/seed.ts",
-    "user:create": "tsx scripts/create-user.ts"
+    "user:create": "tsx scripts/create-user.ts",
+    "test": "tsx --test --test-reporter=spec \"tests/unit/**/*.test.ts\"",
+    "test:e2e": "playwright test",
+    "test:restore": "tsx tests/e2e/restore.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
@@ -25,6 +28,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

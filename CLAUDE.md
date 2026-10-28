@@ -41,9 +41,12 @@ Next.js 15 App Router + TypeScript · Tailwind v4 (token in `@theme` dentro `src
 - Schema: modificare `src/db/schema.ts` → `npm run db:generate` → controllare l'SQL → `npm run db:migrate`.
 
 ## Verifiche prima di ogni commit
-`npx tsc --noEmit` · `npm run lint` · prova nel browser (dev server su http://localhost:3000) e, a fine step, `npm run build` (fermare prima il dev server: usano la stessa cartella `.next`).
+`npx tsc --noEmit` · `npm run lint` · `npm test` · prova nel browser (dev server su http://localhost:3000) e, se si tocca il Live, `npm run test:e2e`; a fine step `npm run build` (fermare prima il dev server: usano la stessa cartella `.next`).
 
-**Test sul DB reale (Neon):** sempre con **copia delle tabelle toccate prima e ripristino identico dopo**, verificato (in passato un test ha cancellato un giocatore e cambiato date: recuperati). Per entrare nell'area staff nei test: utente temporaneo con `npm run user:create` + variabile `NEW_USER_PASSWORD`, eliminato alla fine.
+**Test:** logica in `tests/unit/` (`node:test` via `tsx`, niente DB); E2E in `tests/e2e/` (Playwright). Nuove regole del Live o delle validazioni → nuovo caso in `tests/unit/`.
+
+**Test sul DB reale (Neon):** sempre con **copia delle tabelle prima e ripristino identico dopo**, verificato (in passato un test ha cancellato un giocatore e cambiato date: recuperati). Negli E2E lo fa già `tests/e2e/global-setup.ts` (copia anche su file, partita e utente temporanei, ripristino in transazione, verifica); usare quello anche per nuovi E2E. Script a parte: stessa regola, con utente temporaneo via `npm run user:create` + `NEW_USER_PASSWORD`, eliminato alla fine.
+- Sulla porta 3000 può girare un'altra app di Max: se `npm run dev` parte sulla 3001, `E2E_BASE_URL=http://localhost:3001` (il setup si rifiuta di partire se il server non è CUSBros).
 
 ## Insidie note (Windows)
 - I file devono restare con fine riga **LF** (`.gitattributes`). Se si modificano file con script Python usare `open(..., newline="")`; il `grep` di Git Bash non vede i CR, controllare i byte.

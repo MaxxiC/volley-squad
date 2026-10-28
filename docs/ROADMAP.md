@@ -46,6 +46,7 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] Cambi (n/6, ruolo di chi entra, avviso rientro), libero (non conta come cambio, esce da solo in P4), timeout, correzione punteggio, formazione set successivo, fine set (25/15 con +2), fine partita + MVP (parziali ricalcolati sul server)
 - [x] Feed ultime azioni + Annulla/Ripeti, eventi `incomplete` ("da completare")
 - [x] API `POST /api/matches/[id]/events` batch idempotente (uuid client), coda di invio con nuovi tentativi
+- [x] Test nel repo: `npm test` (logica del Live, validazioni partite/eventi/Prepara Live, date, formazione) e `npm run test:e2e` (Playwright: Prepara Live → Live → 3 set → MVP su partita temporanea, copia e ripristino verificato del DB), `npm run test:restore` per i test interrotti
 - [ ] Offline: IndexedDB come coda, UI ottimistica, sync su `online` + retry, indicatore stato
 - [ ] Service worker (`@serwist/next`): precache shell `/admin/live/*`, font, logo
 - Limiti noti del Live (da valutare): scambio tra i due liberi durante un set (oggi il libero si sceglie per set), MVP obbligatorio per chiudere la partita, la pila Annulla/Ripeti si azzera ricaricando la pagina (gli eventi restano tutti).
@@ -67,7 +68,6 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [ ] **Giornate di riposo** nel Calendario pubblico ("Riposa CUSBros", 7ª andata e ritorno), come sul sito ufficiale.
 - [ ] **Loghi delle squadre** accanto ai nomi (come sul sito ufficiale).
 - [ ] **Animazioni leggere tra le pagine:** transizioni morbide (fade/slide brevi) senza librerie pesanti, es. View Transitions API del browser o CSS puro; rispettare `prefers-reduced-motion`.
-- [ ] **Test automatici nel repo:** oggi i test (logica del Live, E2E con Playwright con copia/ripristino del DB) vivono fuori dal repo; portarli in `tests/` con un comando `npm test`.
 
 ---
 
