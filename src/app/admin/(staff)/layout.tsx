@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 import { LOGIN_PATH } from "@/auth.config";
@@ -25,9 +26,12 @@ export default async function StaffLayout({ children }: { children: React.ReactN
       <header className="sticky top-0 z-5 border-b border-line-soft bg-bg">
         <div className="mx-auto flex max-w-[1100px] flex-col gap-2.5 px-admin pt-3">
           <div className="flex items-center gap-2.5">
-            <Image src="/logo.png" alt="" width={32} height={32} className="block size-8" />
-            <span className="font-display text-lg font-bold tracking-[.08em] uppercase">{TEAM_NAME}</span>
-            <span className="mr-auto font-display text-[13px] font-semibold tracking-[.2em] text-gold uppercase">
+            {/* Logo e nome portano al sito pubblico, come nelle pagine pubbliche. */}
+            <Link href="/" title="Vai al sito" className="flex min-h-11 shrink-0 items-center gap-2.5 text-ink hover:text-gold">
+              <Image src="/logo.png" alt="" width={32} height={32} className="block size-8" />
+              <span className="font-display text-lg font-bold tracking-[.08em] uppercase">{TEAM_NAME}</span>
+            </Link>
+            <span className="mr-auto shrink-0 font-display text-[13px] font-semibold tracking-[.2em] text-gold uppercase">
               Staff
             </span>
             <span className="min-w-0 truncate text-[13px] text-muted">
