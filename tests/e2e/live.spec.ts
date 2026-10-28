@@ -108,6 +108,20 @@ test("Live completo sul DB reale (con ripristino)", async ({ page }) => {
     await expect(page.getByRole("region", { name: "Punteggio" })).toBeVisible({ timeout: 60_000 });
     expect(await score(page)).toMatchObject({ us: 1, them: 0 });
     await expect(feedTop(page)).toContainText("Attacco punto");
+
+    // La pila sopravvive al ricaricamento: Ripeti rimette il punto loro, Annulla lo toglie di nuovo.
+    await page.getByRole("button", { name: "↷ Ripeti" }).click();
+    expect(await score(page)).toMatchObject({ us: 1, them: 1 });
+    await page.getByRole("button", { name: "↶ Annulla" }).click();
+    expect(await score(page)).toMatchObject({ us: 1, them: 0 });
+    await saved(page);
+
+    // Senza la pila salvata (dati del telefono cancellati) si ricostruisce dal registro.
+    await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith("cusbros:undo:")).forEach((k) => localStorage.removeItem(k)));
+    await page.reload();
+    await expect(page.getByRole("region", { name: "Punteggio" })).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByRole("button", { name: "↶ Annulla" })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "↷ Ripeti" })).toBeDisabled();
   });
 
   await test.step("cambi: regolare e con avviso del rientro", async () => {
