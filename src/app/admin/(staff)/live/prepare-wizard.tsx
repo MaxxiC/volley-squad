@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/admin/page-header";
 import { INPUT, LABEL } from "@/components/admin/styles";
 import { TEAM_NAME } from "@/lib/club";
 import { LineupField, LineupPool, WomenWarning, lineupHint, useLineup } from "@/components/admin/lineup-picker";
-import { EMPTY_SLOTS, MIN_WOMEN, fillInOrder, womenOnCourt } from "@/lib/lineup";
+import { EMPTY_SLOTS, MIN_WOMEN, fillInOrder, roleMismatches, womenOnCourt } from "@/lib/lineup";
 import { PLAYER_ROLES, ROLE_LABEL, fullName, type PlayerRole } from "@/lib/players";
 import { clearLocalLog } from "@/lib/live/local-log";
 import { startMatch } from "./actions";
@@ -265,6 +265,11 @@ export function PrepareWizard({ match, choices, roster, current, last }: Props) 
             <h2 className={H2}>Formazione set 1</h2>
             <span className="text-sm text-muted">{lineupHint(lineup)}</span>
             <LineupField lineup={lineup} playerOf={(id) => byId.get(id)} roleOf={(id) => roles[id]} />
+            <RoleHints
+              mismatches={roleMismatches(slots, (id) => roles[id])}
+              playerOf={(id) => byId.get(id)}
+              onApply={(id, role) => setRoles((r) => ({ ...r, [id]: role }))}
+            />
             {filled === 6 && <WomenWarning ids={onCourt} genderOf={genderOf} />}
           </div>
 
@@ -387,6 +392,41 @@ export function PrepareWizard({ match, choices, roster, current, last }: Props) 
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Chi in formazione sta al posto di un altro ruolo (schema normale dall'alzatore): con un tocco
+ * prende quel ruolo per questa partita (resta salvato nei presenti, conta per le statistiche).
+ */
+function RoleHints({
+  mismatches,
+  playerOf,
+  onApply,
+}: {
+  mismatches: Map<number, PlayerRole>;
+  playerOf: (id: number) => { number: number; firstName: string; lastName: string } | undefined;
+  onApply: (id: number, role: PlayerRole) => void;
+}) {
+  if (mismatches.size === 0) return null;
+  return (
+    <div role="status" className="flex flex-col gap-2 rounded-tile border border-gold-line p-3">
+      <span className="text-[13px] text-muted">Ruoli dalla posizione (schema normale dall'alzatore):</span>
+      {[...mismatches].map(([id, role]) => {
+        const p = playerOf(id);
+        return (
+          <div key={id} className="flex flex-wrap items-center gap-2">
+            <span className="min-w-0 flex-1 text-sm text-ink">
+              <span className="font-display font-bold text-gold">#{p?.number}</span> {p ? fullName(p) : ""} è al posto{" "}
+              {role === "O" ? "dell'opposto" : role === "P" ? "dell'alzatore" : role === "C" ? "del centrale" : "della banda"}
+            </span>
+            <button type="button" onClick={() => onApply(id, role)} className={CHIP}>
+              {ROLE_LABEL[role]} oggi
+            </button>
+          </div>
+        );
+      })}
     </div>
   );
 }
