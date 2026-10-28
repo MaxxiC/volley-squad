@@ -43,6 +43,7 @@ export default async function LiveMatchPage({ params }: { params: Promise<{ matc
         title: matchTitle(match.home, match.opponent.name),
         opponent: shortTeamName(match.opponent.name),
         finished: match.status === "finished",
+        mvpId: match.mvpPlayerId,
       }}
       players={present satisfies LivePlayer[]}
       lineups={log.lineups}

@@ -35,7 +35,7 @@ export function PublicShell({ width, navLink, watermark = false, children }: Pub
         </Link>
         <Link
           href={navLink.href}
-          className="inline-flex min-h-11 items-center rounded-chip border border-line-strong px-4.5 py-2.5 font-display text-base font-semibold tracking-[.1em] text-ink uppercase hover:border-gold hover:text-gold"
+          className="inline-flex min-h-11 items-center rounded-chip whitespace-nowrap border border-line-strong px-4.5 py-2.5 font-display text-base font-semibold tracking-[.1em] text-ink uppercase hover:border-gold hover:text-gold"
         >
           {navLink.label}
         </Link>

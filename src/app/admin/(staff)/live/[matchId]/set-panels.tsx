@@ -88,17 +88,20 @@ export function MatchEnd({
   players,
   pendingSync,
   offline,
+  initialMvp = null,
 }: {
   matchId: number;
   live: LiveState;
   players: LivePlayer[];
+  /** MVP già salvato (partita riaperta dallo Storico): resta scelto. */
+  initialMvp?: number | null;
   /** Azioni non ancora salvate: si chiude solo quando il server ha tutto. */
   pendingSync: number;
   /** Senza rete non si può chiudere (i parziali si ricalcolano sul server). */
   offline: boolean;
 }) {
   const router = useRouter();
-  const [mvp, setMvp] = useState<number | null>(null);
+  const [mvp, setMvp] = useState<number | null>(initialMvp);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const won = live.sets.us > live.sets.them;
@@ -121,7 +124,9 @@ export function MatchEnd({
       <span className="text-sm text-ink-2">
         {live.finishedSets.map((s) => `${s.us}–${s.them}`).join(" · ")}
       </span>
-      <span className="font-display text-sm font-bold tracking-[.2em] text-gold uppercase">MVP della partita</span>
+      <span className="font-display text-sm font-bold tracking-[.2em] text-gold uppercase">
+        MVP della partita <span className="text-faint">· facoltativo, si può scegliere anche dopo dallo Storico</span>
+      </span>
       <div className="grid grid-cols-3 gap-2">
         {players.map((p) => (
           <button
@@ -141,8 +146,8 @@ export function MatchEnd({
           {error}
         </p>
       )}
-      <button type="button" disabled={pending || offline || pendingSync > 0 || mvp === null} onClick={close} className={PRIMARY}>
-        {offline ? "Serve la rete per concludere" : pendingSync > 0 ? "Salvataggio azioni…" : pending ? "Chiusura…" : mvp === null ? "Scegli l'MVP" : "Concludi partita"}
+      <button type="button" disabled={pending || offline || pendingSync > 0} onClick={close} className={PRIMARY}>
+        {offline ? "Serve la rete per concludere" : pendingSync > 0 ? "Salvataggio azioni…" : pending ? "Chiusura…" : mvp === null ? "Concludi senza MVP" : "Concludi partita"}
       </button>
       <span className="text-[13px] text-faint">
         Dopo la chiusura il risultato compare su Home e Calendario. Gli errori si correggono dallo Storico live.

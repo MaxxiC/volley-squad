@@ -217,6 +217,36 @@ test("Live completo sul DB reale (con ripristino)", async ({ page }) => {
     expect(events.filter((e) => e.deleted)).toHaveLength(1); // il punto loro annullato
   });
 
+  await test.step("Storico: correzione con ricalcolo, modifica che romperebbe il set rifiutata", async () => {
+    await page.goto(`/admin/storico?partita=${matchId}`);
+    await expect(page.getByRole("link", { name: new RegExp(esc(opponent), "i") })).toHaveAttribute("aria-current", "page");
+    // Il punto d'attacco del set 1 passa a un altro giocatore: punteggio e parziali non cambiano.
+    const other = player(slots[1]);
+    await page.getByRole("button", { name: /Attacco · Punto/ }).click();
+    await page.getByLabel("Giocatore").selectOption(String(other.id));
+    await page.getByRole("button", { name: "Salva", exact: true }).click();
+    await expect(page.getByRole("button", { name: new RegExp(`Attacco · Punto.*${esc(playerLabel(other))}`) })).toBeVisible();
+    const kill = await db.select().from(s.events).where(and(eq(s.events.matchId, matchId), eq(s.events.skill, "attack"), eq(s.events.outcome, "kill")));
+    expect(kill.map((e) => e.playerId)).toEqual([other.id]);
+
+    // Un errore avversario diventato punto loro lascerebbe il set 1 a 24–2: rifiutato, nulla cambia.
+    await page.getByRole("button", { name: /Errore avversario/ }).first().click();
+    await page.getByLabel("Fondamentale").selectOption("opp_point");
+    await page.getByRole("button", { name: "Salva", exact: true }).click();
+    await expect(page.getByText(/il set 1 finirebbe 24–2/)).toBeVisible();
+    const sets = await db.select().from(s.matchSets).where(eq(s.matchSets.matchId, matchId));
+    expect(sets.sort((a, b) => a.n - b.n).map((x) => `${x.us}-${x.them}`)).toEqual(["25-1", "25-0", "25-0"]);
+  });
+
+  await test.step("riepilogo pubblico della partita", async () => {
+    await page.goto(`/partite/${matchId}`);
+    await expect(page.getByText("Vinta", { exact: true })).toBeVisible();
+    await expect(page.getByText("MVP della partita")).toBeVisible();
+    await expect(page.getByText(fullName(player(slots[3])), { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Come abbiamo fatto punto" })).toBeVisible();
+    await expect(page.getByText("25–1")).toBeVisible();
+  });
+
   await test.step("pagine pubbliche e controlli finali", async () => {
     await page.goto("/calendario");
     await expect(page.getByText(opponentFull).first()).toBeVisible();
