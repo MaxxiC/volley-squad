@@ -131,14 +131,25 @@ test("Live completo sul DB reale (con ripristino)", async ({ page }) => {
     await expect(page.getByRole("button", { name: /^Cambio 1\/6/ })).toBeVisible();
   });
 
-  await test.step("libero: entra in seconda linea, esce da solo in P4", async () => {
-    await page.getByRole("button", { name: /Libero.*Fai entrare/ }).click();
-    await pos(page, 5).click();
+  await test.step("libero: entra per il centrale, cambio libero A ↔ B, esce da solo in P4", async () => {
+    // Scorciatoia: il centrale in seconda linea (P5 dopo la rotazione) esce per il libero.
+    const centrale = player(slots[5]);
+    await page.getByRole("button", { name: `Entra per ${playerLabel(centrale)} (centrale)` }).click();
     await expect(pos(page, 5)).toHaveAttribute("aria-label", /\(libero\)/);
-    await expect(page.getByText("Libero in campo")).toBeVisible();
+    await expect(page.getByText(`In campo al posto di ${playerLabel(centrale)}`)).toBeVisible();
+    await expect(feedTop(page)).toContainText(`Libero entra per ${playerLabel(centrale)}`);
+
+    // L'altro libero prende il suo posto senza consumare cambi.
+    const other = present.map((x) => player(x.playerId)).find((p) => p.role === "L" && p.id !== lineup.liberoId);
+    if (other) {
+      await page.getByRole("button", { name: `Cambia con ${playerLabel(other)}` }).click();
+      await expect(pos(page, 5)).toHaveAttribute("aria-label", `P5: ${playerLabel(other)} (libero)`);
+      await expect(page.getByRole("button", { name: /^Cambio 1\/6/ })).toBeVisible();
+      await expect(feedTop(page)).toContainText(`Cambio libero · entra ${playerLabel(other)}`);
+    }
     await page.getByRole("button", { name: "Ruota" }).click();
     await expect(page.locator("[aria-label*='(libero)']")).toHaveCount(0);
-    await expect(page.getByText("Libero in campo")).toHaveCount(0);
+    await expect(page.getByText(/^In campo al posto di/)).toHaveCount(0);
   });
 
   await test.step("timeout e correzione del punteggio", async () => {

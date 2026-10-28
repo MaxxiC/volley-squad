@@ -51,7 +51,8 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] Service worker scritto a mano (`public/sw.js`, solo in produzione) invece di `@serwist/next` (che richiede webpack, la build usa Turbopack): pagina `/admin/live/<id>` prima dalla rete (attesa max 4 s) poi dalla copia salvata, file statici di Next/font/logo dalla cache. Verificato con `tests/e2e/offline.spec.ts` sulla build di produzione
 - [x] Invio robusto: blocchi da 100 eventi; un evento rifiutato dal server (400/422) si mette da parte e non blocca gli altri (avviso "azioni scartate", sparisce se si annulla/rifà); sessione scaduta → "Sessione scaduta · N in coda" + link per rientrare; "Esci" cancella copia locale e pagine salvate solo a coda vuota (altrimenti chiede conferma), senza rete non esce. Test: `tests/e2e/sync.spec.ts`
 - Limiti noti dell'offline: un solo telefono per partita (due telefoni offline sulla stessa partita creerebbero eventi in conflitto); la cache dei file statici cresce a ogni deploy (si azzera cambiando `VERSION` in `sw.js`); le pagine diverse dal Live non si aprono offline.
-- Limiti noti del Live (da valutare): scambio tra i due liberi durante un set (oggi il libero si sceglie per set), MVP obbligatorio per chiudere la partita, la pila Annulla/Ripeti si azzera ricaricando la pagina (gli eventi restano tutti).
+- [x] Campo come mini campo (rete, prima/seconda linea, ruoli) anche in Prepara Live e formazione set; **posto del libero sempre visibile**: entrata con un tocco per il centrale in seconda linea (non per chi sta per battere), uscita, scambio libero A ↔ B e scelta del libero a set iniziato, mai conteggiati come cambi
+- Limiti noti del Live (da valutare): MVP obbligatorio per chiudere la partita, la pila Annulla/Ripeti si azzera ricaricando la pagina (gli eventi restano tutti).
 
 ## 5 · Storico, statistiche, riepilogo pubblico
 - [ ] Storico live: tab partita, set, lista eventi editabile, filtri, "Salva e prossima →", ricalcolo punteggi
