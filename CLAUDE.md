@@ -10,7 +10,7 @@ Web app della squadra di pallavolo mista **CUSBros** (Libertas Cup Mix 2027, gir
 - UI e testi **in italiano**; anche commenti e messaggi di commit.
 - **Step piccoli e verificabili**: a fine step dire cosa è stato fatto e come provarlo in locale, poi **fermarsi per conferma**.
 - Se qualcosa è ambiguo, **chiedere** invece di indovinare. Lo stack è deciso: non cambiarlo senza chiedere.
-- **Git**: `main` stabile, `dev` lavoro quotidiano, `feat/xxx` per lavori grossi (ora `feat/live`). Commit per **macro sezione**, messaggio **solo titolo** (niente corpo), es. `feat: admin giocatori e rosa reale`. A fine step comunicare il nome del commit. **Il push lo fa Max.**
+- **Git**: `main` stabile, `dev` lavoro quotidiano, `feat/xxx` per lavori grossi (ora `feat/storico`). Commit per **macro sezione**, messaggio **solo titolo** (niente corpo), es. `feat: admin giocatori e rosa reale`. A fine step comunicare il nome del commit. **Il push lo fa Max.**
 - Segreti solo in `.env` / `.env.local` (mai committati).
 
 ## Stack
