@@ -14,8 +14,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const matchId = Number((await params).id);
   if (!Number.isInteger(matchId)) return NextResponse.json({ error: "Partita non valida" }, { status: 400 });
-  const match = await db.query.matches.findFirst({ where: eq(matches.id, matchId), columns: { id: true } });
+  const match = await db.query.matches.findFirst({ where: eq(matches.id, matchId), columns: { id: true, status: true } });
   if (!match) return NextResponse.json({ error: "Partita non trovata" }, { status: 404 });
+  // A partita conclusa le azioni si correggono dallo Storico: un telefono rimasto indietro non le sovrascrive.
+  // 422: il Live mette da parte le azioni e non riprova.
+  if (match.status === "finished") {
+    return NextResponse.json({ error: "Partita conclusa: le azioni si correggono dallo Storico" }, { status: 422 });
+  }
 
   const parsed = EventBatchSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {

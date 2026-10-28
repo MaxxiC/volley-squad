@@ -59,7 +59,7 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 
 ## 5 · Storico, statistiche, riepilogo pubblico
 - Decisioni (28/10/2026): nello Storico si correggono **solo le partite concluse** (quelle in corso in sola lettura, così Storico e telefono del Live non si sovrascrivono). Le partite con il risultato inserito a mano (es. n. 15 con Stordyteam) non hanno azioni: niente Storico né statistiche per loro.
-- [ ] Storico live: tab partita, set, lista eventi editabile, filtri, "Salva e prossima →", ricalcolo punteggi
+- [x] Storico live (`/admin/storico`, 🌿 `feat/storico`): partite registrate col Live (dalla più recente), set con il numero di azioni da completare, filtri Tutte / Da completare · N / Solo ★, azioni dalla più recente con il punteggio ricalcolato; modifica di fondamentale, esito, giocatore e ★ (il punto si ricava dall'esito), Elimina (come nel Live: resta nel registro annullato), "+ Aggiungi azione" in fondo al set o dopo un'azione, "Salva e prossima →". Ogni modifica ricalcola sul server tutta la partita e riscrive i parziali; è rifiutata se la partita non risulta più finita o un set chiuso non ha un punteggio di fine set (per spostare un punto si aggiunge prima l'azione che manca). Le partite in corso sono in sola lettura e l'API del Live rifiuta (422) azioni per partite concluse. Logica in `src/lib/live/storico.ts`, test in `tests/unit/live-storico.test.ts`
 - [ ] Giocatori: efficienza per fondamentale, presenze / stelline / MVP
 - [ ] Grafico Andamento (ultime 12, bande migliore/peggiore finestra di 3)
 - [ ] Pagina pubblica `/partite/[id]`: score, parziali, MVP, come abbiamo fatto punto, migliori, confronto
@@ -105,4 +105,4 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - **Login:** nessun limite di tentativi per ora (uso interno, 3 utenti). Da rivalutare prima del deploy.
 - **Password dimenticata:** per ora solo messaggio "contatta l'admin".
 - **`/partite/[id]`:** le card giocate ci linkano già; finché la pagina non esiste (step 5) danno 404.
-- **Stato al 28/10/2026:** step 0–4 completati (step 4 su `feat/live`, merge a cura di Max); prossimo lo step 5.1 Storico live. Il dev server si avvia con `npm run dev` (porta 3001).
+- **Stato al 28/10/2026:** step 0–4 completati (step 4 su `feat/live`, merge a cura di Max); step 5.1 Storico live fatto su `feat/storico`; prossimo il 5.2 Statistiche giocatori. Il dev server si avvia con `npm run dev` (porta 3001).
