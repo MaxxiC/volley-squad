@@ -11,13 +11,44 @@ import { mergeLogs } from "@/lib/live/merge";
 import type { LiveEvent } from "@/lib/live/types";
 import { uuid } from "@/lib/uuid";
 
-/** offline = rete assente (le azioni restano in coda); error = il server ha risposto con un errore. */
-export type SyncStatus = { pending: number; offline: boolean; error: string | null };
+/**
+ * problem: offline = rete assente · auth = sessione scaduta (serve rientrare) · error = il server non
+ * risponde bene (si riprova). rejected = azioni scartate dal server perché non valide: restano solo
+ * sul telefono e non bloccano le altre.
+ */
+export type SyncStatus = {
+  pending: number;
+  problem: "offline" | "auth" | "error" | null;
+  message: string | null;
+  rejected: { count: number; message: string | null };
+};
 
 const RETRY_MS = 4000;
 const FLUSH_DELAY_MS = 250;
+/** Eventi per richiesta (l'API ne accetta al massimo 500): una partita intera offline va a blocchi. */
+const BATCH_SIZE = 100;
 
-class ServerError extends Error {}
+type Problem = { kind: "auth" | "error"; message: string } | { kind: "offline" };
+type PostResult = { kind: "ok" } | { kind: "rejected"; message: string } | Problem;
+
+/** Quante azioni sono state scartate e l'ultimo motivo. */
+const rejectedStatus = (m: Map<string, string>) => ({ count: m.size, message: [...m.values()].at(-1) ?? null });
+
+async function post(matchId: number, events: LiveEvent[]): Promise<PostResult> {
+  const res = await fetch(`/api/matches/${matchId}/events`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ events }),
+  }).catch(() => null);
+  if (!res) return { kind: "offline" };
+  if (res.ok) return { kind: "ok" };
+  const body = (await res.json().catch(() => null)) as { error?: string } | null;
+  const message = body?.error ?? `Errore ${res.status}`;
+  // 400/422: dati non validi, reinviarli non serve. 401: sessione scaduta. Il resto: si riprova.
+  if (res.status === 400 || res.status === 422) return { kind: "rejected", message };
+  if (res.status === 401) return { kind: "auth", message };
+  return { kind: "error", message };
+}
 
 export function useLiveEvents(matchId: number, initial: LiveEvent[]) {
   // Il ref è la fonte di verità (letture sempre aggiornate anche tra due tocchi rapidi);
@@ -28,41 +59,62 @@ export function useLiveEvents(matchId: number, initial: LiveEvent[]) {
   const [history, setHistory] = useState<History>(EMPTY_HISTORY);
 
   const queue = useRef(new Map<string, LiveEvent>());
+  const rejected = useRef(new Map<string, string>());
   const inFlight = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [sync, setSync] = useState<SyncStatus>({ pending: 0, offline: false, error: null });
+  const [sync, setSync] = useState<SyncStatus>({ pending: 0, problem: null, message: null, rejected: { count: 0, message: null } });
+
+  /** Il server ha queste versioni: fuori dalla coda (se nel frattempo un evento è cambiato, resta). */
+  const ack = useCallback((batch: LiveEvent[]) => {
+    for (const e of batch) if (queue.current.get(e.id) === e) queue.current.delete(e.id);
+    void markSynced(batch);
+  }, []);
+
+  /** Blocco rifiutato: si manda un evento alla volta e si mette da parte solo quello non valido. */
+  const sendOneByOne = useCallback(
+    async (batch: LiveEvent[]): Promise<Problem | null> => {
+      for (const e of batch) {
+        if (queue.current.get(e.id) !== e) continue;
+        const res = await post(matchId, [e]);
+        if (res.kind === "ok") ack([e]);
+        else if (res.kind === "rejected") {
+          queue.current.delete(e.id);
+          rejected.current.set(e.id, res.message);
+        } else return res;
+      }
+      return null;
+    },
+    [matchId, ack],
+  );
 
   const flush = useCallback(async () => {
     if (inFlight.current || queue.current.size === 0) return;
     inFlight.current = true;
-    const batch = [...queue.current.values()];
+    let problem: Problem | null = null;
     try {
-      const res = await fetch(`/api/matches/${matchId}/events`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ events: batch }),
-      }).catch(() => null);
-      if (!res) throw new Error("offline");
-      if (!res.ok) {
-        const body = (await res.json().catch(() => null)) as { error?: string } | null;
-        throw new ServerError(body?.error ?? `Errore ${res.status}`);
+      while (queue.current.size > 0 && !problem) {
+        const batch = [...queue.current.values()].slice(0, BATCH_SIZE);
+        const res = await post(matchId, batch);
+        if (res.kind === "ok") ack(batch);
+        else if (res.kind === "rejected") problem = await sendOneByOne(batch);
+        else problem = res;
       }
-      // Tolgo dalla coda solo le versioni inviate: se nel frattempo un evento è cambiato, resta in coda.
-      for (const e of batch) if (queue.current.get(e.id) === e) queue.current.delete(e.id);
-      void markSynced(batch);
-      setSync({ pending: queue.current.size, offline: false, error: null });
-    } catch (err) {
-      const offline = !(err instanceof ServerError);
-      setSync({ pending: queue.current.size, offline, error: offline ? null : (err as Error).message });
+    } finally {
+      inFlight.current = false;
+    }
+    setSync({
+      pending: queue.current.size,
+      problem: problem?.kind ?? null,
+      message: problem && "message" in problem ? problem.message : null,
+      rejected: rejectedStatus(rejected.current),
+    });
+    if (problem) {
       timer.current = setTimeout(() => {
         timer.current = null;
         void flush();
       }, RETRY_MS);
-    } finally {
-      inFlight.current = false;
-    }
-    if (queue.current.size > 0 && !timer.current) void flush();
-  }, [matchId]);
+    } else if (queue.current.size > 0 && !timer.current) void flush();
+  }, [matchId, ack, sendOneByOne]);
 
   const scheduleFlush = useCallback(() => {
     if (timer.current) clearTimeout(timer.current);
@@ -99,7 +151,7 @@ export function useLiveEvents(matchId: number, initial: LiveEvent[]) {
       timer.current = null;
       void flush();
     };
-    const onOffline = () => setSync((s) => ({ ...s, offline: true }));
+    const onOffline = () => setSync((s) => ({ ...s, problem: "offline", message: null }));
     if (!navigator.onLine) onOffline();
     window.addEventListener("online", retry);
     window.addEventListener("offline", onOffline);
@@ -120,7 +172,9 @@ export function useLiveEvents(matchId: number, initial: LiveEvent[]) {
       setEvents(next);
       void saveLocal(matchId, version);
       queue.current.set(version.id, version);
-      setSync((s) => ({ ...s, pending: queue.current.size }));
+      // Una nuova versione di un evento scartato riprova a passare.
+      rejected.current.delete(version.id);
+      setSync((s) => ({ ...s, pending: queue.current.size, rejected: rejectedStatus(rejected.current) }));
       scheduleFlush();
     },
     [matchId, scheduleFlush],

@@ -49,6 +49,7 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] Test nel repo: `npm test` (logica del Live, validazioni partite/eventi/Prepara Live, date, formazione) e `npm run test:e2e` (Playwright: Prepara Live → Live → 3 set → MVP su partita temporanea, copia e ripristino verificato del DB), `npm run test:restore` per i test interrotti
 - [x] Offline: copia locale del registro su IndexedDB (`src/lib/live/local-log.ts`, ogni azione salvata subito, `pending` finché il server non conferma), unione con il registro del server all'apertura (`merge.ts`), invio su `online` / ritorno sull'app + nuovi tentativi, indicatore "Offline · N azioni in coda" / "Sincronizzato"; "Concludi partita" chiede la rete
 - [x] Service worker scritto a mano (`public/sw.js`, solo in produzione) invece di `@serwist/next` (che richiede webpack, la build usa Turbopack): pagina `/admin/live/<id>` prima dalla rete (attesa max 4 s) poi dalla copia salvata, file statici di Next/font/logo dalla cache. Verificato con `tests/e2e/offline.spec.ts` sulla build di produzione
+- [x] Invio robusto: blocchi da 100 eventi; un evento rifiutato dal server (400/422) si mette da parte e non blocca gli altri (avviso "azioni scartate", sparisce se si annulla/rifà); sessione scaduta → "Sessione scaduta · N in coda" + link per rientrare; "Esci" cancella copia locale e pagine salvate solo a coda vuota (altrimenti chiede conferma), senza rete non esce. Test: `tests/e2e/sync.spec.ts`
 - Limiti noti dell'offline: un solo telefono per partita (due telefoni offline sulla stessa partita creerebbero eventi in conflitto); la cache dei file statici cresce a ogni deploy (si azzera cambiando `VERSION` in `sw.js`); le pagine diverse dal Live non si aprono offline.
 - Limiti noti del Live (da valutare): scambio tra i due liberi durante un set (oggi il libero si sceglie per set), MVP obbligatorio per chiudere la partita, la pila Annulla/Ripeti si azzera ricaricando la pagina (gli eventi restano tutti).
 
@@ -62,6 +63,7 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [ ] Manifest + icone 192/512 dal logo
 - [ ] Progetto Vercel collegato al repo, env `DATABASE_URL` + `AUTH_SECRET`
 - [ ] Verifica su telefono reale: installazione PWA, live offline in palestra
+- [ ] **iPhone:** Safari cancella cache e dati di un sito non aperto da 7 giorni se non è installato sulla Home → installazione PWA consigliata per chi registra il Live; in ogni caso aprire il Live con la rete prima della partita
 - [ ] Merge finale `dev` → `main`
 
 ## 💡 Idee future

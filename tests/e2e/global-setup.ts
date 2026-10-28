@@ -67,23 +67,27 @@ export default async function globalSetup(config: FullConfig) {
       .values({ seasonId: season.id, phase: "ritorno", round: 99, home: true, opponentId: opponent.id, venue: "Test E2E", startsAt })
       .returning({ id: schema.matches.id });
 
-    // Seconda partita già "in corso" (presenti tutti, formazione automatica, battiamo noi) per l'offline.
-    const [offline] = await db
-      .insert(schema.matches)
-      .values({ seasonId: season.id, phase: "ritorno", round: 98, home: true, opponentId: opponent.id, venue: "Test E2E", startsAt, status: "live" })
-      .returning({ id: schema.matches.id });
+    // Partite già "in corso" (presenti tutti, formazione automatica, battiamo noi) per offline e invio.
     const roster = await db.query.players.findMany({ where: eq(schema.players.active, true), orderBy: [asc(schema.players.number)] });
     const { slots, libero } = fillInOrder(EMPTY_SLOTS, null, roster);
     if (slots.some((x) => x === null)) throw new Error("Rosa insufficiente per la formazione di test");
     const [p1, p2, p3, p4, p5, p6] = slots as number[];
-    await runBatch([
-      db.insert(schema.matchPlayers).values(roster.map((p) => ({ matchId: offline.id, playerId: p.id, role: p.role }))),
-      db.insert(schema.lineups).values({ matchId: offline.id, setN: 1, p1, p2, p3, p4, p5, p6, liberoId: libero, serveFirst: "us" }),
-    ]);
+    const liveMatch = async (round: number) => {
+      const [m] = await db
+        .insert(schema.matches)
+        .values({ seasonId: season.id, phase: "ritorno", round, home: true, opponentId: opponent.id, venue: "Test E2E", startsAt, status: "live" })
+        .returning({ id: schema.matches.id });
+      await runBatch([
+        db.insert(schema.matchPlayers).values(roster.map((p) => ({ matchId: m.id, playerId: p.id, role: p.role }))),
+        db.insert(schema.lineups).values({ matchId: m.id, setN: 1, p1, p2, p3, p4, p5, p6, liberoId: libero, serveFirst: "us" }),
+      ]);
+      return m.id;
+    };
 
     process.env.E2E_PASSWORD = password;
     process.env.E2E_MATCH_ID = String(match.id);
-    process.env.E2E_OFFLINE_MATCH_ID = String(offline.id);
+    process.env.E2E_OFFLINE_MATCH_ID = String(await liveMatch(98));
+    process.env.E2E_SYNC_MATCH_ID = String(await liveMatch(97));
     process.env.E2E_OPPONENT = opponent.name;
   } catch (err) {
     await teardown();

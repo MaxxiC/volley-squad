@@ -80,6 +80,28 @@ export async function markSynced(events: LiveEvent[]) {
   }
 }
 
+/** Azioni di qualsiasi partita non ancora arrivate al server. */
+export async function pendingCount() {
+  try {
+    const rows = await tx("readonly", (s) => request(s.getAll() as IDBRequest<Row[]>));
+    return rows.filter((r) => r.pending).length;
+  } catch {
+    return 0;
+  }
+}
+
+/** Uscita dall'area staff: copia locale cancellata, ma solo se non c'è nulla da inviare. */
+export async function clearIfSynced() {
+  const pending = await pendingCount();
+  if (pending > 0) return pending;
+  try {
+    await tx("readwrite", (s) => void s.clear());
+  } catch {
+    // Nulla da pulire.
+  }
+  return 0;
+}
+
 /** Partita conclusa: la copia locale non serve più. */
 export async function clearLocalLog(matchId: number) {
   try {

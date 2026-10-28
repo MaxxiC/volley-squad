@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { LOGIN_PATH } from "@/auth.config";
 import { TEAM_NAME } from "@/lib/club";
 import { describeEvent } from "@/lib/live/describe";
 import { keepLivePageOffline } from "@/lib/live/offline-page";
@@ -95,7 +96,7 @@ export function LiveBoard({ match, players, lineups, initialEvents }: Props) {
         )}
 
         {live.matchOver && !match.finished && (
-          <MatchEnd matchId={match.id} live={live} players={players} pendingSync={sync.pending} offline={sync.offline} />
+          <MatchEnd matchId={match.id} live={live} players={players} pendingSync={sync.pending} offline={sync.problem === "offline"} />
         )}
 
         {needLineup && (
@@ -242,25 +243,45 @@ function QuickBar({
   sync: SyncStatus;
 }) {
   const queued = `${sync.pending} ${sync.pending === 1 ? "azione" : "azioni"} in coda`;
-  const status = sync.offline
-    ? { dot: "bg-red", text: sync.pending > 0 ? `Offline · ${queued}` : "Offline" }
-    : sync.error
-      ? { dot: "bg-red", text: `Non salvato (${sync.error}) · ${queued}, riprovo` }
-      : sync.pending > 0
-        ? { dot: "bg-muted", text: "Salvataggio…" }
-        : { dot: "bg-green", text: "Sincronizzato" };
+  const status =
+    sync.problem === "offline"
+      ? { dot: "bg-red", text: sync.pending > 0 ? `Offline · ${queued}` : "Offline" }
+      : sync.problem === "auth"
+        ? { dot: "bg-red", text: `Sessione scaduta · ${queued}` }
+        : sync.problem === "error"
+          ? { dot: "bg-red", text: `Non salvato (${sync.message}) · ${queued}, riprovo` }
+          : sync.pending > 0
+            ? { dot: "bg-muted", text: "Salvataggio…" }
+            : { dot: "bg-green", text: "Sincronizzato" };
   return (
-    <div className="flex items-center gap-2">
-      <button type="button" onClick={onUndo} disabled={!canUndo} className={SMALL_BTN}>
-        ↶ Annulla
-      </button>
-      <button type="button" onClick={onRedo} disabled={!canRedo} className={SMALL_BTN}>
-        ↷ Ripeti
-      </button>
-      <span role="status" className="ml-auto flex items-center gap-2 text-[13px] text-muted">
-        <span className={`size-2 rounded-full ${status.dot}`} />
-        {status.text}
-      </span>
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        <button type="button" onClick={onUndo} disabled={!canUndo} className={SMALL_BTN}>
+          ↶ Annulla
+        </button>
+        <button type="button" onClick={onRedo} disabled={!canRedo} className={SMALL_BTN}>
+          ↷ Ripeti
+        </button>
+        <span role="status" className="ml-auto flex items-center gap-2 text-[13px] text-muted">
+          <span className={`size-2 rounded-full ${status.dot}`} />
+          {status.text}
+        </span>
+      </div>
+      {sync.problem === "auth" && (
+        // Dopo il login si torna qui: le azioni sono sul telefono e ripartono da sole (solo lato client).
+        <a
+          href={`${LOGIN_PATH}?callbackUrl=${encodeURIComponent(location.pathname)}`}
+          className="inline-flex min-h-11 items-center self-end text-sm font-semibold text-gold"
+        >
+          Rientra per inviarle →
+        </a>
+      )}
+      {sync.rejected.count > 0 && (
+        <p role="alert" className="rounded-btn border border-red-line px-3 py-2 text-sm text-red">
+          {sync.rejected.count === 1 ? "1 azione scartata" : `${sync.rejected.count} azioni scartate`} dal server
+          {sync.rejected.message ? ` (${sync.rejected.message})` : ""}: restano solo su questo telefono, annullale o rifalle.
+        </p>
+      )}
     </div>
   );
 }

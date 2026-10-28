@@ -21,6 +21,6 @@ export async function score(page: Page) {
 }
 
 /** Indicatore accanto ad Annulla/Ripeti. */
-export const syncStatus = (page: Page) => page.getByRole("status").filter({ hasText: /Sincronizzato|Offline|Salvataggio|Non salvato/ });
+export const syncStatus = (page: Page) => page.getByRole("status").filter({ hasText: /Sincronizzato|Offline|Salvataggio|Non salvato|Sessione scaduta/ });
 
 export const saved = (page: Page) => expect(syncStatus(page)).toHaveText(/Sincronizzato/, { timeout: 30_000 });
