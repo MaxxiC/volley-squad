@@ -1,7 +1,7 @@
 // Validazione di "Inizia partita" (solo server: importata dalla action).
 import { z } from "zod";
 import { PLAYER_ROLES } from "@/lib/players";
-import type { StartMatchInput } from "./prepare-form";
+import type { ResetLiveInput, StartMatchInput } from "./prepare-form";
 
 const id = z.number().int().positive();
 
@@ -23,3 +23,8 @@ export const StartMatchSchema = z
       ctx.addIssue({ code: "custom", message: "Il libero non può essere anche in formazione" });
     }
   }) satisfies z.ZodType<unknown, StartMatchInput>;
+
+export const ResetLiveSchema = z.object({
+  matchId: id,
+  confirm: z.string().trim().min(1, "Scrivi il nome dell'avversario per confermare").max(200),
+}) satisfies z.ZodType<unknown, ResetLiveInput>;
