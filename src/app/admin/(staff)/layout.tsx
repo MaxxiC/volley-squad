@@ -1,8 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 import { LOGIN_PATH } from "@/auth.config";
+import { Logo } from "@/components/ui/logo";
 import { TEAM_NAME } from "@/lib/club";
 import { AdminTabs } from "./admin-tabs";
 import { LogoutButton } from "./logout-button";
@@ -28,7 +28,7 @@ export default async function StaffLayout({ children }: { children: React.ReactN
           <div className="flex items-center gap-2.5">
             {/* Logo e nome portano al sito pubblico, come nelle pagine pubbliche. */}
             <Link href="/" title="Vai al sito" className="flex min-h-11 shrink-0 items-center gap-2.5 text-ink hover:text-gold">
-              <Image src="/logo.png" alt="" width={32} height={32} className="block size-8" />
+              <Logo size={32} alt="" className="block size-8" />
               <span className="font-display text-lg font-bold tracking-[.08em] uppercase">{TEAM_NAME}</span>
             </Link>
             <span className="mr-auto shrink-0 font-display text-[13px] font-semibold tracking-[.2em] text-gold uppercase">
