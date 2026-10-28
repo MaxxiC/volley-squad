@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { Logo } from "@/components/ui/logo";
 import { TEAM_NAME } from "@/lib/club";
 
 const MAX_WIDTH = {
@@ -20,11 +20,9 @@ export function PublicShell({ width, navLink, watermark = false, children }: Pub
   return (
     <div className="relative min-h-screen overflow-x-clip">
       {watermark && (
-        <Image
-          src="/logo.png"
+        <Logo
+          decorative
           alt=""
-          width={582}
-          height={582}
           sizes="900px"
           className="pointer-events-none absolute -top-[10vw] -right-[18vw] z-0 h-auto w-[clamp(420px,70vw,900px)] opacity-6 grayscale"
         />
@@ -32,7 +30,7 @@ export function PublicShell({ width, navLink, watermark = false, children }: Pub
 
       <nav className={`relative z-1 mx-auto flex items-center gap-4 px-gutter py-4.5 ${maxWidth}`}>
         <Link href="/" className="mr-auto flex min-h-11 items-center gap-3 text-ink hover:text-ink">
-          <Image src="/logo.png" alt={`Logo ${TEAM_NAME}`} width={40} height={40} priority className="block size-10" />
+          <Logo size={40} alt={`Logo ${TEAM_NAME}`} priority className="block size-10" />
           <span className="font-display text-xl font-bold tracking-[.08em] uppercase">{TEAM_NAME}</span>
         </Link>
         <Link
