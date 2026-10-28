@@ -12,6 +12,10 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+# copie del DB fatte dagli E2E (contengono dati reali)
+/tests/.snapshots/
 
 # next.js
 /.next/

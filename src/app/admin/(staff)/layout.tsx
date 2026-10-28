@@ -4,6 +4,7 @@ import { auth, signOut } from "@/auth";
 import { LOGIN_PATH } from "@/auth.config";
 import { TEAM_NAME } from "@/lib/club";
 import { AdminTabs } from "./admin-tabs";
+import { LogoutButton } from "./logout-button";
 
 const ROLE_LABEL = { admin: "Admin", coach: "Allenatore" } as const;
 
@@ -33,19 +34,12 @@ export default async function StaffLayout({ children }: { children: React.ReactN
               {name ? `${shortName(name)} · ` : ""}
               {ROLE_LABEL[role]}
             </span>
-            <form
-              action={async () => {
+            <LogoutButton
+              logout={async () => {
                 "use server";
                 await signOut({ redirectTo: LOGIN_PATH });
               }}
-            >
-              <button
-                type="submit"
-                className="inline-flex min-h-11 cursor-pointer items-center text-[13px] font-semibold text-gold hover:text-gold-hover"
-              >
-                Esci
-              </button>
-            </form>
+            />
           </div>
           <AdminTabs />
         </div>

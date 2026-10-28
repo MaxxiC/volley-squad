@@ -1,0 +1,203 @@
+// Stato del Live ricostruito SEMPRE dal registro eventi: nessun punteggio salvato a parte,
+// così annullare/ripristinare o sincronizzare in ritardo non può lasciare uno stato incoerente.
+import type { PlayerRole } from "../players";
+import type { Side } from "./skills";
+import type { LiveEvent, LiveLineup } from "./types";
+
+export type Score = { us: number; them: number };
+
+/** Cambi consentiti per set (oltre si avvisa, senza bloccare). */
+export const MAX_SUBS = 6;
+/** Timeout per squadra per set. */
+export const MAX_TIMEOUTS = 2;
+/** Set da vincere per chiudere la partita. */
+export const SETS_TO_WIN = 3;
+
+export type LiveState = {
+  setN: number;
+  score: Score;
+  /** Set vinti (chiusi con un evento set_end). */
+  sets: Score;
+  /** Parziali dei set già chiusi, in ordine. */
+  finishedSets: { n: number; us: number; them: number }[];
+  serving: Side;
+  /** Chi ha battuto per primo in questo set (al set dopo batte per primo l'altro). */
+  serveFirst: Side;
+  /** P1..P6: id giocatore in campo (il libero compare qui quando è in campo). */
+  rotation: number[];
+  /** Libero designato per il set. */
+  liberoId: number | null;
+  /** Giocatore sostituito dal libero; null = libero in panchina. */
+  liberoFor: number | null;
+  /** Cambi del set in corso. */
+  subs: number;
+  /** Coppie del set: chi è uscito → chi è entrato al suo posto (regola del rientro). */
+  subPairs: Record<number, number>;
+  /** Ruolo con cui un giocatore è entrato nei cambi (vale per il resto della partita). */
+  roles: Record<number, PlayerRole>;
+  timeouts: Score;
+  /** Eventi validi del set in corso, in ordine, con il punteggio subito dopo ciascuno. */
+  timeline: { event: LiveEvent; score: Score }[];
+  /** Chi ha raggiunto il punteggio per chiudere il set (25, 15 al 5°, con 2 di scarto). */
+  setWinner: Side | null;
+  /** Qualcuno ha vinto 3 set. */
+  matchOver: boolean;
+  /** Il set in corso non ha ancora azioni: si può ancora impostare la formazione. */
+  setNotStarted: boolean;
+};
+
+/** Rotazione in senso orario: chi era in P2 va in P1 (README → Rotazione automatica). */
+export function rotateClockwise(pos: number[]) {
+  return pos.map((_, i) => pos[(i + 1) % 6]);
+}
+
+function rotateBack(pos: number[]) {
+  return pos.map((_, i) => pos[(i + 5) % 6]);
+}
+
+export function setTarget(setN: number) {
+  return setN === 5 ? 15 : 25;
+}
+
+export function setWinnerOf(setN: number, score: Score): Side | null {
+  const target = setTarget(setN);
+  if (Math.max(score.us, score.them) < target || Math.abs(score.us - score.them) < 2) return null;
+  return score.us > score.them ? "us" : "them";
+}
+
+/** Eventi in ordine di registrazione (seq), esclusi gli annullati. */
+export function activeEvents(events: Iterable<LiveEvent>) {
+  return [...events].filter((e) => !e.deleted).sort((a, b) => a.seq - b.seq);
+}
+
+/** Posizioni di seconda linea: P1, P6, P5 (dove può stare il libero). */
+export const BACK_ROW = [0, 5, 4] as const;
+const FRONT_P4 = 3;
+
+const replace = (pos: number[], out: number, inn: number) => pos.map((id) => (id === out ? inn : id));
+
+/**
+ * Il libero non può stare in prima linea: quando la rotazione lo porta in P4 esce da solo e
+ * rientra il giocatore che aveva sostituito.
+ */
+function liberoLeavesFrontRow(s: LiveState): LiveState {
+  if (s.liberoId === null || s.liberoFor === null || s.rotation.indexOf(s.liberoId) !== FRONT_P4) return s;
+  return { ...s, rotation: replace(s.rotation, s.liberoId, s.liberoFor), liberoFor: null };
+}
+
+export function computeLive(lineups: LiveLineup[], events: Iterable<LiveEvent>): LiveState | null {
+  const first = lineups.find((l) => l.setN === 1);
+  if (!first) return null;
+
+  /** Nuovo set: formazione del set (se c'è) o stessa rotazione, batte per primo chi prima riceveva. */
+  const startSet = (setN: number, previous?: LiveState): LiveState => {
+    const lineup = lineups.find((l) => l.setN === setN);
+    const serveFirst: Side = lineup?.serveFirst ?? (previous?.serveFirst === "us" ? "them" : "us");
+    // Il libero torna in panchina a fine set: in campo il giocatore che sostituiva.
+    const carried = previous?.liberoFor && previous.liberoId
+      ? replace(previous.rotation, previous.liberoId, previous.liberoFor)
+      : previous?.rotation;
+    return {
+      setN,
+      score: { us: 0, them: 0 },
+      sets: previous?.sets ?? { us: 0, them: 0 },
+      finishedSets: previous?.finishedSets ?? [],
+      serving: serveFirst,
+      serveFirst,
+      rotation: lineup ? [...lineup.slots] : [...(carried ?? first.slots)],
+      liberoId: lineup ? lineup.liberoId : (previous?.liberoId ?? null),
+      liberoFor: null,
+      subs: 0,
+      subPairs: {},
+      roles: previous?.roles ?? {},
+      timeouts: { us: 0, them: 0 },
+      timeline: [],
+      setWinner: null,
+      matchOver: false,
+      setNotStarted: true,
+    };
+  };
+
+  let s = startSet(1);
+  for (const e of activeEvents(events)) {
+    const d = e.detail ?? {};
+    switch (e.kind) {
+      case "set_end": {
+        const winner = setWinnerOf(s.setN, s.score) ?? (s.score.us > s.score.them ? "us" : "them");
+        s = startSet(s.setN + 1, {
+          ...s,
+          sets: { ...s.sets, [winner]: s.sets[winner] + 1 },
+          finishedSets: [...s.finishedSets, { n: s.setN, ...s.score }],
+        });
+        continue;
+      }
+      case "lineup":
+        // Formazione del set: vale solo se il set non è ancora iniziato.
+        if (s.setNotStarted && d.slots?.length === 6) {
+          s = {
+            ...s,
+            rotation: [...d.slots],
+            liberoId: d.liberoId ?? null,
+            liberoFor: null,
+            serving: d.serveFirst ?? s.serving,
+            serveFirst: d.serveFirst ?? s.serveFirst,
+          };
+        }
+        break;
+      case "rotation":
+        s = liberoLeavesFrontRow({ ...s, rotation: d.dir === -1 ? rotateBack(s.rotation) : rotateClockwise(s.rotation) });
+        break;
+      case "sub":
+        if (d.in && d.out) {
+          s = {
+            ...s,
+            rotation: replace(s.rotation, d.out, d.in),
+            subs: s.subs + 1,
+            subPairs: { ...s.subPairs, [d.out]: d.in },
+            roles: d.role ? { ...s.roles, [d.in]: d.role } : s.roles,
+          };
+        }
+        break;
+      case "libero":
+        if (d.in && d.out) {
+          const entering = d.in === s.liberoId;
+          s = { ...s, rotation: replace(s.rotation, d.out, d.in), liberoFor: entering ? d.out : null };
+        }
+        break;
+      case "timeout":
+        if (d.side) s = { ...s, timeouts: { ...s.timeouts, [d.side]: s.timeouts[d.side] + 1 } };
+        break;
+      case "correction":
+        if (e.point && d.delta) s = { ...s, score: { ...s.score, [e.point]: Math.max(0, s.score[e.point] + d.delta) } };
+        break;
+      case "action":
+        if (e.point) {
+          const score = { ...s.score, [e.point]: s.score[e.point] + 1 };
+          // Cambio palla a nostro favore: si ruota prima di andare in battuta.
+          const rotation = e.point === "us" && s.serving === "them" ? rotateClockwise(s.rotation) : s.rotation;
+          s = liberoLeavesFrontRow({ ...s, score, rotation, serving: e.point });
+        }
+        break;
+    }
+    if (e.kind !== "lineup") s = { ...s, setNotStarted: false };
+    s = { ...s, timeline: [...s.timeline, { event: e, score: s.score }] };
+  }
+  return {
+    ...s,
+    setWinner: setWinnerOf(s.setN, s.score),
+    matchOver: s.sets.us === SETS_TO_WIN || s.sets.them === SETS_TO_WIN,
+  };
+}
+
+/**
+ * Regola del rientro: chi è uscito può rientrare una sola volta e solo al posto di chi l'ha
+ * sostituito; chi è entrato può uscire solo per far rientrare il titolare. null = cambio regolare.
+ */
+export function subWarning(s: LiveState, out: number, inn: number): string | null {
+  const replacedBy = s.subPairs[inn];
+  const outCameInFor = Object.entries(s.subPairs).find(([, entered]) => entered === out)?.[0];
+  if (s.subs >= MAX_SUBS) return `Cambi finiti: già ${s.subs}/${MAX_SUBS} in questo set`;
+  if (replacedBy !== undefined && replacedBy !== out) return "Rientro non regolare: può rientrare solo al posto di chi l'ha sostituito";
+  if (outCameInFor !== undefined && Number(outCameInFor) !== inn) return "Chi è entrato può uscire solo per far rientrare il titolare";
+  return null;
+}

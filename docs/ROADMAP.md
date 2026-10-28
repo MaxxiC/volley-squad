@@ -18,7 +18,7 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] Font `next/font`: Barlow Condensed (500–800) + Barlow (400–600)
 - [x] Logo in `public/`, favicon da logo
 - [x] Layout pubblico: Nav + Footer (max-w 1200 Home / 1000 Calendario)
-- [x] `src/lib/mock-data.ts` strutturato come il modello dati, letto da `src/lib/data.ts`
+- [x] Dati finti strutturati come il modello dati (poi sostituiti dal DB nello step 2), letti da `src/lib/data.ts`
 - [x] Home: hero, prossima partita + **Countdown** (client), ultimo risultato, classifica top 5, CTA
 - [x] Calendario: riepilogo, filtro segmentato, card partite, classifica completa `#classifica`
 - [x] Date/ore formattate in `Europe/Rome`
@@ -35,19 +35,23 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 
 ## 3 · Admin Partite + Giocatori ✅
 - [x] Partite: lista, form espandibile, parziali validati, crea/modifica/elimina con conferma
-- [x] Scorciatoie: orari frequenti (i 3 più usati), autocompletamento palestra e avversario, "Usa PalaCUS", "Duplica come ritorno"
+- [x] Scorciatoie: orari frequenti (i 3 più usati), autocompletamento palestra e avversario, "Usa palestra di casa", "Duplica come ritorno"; fase andata/ritorno, numero gara, partite rinviate e a tavolino
 - [x] Gestione classifica (`/admin/partite/classifica`, G = V + P calcolato)
 - [x] `revalidatePath` di Home e Calendario dopo ogni modifica
-- [x] Giocatori: lista + form (numero, nome, cognome, ruolo, attivo), scheda base con presenze/stelline/MVP; numero unico tra gli attivi; eliminazione solo senza dati di partita (altrimenti si disattiva)
+- [x] Giocatori: lista + form (numero, nome, cognome, ruolo, sesso facoltativo, attivo), scheda base con presenze/stelline/MVP; numero unico tra gli attivi; eliminazione solo senza dati di partita (altrimenti si disattiva)
 
 ## 4 · Live 🌿 `feat/live`
-- [ ] Prepara Live: wizard Presenti → Formazione → Inizio (+ scorciatoie)
-- [ ] Live online: tabellone, Semplice / Avanzato, campo, rotazione automatica + manuale
-- [ ] Cambi (n/6), fine set (25/15 con +2), fine partita + MVP
-- [ ] Feed ultime azioni + undo illimitato nel set, eventi `incomplete`
-- [ ] API `POST /api/matches/[id]/events` batch idempotente (uuid client)
-- [ ] Offline: IndexedDB come coda, UI ottimistica, sync su `online` + retry, indicatore stato
-- [ ] Service worker (`@serwist/next`): precache shell `/admin/live/*`, font, logo
+- [x] Prepara Live: wizard Presenti (con ruolo di partita) → Formazione (avviso donne) → Inizio (+ scorciatoie); salva presenze, formazione set 1 e chi batte, partita "in corso"
+- [x] Live online: tabellone, Semplice / Avanzato, campo, rotazione automatica + manuale, Annulla/Ripeti (stato sempre ricalcolato dal registro eventi)
+- [x] Cambi (n/6, ruolo di chi entra, avviso rientro), libero (non conta come cambio, esce da solo in P4), timeout, correzione punteggio, formazione set successivo, fine set (25/15 con +2), fine partita + MVP (parziali ricalcolati sul server)
+- [x] Feed ultime azioni + Annulla/Ripeti, eventi `incomplete` ("da completare")
+- [x] API `POST /api/matches/[id]/events` batch idempotente (uuid client), coda di invio con nuovi tentativi
+- [x] Test nel repo: `npm test` (logica del Live, validazioni partite/eventi/Prepara Live, date, formazione) e `npm run test:e2e` (Playwright: Prepara Live → Live → 3 set → MVP su partita temporanea, copia e ripristino verificato del DB), `npm run test:restore` per i test interrotti
+- [x] Offline: copia locale del registro su IndexedDB (`src/lib/live/local-log.ts`, ogni azione salvata subito, `pending` finché il server non conferma), unione con il registro del server all'apertura (`merge.ts`), invio su `online` / ritorno sull'app + nuovi tentativi, indicatore "Offline · N azioni in coda" / "Sincronizzato"; "Concludi partita" chiede la rete
+- [x] Service worker scritto a mano (`public/sw.js`, solo in produzione) invece di `@serwist/next` (che richiede webpack, la build usa Turbopack): pagina `/admin/live/<id>` prima dalla rete (attesa max 4 s) poi dalla copia salvata, file statici di Next/font/logo dalla cache. Verificato con `tests/e2e/offline.spec.ts` sulla build di produzione
+- [x] Invio robusto: blocchi da 100 eventi; un evento rifiutato dal server (400/422) si mette da parte e non blocca gli altri (avviso "azioni scartate", sparisce se si annulla/rifà); sessione scaduta → "Sessione scaduta · N in coda" + link per rientrare; "Esci" cancella copia locale e pagine salvate solo a coda vuota (altrimenti chiede conferma), senza rete non esce. Test: `tests/e2e/sync.spec.ts`
+- Limiti noti dell'offline: un solo telefono per partita (due telefoni offline sulla stessa partita creerebbero eventi in conflitto); la cache dei file statici cresce a ogni deploy (si azzera cambiando `VERSION` in `sw.js`); le pagine diverse dal Live non si aprono offline.
+- Limiti noti del Live (da valutare): scambio tra i due liberi durante un set (oggi il libero si sceglie per set), MVP obbligatorio per chiudere la partita, la pila Annulla/Ripeti si azzera ricaricando la pagina (gli eventi restano tutti).
 
 ## 5 · Storico, statistiche, riepilogo pubblico
 - [ ] Storico live: tab partita, set, lista eventi editabile, filtri, "Salva e prossima →", ricalcolo punteggi
@@ -55,23 +59,26 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [ ] Grafico Andamento (ultime 12, bande migliore/peggiore finestra di 3)
 - [ ] Pagina pubblica `/partite/[id]`: score, parziali, MVP, come abbiamo fatto punto, migliori, confronto
 
+## 6 · PWA + deploy
+- [ ] Manifest + icone 192/512 dal logo
+- [ ] Progetto Vercel collegato al repo, env `DATABASE_URL` + `AUTH_SECRET`
+- [ ] Verifica su telefono reale: installazione PWA, live offline in palestra
+- [ ] **iPhone:** Safari cancella cache e dati di un sito non aperto da 7 giorni se non è installato sulla Home → installazione PWA consigliata per chi registra il Live; in ogni caso aprire il Live con la rete prima della partita
+- [ ] Merge finale `dev` → `main`
+
 ## 💡 Idee future
 - [ ] **Import dal calendario ufficiale** (SportAdmin): bottone in admin che rilegge calendario, risultati e classifica del girone e propone gli aggiornamenti.
 - [ ] **Giornate di riposo** nel Calendario pubblico ("Riposa CUSBros", 7ª andata e ritorno), come sul sito ufficiale.
 - [ ] **Loghi delle squadre** accanto ai nomi (come sul sito ufficiale).
 - [ ] **Animazioni leggere tra le pagine:** transizioni morbide (fade/slide brevi) senza librerie pesanti, es. View Transitions API del browser o CSS puro; rispettare `prefers-reduced-motion`.
 
-## 6 · PWA + deploy
-- [ ] Manifest + icone 192/512 dal logo
-- [ ] Progetto Vercel collegato al repo, env `DATABASE_URL` + `AUTH_SECRET`
-- [ ] Verifica su telefono reale: installazione PWA, live offline in palestra
-- [ ] Merge finale `dev` → `main`
-
 ---
 
 ## 📌 Da fare (Max)
 - [x] **Neon:** progetto creato, `.env` compilato.
-- [ ] **Utenti staff:** crea te stesso (`admin`) e i 2 allenatori (`coach`) con `npm run user:create`.
+- [x] **Utente admin** creato.
+- [ ] **Allenatori:** crea i 2 utenti `coach` con `npm run user:create -- <email> "<nome>" coach`.
+- [ ] **Sesso dei giocatori** in Admin Giocatori (serve all'avviso "almeno 2 donne in campo").
 - [ ] **Classifica:** decidere se inserita a mano o calcolata. Il DB ha già la tabella `standings` (va bene per entrambe le strade).
 - [x] **"Andata" nel Calendario:** aggiunta la fase (andata/ritorno) e il numero gara ufficiale.
 - [x] **Rosa vera:** 14 giocatori caricati (27/10/2026).
@@ -80,20 +87,17 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 ## ✅ Decisioni sul gioco (27/10/2026)
 - **Ruoli variabili:** ruolo principale in anagrafica; **ruolo per partita** scelto in Prepara Live (proposto quello dell'anagrafica); nei **cambi** si indica in che ruolo entra (proposto quello di chi esce). Variabili: Capelli, Claudio (anche adattatore), Clementi, Placucci, Kevi, Botticelli, Fish.
 - **Misto:** almeno **2 donne** in campo → solo **avviso a schermo**, mai blocco. Serve il sesso in anagrafica (facoltativo, impostato a mano).
-- **Libero:** regole ufficiali, non batte (dettaglio da chiarire, vedi sotto). Due liberi in rosa (Federici, Casadei); le entrate/uscite del libero non contano come cambi.
+- **Libero:** non può essere il primo a battere nel suo turno: quando la rotazione lo porta in battuta rientra il centrale e batte; **dalla battuta successiva** il libero può prendere il suo posto anche in battuta. Due liberi in rosa (Federici, Casadei); le entrate/uscite del libero non contano come cambi.
 - **Nel Live (step 4):** timeout (2 per set), correzione manuale del punteggio, **indietro/avanti** sui tocchi (avanti solo finché non si fa una nuova azione), stato sempre ricalcolato dal registro eventi così non si rompe a metà.
 - **Partite:** stati **rinviata** e **a tavolino** (vinta/persa 3–0).
 - Già previsti dal regolamento e da gestire come avvisi: max 6 cambi per set, rientro del titolare solo al posto di chi l'ha sostituito, alternanza di chi batte a inizio set (5° set a sorteggio).
 
-## ❓ Da chiarire
-- **Libero e battuta:** "non può battere, ma dopo che il centrale rientrato ha fatto almeno una battuta può andare a battere e fare la seconda" → da capire con un esempio (vedi chat).
-
 ## Note e decisioni aperte
 - **Campionato reale:** Libertas Cup Mix 2027, girone Challenge (Rimini). Fonte: [calendario ufficiale SportAdmin](https://sportadmin.net/s/libertas-volley-comitato-provinciale-rimini). I dati dei prototipi (Bologna, PalaCUS, squadre) erano inventati e sono stati sostituiti il 27/10/2026.
-- **Classifica:** probabilmente inserita a mano (le partite delle altre squadre non le registriamo). Vedi "Da fare".
+- **Classifica:** oggi inserita a mano da Admin Partite → Classifica (le partite delle altre squadre non le registriamo). Decisione definitiva in "Da fare".
 - **npm audit:** 2 avvisi su `postcss` interno a Next 15 (solo build-time). La "fix" proposta è passare a Next 16: non applicata, si rivaluta quando esce una patch 15.x. Altri avvisi `esbuild` arrivano da `drizzle-kit` (solo CLI in locale, non va in produzione).
 - **Auth.js v5** è ancora in beta: versione bloccata a `5.0.0-beta.32`, aggiornare solo di proposito.
 - **Login:** nessun limite di tentativi per ora (uso interno, 3 utenti). Da rivalutare prima del deploy.
 - **Password dimenticata:** per ora solo messaggio "contatta l'admin".
-- **"Andata" nel Calendario:** testo fisso; il modello dati non ha la fase del campionato. Da decidere se aggiungerla.
 - **`/partite/[id]`:** le card giocate ci linkano già; finché la pagina non esiste (step 5) danno 404.
+- **Stato al 28/10/2026:** step 0–3 completati su `dev`; step 4 su `feat/live` (Prepara Live, Live online, cambi/libero/timeout/fine partita, test nel repo e offline fatti; manca la chiusura: verifica su telefono e merge su `dev`). Il dev server si avvia con `npm run dev`.

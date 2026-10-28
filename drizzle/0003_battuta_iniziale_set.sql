@@ -1,0 +1,1 @@
+ALTER TABLE "lineups" ADD COLUMN "serve_first" "point_side" NOT NULL;

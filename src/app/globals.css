@@ -24,6 +24,8 @@
   --color-blue: #7f9fe0;
   --color-red: #e08a7c;
   --color-red-line: #5a2f29;
+  /* Stato "dati salvati / sincronizzato" (design Prepara Live). */
+  --color-green: #7fbf8a;
 
   --radius-*: initial;
   --radius-badge: 4px;
