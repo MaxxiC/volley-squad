@@ -11,10 +11,11 @@ import { EMPTY_SLOTS, MIN_WOMEN, fillInOrder, roleMismatches, womenOnCourt } fro
 import { PLAYER_ROLES, ROLE_LABEL, fullName, type PlayerRole } from "@/lib/players";
 import { clearLocalLog } from "@/lib/live/local-log";
 import { startMatch } from "./actions";
+import { ResetLive } from "./reset-live";
 import { LIVE_MODE_KEY, type LiveMode, type PreparePlayer, type PrepareSetup } from "./prepare-form";
 
 type Props = {
-  match: { id: number; kicker: string; title: string; opponent: string; live: boolean };
+  match: { id: number; kicker: string; title: string; opponent: string; live: boolean; actions: number };
   choices: { id: number; label: string }[];
   roster: PreparePlayer[];
   /** Preparazione già salvata per questa partita. */
@@ -139,6 +140,7 @@ export function PrepareWizard({ match, choices, roster, current, last }: Props) 
           <Link href={`/admin/live/${match.id}`} className="inline-flex min-h-11 items-center font-semibold">
             Riprendi il Live →
           </Link>
+          <ResetLive matchId={match.id} opponent={match.opponent} actions={match.actions} />
         </div>
       )}
 
