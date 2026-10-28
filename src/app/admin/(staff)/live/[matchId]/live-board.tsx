@@ -18,7 +18,7 @@ import { SimpleInput } from "./simple-input";
 import { useLiveEvents, type SyncStatus } from "./use-live-events";
 
 type Props = {
-  match: { id: number; title: string; opponent: string; finished: boolean };
+  match: { id: number; title: string; opponent: string; finished: boolean; mvpId: number | null };
   players: LivePlayer[];
   lineups: LiveLineup[];
   /** Id di questo Live (formazione del 1° set): la copia del telefono di un Live precedente si scarta. */
@@ -99,7 +99,14 @@ export function LiveBoard({ match, players, lineups, startId, initialEvents }: P
         )}
 
         {live.matchOver && !match.finished && (
-          <MatchEnd matchId={match.id} live={live} players={players} pendingSync={sync.pending} offline={sync.problem === "offline"} />
+          <MatchEnd
+            matchId={match.id}
+            live={live}
+            players={players}
+            pendingSync={sync.pending}
+            offline={sync.problem === "offline"}
+            initialMvp={match.mvpId}
+          />
         )}
 
         {needLineup && (
