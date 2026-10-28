@@ -54,7 +54,9 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] Campo come mini campo (rete, prima/seconda linea, ruoli) anche in Prepara Live e formazione set; **posto del libero sempre visibile**: entrata con un tocco per il centrale in seconda linea (non per chi sta per battere), uscita, scambio libero A ↔ B e scelta del libero a set iniziato, mai conteggiati come cambi
 - [x] **Azzera il Live** (Prepara Live, solo partite in corso, doppia conferma con il nome dell'avversario, controllata anche dal server): via azioni, formazione e presenti, la partita torna da giocare; la copia del telefono è legata al Live (formazione del 1° set) e quella di un Live precedente si scarta da sola
 - [x] **Libero automatico sui centrali** (pallino blu sui centrali): entra da solo per il centrale in seconda linea e si alterna sui due (esce in P4, entra per l'altro; se il centrale è in P1 e batte, entra quando perdiamo la battuta). Uscito a mano non rientra da solo finché quel centrale è in seconda linea; tutti i bottoni manuali restano. È calcolato dallo stato (nessun evento): sul server, senza ruoli, i parziali non cambiano
-- Limiti noti del Live (da valutare): MVP obbligatorio per chiudere la partita, la pila Annulla/Ripeti si azzera ricaricando la pagina (gli eventi restano tutti).
+- Limiti noti del Live (da valutare): la pila Annulla/Ripeti si azzera ricaricando la pagina (gli eventi restano tutti).
+- [x] MVP facoltativo alla chiusura ("Concludi senza MVP"); si sceglie o si cambia anche dopo dallo Storico.
+- [x] Partita conclusa: dallo Storico "Riapri nel Live" (torna in corso con tutte le azioni, parziali tolti fino alla nuova chiusura, l'MVP salvato resta proposto) e "Azzera il Live" (doppia conferma, via anche risultato e MVP). Per le prove: partita futura → Live → conclusa → Azzera.
 - [x] Chiusura (28/10/2026): prove di Max su iPhone (Vercel), E2E verdi su dev e su build di produzione con service worker, DB ripristinato e verificato; partita e squadra TEST-volley eliminate (per le prove si usa una partita futura e poi "Azzera il Live"). Merge `feat/live` → `dev` → `main` a cura di Max.
 
 ## 5 · Storico, statistiche, riepilogo pubblico 🌿 `feat/storico` ✅
@@ -76,7 +78,7 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] Utente eliminato → accesso finito subito (prima restava valido il JWT fino a 30 giorni): `currentStaff()` ricontrolla l'utente nel DB, `/admin/sessione-scaduta` chiude la sessione senza giri di redirect.
 - [x] Intestazioni di sicurezza su tutte le pagine (`X-Frame-Options`, CSP `frame-ancestors 'none'`/`form-action 'self'`/`object-src 'none'`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`), niente `X-Powered-By`.
 - [x] Test: `tests/e2e/security.spec.ts` (accesso, API, intestazioni, noindex, login, redirect, utente eliminato) e `tests/unit/security.test.ts` (redirect del login).
-- [ ] **Limite ai tentativi di accesso** (es. 5 errori in 15 minuti per email/IP → attesa): serve una tabella nel DB, su Vercel la memoria del server non resta tra le richieste. Da decidere (Max).
+- [x] **Limite ai tentativi di accesso** (tabella `login_attempts`, migrazione `0005`): in 15 minuti 5 errori per email+connessione, 20 per connessione, 50 per email (largo apposta: chi conosce un'email non può bloccare il proprietario con pochi tentativi). Controllato dentro Auth.js (`authorize`), così vale anche chiamando l'endpoint direttamente; dopo un accesso riuscito si azzerano i tentativi dell'email. Logica in `src/lib/login-limit.ts`, test unitari ed E2E.
 - [ ] CSP completa anche per script e stili: richiede i nonce di Next, da valutare solo se serve.
 
 ## 💡 Idee future

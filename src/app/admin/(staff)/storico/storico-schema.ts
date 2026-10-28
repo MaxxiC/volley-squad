@@ -1,7 +1,7 @@
 // Validazione delle azioni dello Storico (solo server: importata dalle action).
 import { z } from "zod";
 import { EDIT_SKILLS } from "@/lib/live/storico";
-import type { AddEventInput, DeleteEventInput, SaveEventInput } from "./storico-form";
+import type { AddEventInput, DeleteEventInput, ReopenMatchInput, SaveEventInput, SetMvpInput } from "./storico-form";
 
 const id = z.number().int().positive();
 
@@ -22,3 +22,7 @@ export const AddEventSchema = z.object({
   afterId: z.uuid().nullable(),
   edit: ActionEditSchema,
 }) satisfies z.ZodType<unknown, AddEventInput>;
+
+export const SetMvpSchema = z.object({ matchId: id, mvpId: id.nullable() }) satisfies z.ZodType<unknown, SetMvpInput>;
+
+export const ReopenMatchSchema = z.object({ matchId: id }) satisfies z.ZodType<unknown, ReopenMatchInput>;

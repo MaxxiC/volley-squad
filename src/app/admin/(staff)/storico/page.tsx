@@ -6,8 +6,10 @@ import { PageHeader } from "@/components/admin/page-header";
 import { getCurrentSeason } from "@/lib/data";
 import { formatShortDate } from "@/lib/format";
 import { loadLiveLog } from "@/lib/live/db";
+import { activeEvents } from "@/lib/live/state";
 import type { LivePlayer } from "@/lib/live/types";
 import { matchScore, shortTeamName } from "@/lib/matches";
+import { MatchPanel } from "./match-panel";
 import { StoricoBoard, type StoricoTab } from "./storico-board";
 
 export const metadata: Metadata = { title: "Storico live" };
@@ -82,6 +84,18 @@ export default async function StoricoPage({ searchParams }: { searchParams: Prom
         lineups={log.lineups}
         events={log.events}
       />
+      {match.status === "finished" && (
+        <MatchPanel
+          key={`panel-${match.id}`}
+          match={{
+            id: match.id,
+            opponentName: match.opponent.name,
+            mvpId: match.mvpPlayerId,
+            actions: activeEvents(log.events).filter((e) => e.kind === "action").length,
+          }}
+          players={present}
+        />
+      )}
     </div>
   );
 }

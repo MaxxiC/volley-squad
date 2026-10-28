@@ -11,8 +11,8 @@ import { loadLiveLog } from "@/lib/live/db";
 import { computeLive } from "@/lib/live/state";
 import { applyEdit, editIssue, finishedIssue, insertSeq, isDeletable, isEditable, type ActionEdit } from "@/lib/live/storico";
 import type { LiveEvent } from "@/lib/live/types";
-import type { AddEventInput, DeleteEventInput, SaveEventInput } from "./storico-form";
-import { AddEventSchema, DeleteEventSchema, SaveEventSchema } from "./storico-schema";
+import type { AddEventInput, DeleteEventInput, ReopenMatchInput, SaveEventInput, SetMvpInput } from "./storico-form";
+import { AddEventSchema, DeleteEventSchema, ReopenMatchSchema, SaveEventSchema, SetMvpSchema } from "./storico-schema";
 
 type Log = Awaited<ReturnType<typeof loadLiveLog>>;
 type Write = Parameters<typeof runBatch>[0][number];
@@ -145,4 +145,50 @@ export async function addEvent(input: AddEventInput): Promise<ActionResult<{ id:
     db.insert(events).values({ ...added, matchId, createdAt: new Date(added.createdAt) }),
   ]);
   return failed ?? { ok: true, id: added.id };
+}
+
+/** MVP scelto o cambiato dopo la chiusura (anche nessuno). */
+export async function setMvp(input: SetMvpInput): Promise<ActionResult<{ id: number }>> {
+  await requireStaff();
+  const parsed = SetMvpSchema.safeParse(input);
+  if (!parsed.success) return invalid(parsed.error);
+  const { matchId, mvpId } = parsed.data;
+
+  const match = await db.query.matches.findFirst({ where: eq(matches.id, matchId), columns: { status: true } });
+  if (!match) return { ok: false, error: "Partita non trovata, ricarica la pagina" };
+  if (match.status !== "finished") return { ok: false, error: "L'MVP si sceglie a partita conclusa" };
+  if (mvpId !== null) {
+    const present = await db.query.matchPlayers.findFirst({ where: and(eq(matchPlayers.matchId, matchId), eq(matchPlayers.playerId, mvpId)) });
+    if (!present) return { ok: false, error: "L'MVP deve essere tra i presenti" };
+  }
+  await db.update(matches).set({ mvpPlayerId: mvpId }).where(eq(matches.id, matchId));
+  revalidatePublicPages();
+  revalidatePath("/admin/storico");
+  revalidatePath("/admin/giocatori");
+  return { ok: true, id: matchId };
+}
+
+/**
+ * Riapre nel Live una partita conclusa per sbaglio: torna "in corso" con tutte le sue azioni;
+ * i parziali si tolgono dal sito e si riscrivono alla nuova chiusura.
+ */
+export async function reopenMatch(input: ReopenMatchInput): Promise<ActionResult<{ id: number }>> {
+  await requireStaff();
+  const parsed = ReopenMatchSchema.safeParse(input);
+  if (!parsed.success) return invalid(parsed.error);
+  const { matchId } = parsed.data;
+
+  const found = await finishedLog(matchId);
+  if (!found.ok) return found;
+  if (!computeLive(found.log.lineups, found.log.events)) return { ok: false, error: "Questa partita non è stata registrata con il Live" };
+  await runBatch([
+    db.delete(matchSets).where(eq(matchSets.matchId, matchId)),
+    db.update(matches).set({ status: "live" }).where(eq(matches.id, matchId)),
+  ]);
+  revalidatePublicPages();
+  revalidatePath("/admin/storico");
+  revalidatePath("/admin/partite");
+  revalidatePath("/admin/live");
+  revalidatePath("/admin/giocatori");
+  return { ok: true, id: matchId };
 }

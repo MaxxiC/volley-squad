@@ -9,7 +9,19 @@ import { clearLocalLog } from "@/lib/live/local-log";
 import { resetLive } from "./actions";
 import { sameName } from "./prepare-form";
 
-export function ResetLive({ matchId, opponent, actions }: { matchId: number; opponent: string; actions: number }) {
+export function ResetLive({
+  matchId,
+  opponent,
+  actions,
+  finished = false,
+}: {
+  matchId: number;
+  /** Nome completo dell'avversario: va scritto per confermare. */
+  opponent: string;
+  actions: number;
+  /** Partita conclusa: si perdono anche risultato e MVP. */
+  finished?: boolean;
+}) {
   const router = useRouter();
   const [stage, setStage] = useState<"closed" | "warn" | "confirm">("closed");
   const [typed, setTyped] = useState("");
@@ -45,8 +57,8 @@ export function ResetLive({ matchId, opponent, actions }: { matchId: number; opp
   return (
     <div role="alertdialog" aria-label="Azzera il Live" className="flex w-full flex-col gap-3 rounded-btn border border-red-line bg-bg p-3">
       <p className="text-[15px] text-ink">
-        Si cancellano <strong className="text-red">{lost}</strong>, la formazione e i presenti di questa partita, che torna da
-        giocare. <strong>Non si può annullare.</strong>
+        Si cancellano <strong className="text-red">{lost}</strong>, la formazione e i presenti
+        {finished ? ", il risultato e l'MVP" : ""} di questa partita, che torna da giocare. <strong>Non si può annullare.</strong>
       </p>
 
       {stage === "warn" ? (

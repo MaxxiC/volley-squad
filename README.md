@@ -70,7 +70,7 @@ Vercel, collegato al repo: ogni push su `main` va online (https://volley-squad.v
 - Login: password con bcrypt, stesso messaggio e stessi tempi per email sconosciuta o password sbagliata, dopo il login solo redirect interni all'area staff. Sessione di 30 giorni (in palestra non si deve perdere).
 - Intestazioni di sicurezza su tutte le pagine (`next.config.ts`): il sito non si può mostrare dentro cornici di altri siti, niente fotocamera/microfono/posizione. L'area staff non viene indicizzata.
 - Le azioni di una partita conclusa si correggono solo dallo Storico: l'API del Live le rifiuta.
-- Da fare: limite ai tentativi di accesso (vedi `docs/ROADMAP.md`).
+- Limite ai tentativi di accesso: dopo 5 errori con la stessa email dalla stessa connessione (o 20 da una connessione, 50 sulla stessa email) si aspetta fino a 15 minuti (`src/lib/login-limit.ts`).
 
 ## Git
 
