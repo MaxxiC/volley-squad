@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { LineupField, LineupPool, WomenWarning, lineupHint, useLineup } from "@/components/admin/lineup-picker";
 import { TEAM_NAME } from "@/lib/club";
 import type { Side } from "@/lib/live/skills";
-import type { LiveState } from "@/lib/live/state";
+import { rotationWithoutLibero, type LiveState } from "@/lib/live/state";
 import type { EventDetail, LivePlayer } from "@/lib/live/types";
 import { clearLocalLog } from "@/lib/live/local-log";
 import { shortName } from "@/lib/players";
@@ -31,7 +31,7 @@ export function NextSetLineup({
   onStart: (detail: EventDetail) => void;
 }) {
   const byId = new Map(players.map((p) => [p.id, p]));
-  const lineup = useLineup(live.rotation, live.liberoId);
+  const lineup = useLineup(rotationWithoutLibero(live), live.liberoId);
   const [serveFirst, setServeFirst] = useState<Side>(live.serveFirst);
   const ready = lineup.filled === 6;
 

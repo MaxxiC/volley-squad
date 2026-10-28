@@ -33,7 +33,10 @@ type Props = {
 /** Operazione in corso sul campo: cambio (chi esce → chi entra → ruolo) o entrata del libero. */
 type Action = { kind: "sub"; out: number | null; inn: number | null; role: PlayerRole | null } | { kind: "libero" } | null;
 
-/** Campo con la rete in alto: P4 P3 P2 / P5 P6 P1, pallino oro su P1 quando battiamo noi; sotto il posto del libero. */
+/**
+ * Campo con la rete in alto: P4 P3 P2 / P5 P6 P1, pallino oro su P1 quando battiamo noi e pallino blu
+ * sui centrali (per loro entra il libero in seconda linea); sotto il posto del libero.
+ */
 export function Court({ live, playerOf, bench, liberos, roleOf, selected, onSelect, onRotate, onSub, onLibero, readOnly = false }: Props) {
   const [action, setAction] = useState<Action>(null);
   const back = new Set<number>(BACK_ROW.map((i) => live.rotation[i]));
@@ -61,6 +64,7 @@ export function Court({ live, playerOf, bench, liberos, roleOf, selected, onSele
     const isSelected = sub ? sub.out === id : selected === id;
     const isOut = Boolean(sub && sub.out === id);
     const isLibero = id === live.liberoId;
+    const isCentre = !isLibero && roleOf(id) === "C";
     const look = isOut
       ? "border-red bg-surface-2"
       : isSelected
@@ -81,6 +85,7 @@ export function Court({ live, playerOf, bench, liberos, roleOf, selected, onSele
         <span className="absolute top-1.5 left-2 text-[11px] font-semibold text-faint">P{i + 1}</span>
         {isOut && <span className="absolute top-1 right-1.5 text-[10px] font-bold tracking-[.08em] text-red uppercase">esce</span>}
         {i === 0 && live.serving === "us" && <span className="absolute top-2 right-2 size-2 rounded-full bg-gold" />}
+        {isCentre && live.liberoId !== null && <span aria-hidden className="absolute right-2 bottom-2 size-2 rounded-full bg-blue" />}
         <span className="font-display text-[26px] leading-none font-extrabold text-gold tabular-nums">{p?.number ?? "?"}</span>
         <span className={`max-w-full truncate px-1 text-xs ${isLibero ? "text-blue" : "text-ink-2"}`}>{p ? shortName(p) : ""}</span>
         <span className={`text-[10px] leading-tight ${isLibero ? "text-blue" : "text-faint"}`}>{ROLE_LABEL[isLibero ? "L" : roleOf(id)]}</span>
@@ -129,6 +134,7 @@ export function Court({ live, playerOf, bench, liberos, roleOf, selected, onSele
           playerOf={playerOf}
           liberos={liberos}
           target={liberoTarget(live, roleOf)}
+          isCentre={(id) => roleOf(id) === "C"}
           choosing={liberoMode}
           readOnly={readOnly}
           onChoose={() => setAction(liberoMode ? null : { kind: "libero" })}
@@ -231,15 +237,16 @@ function SubSlot({ label, tone, player, hint }: { label: string; tone: "out" | "
 }
 
 /**
- * Settimo posto, sempre visibile: il libero (si gioca quasi sempre in 7). Da qui entra con un tocco
- * per il centrale in seconda linea (o per chi si sceglie), esce, si scambia con l'altro libero o si
- * sceglie se manca. Niente di tutto questo conta come cambio.
+ * Settimo posto, sempre visibile: il libero (si gioca quasi sempre in 7). Entra ed esce da solo sui
+ * centrali in seconda linea; da qui si fa entrare a mano (per il centrale o per chi si sceglie), esce,
+ * si scambia con l'altro libero o si sceglie se manca. Niente di tutto questo conta come cambio.
  */
 function LiberoSlot({
   live,
   playerOf,
   liberos,
   target,
+  isCentre,
   choosing,
   readOnly,
   onChoose,
@@ -251,6 +258,7 @@ function LiberoSlot({
   liberos: LivePlayer[];
   /** Proposta per l'entrata: il centrale in seconda linea (null = nessuno adatto). */
   target: number | null;
+  isCentre: (id: number) => boolean;
   /** Si sta scegliendo in campo chi esce per il libero. */
   choosing: boolean;
   readOnly: boolean;
@@ -262,6 +270,9 @@ function LiberoSlot({
   const others = liberos.filter((p) => p.id !== live.liberoId);
   const replaced = live.liberoFor ? playerOf(live.liberoFor) : undefined;
   const targetPlayer = target ? playerOf(target) : undefined;
+  // Perché il libero è in panchina: fatto uscire a mano, o il centrale in P1 sta per battere.
+  const skipped = live.liberoSkip !== null && !onCourt ? playerOf(live.liberoSkip) : undefined;
+  const server = live.serving === "us" && isCentre(live.rotation[0]) ? playerOf(live.rotation[0]) : undefined;
   const ACTION = "min-h-11 cursor-pointer rounded-btn border px-2.5 font-display text-sm font-bold tracking-[.06em] uppercase";
 
   return (
@@ -283,9 +294,17 @@ function LiberoSlot({
             ? "Tocca in campo chi esce (seconda linea)"
             : onCourt
               ? `In campo al posto di ${playerLabel(replaced)}`
-              : libero
-                ? "In panchina"
-                : "Scegli chi fa il libero in questo set"}
+              : !libero
+                ? "Scegli chi fa il libero in questo set"
+                : skipped
+                  ? `Uscito a mano: non rientra da solo per ${playerLabel(skipped)}`
+                  : server
+                    ? `Entra quando perdiamo la battuta (batte ${playerLabel(server)})`
+                    : (
+                      <>
+                        In panchina · entra da solo per i centrali <span className="text-blue">●</span> in seconda linea
+                      </>
+                    )}
         </span>
       </div>
 

@@ -1,7 +1,7 @@
 // Stato del Live ricostruito dal registro eventi (src/lib/live/state.ts).
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { computeLive, liberoTarget, rotateClockwise, setWinnerOf, subWarning, type LiveState } from "@/lib/live/state";
+import { computeLive, liberoTarget, rotateClockwise, rotationWithoutLibero, setWinnerOf, subWarning, type LiveState } from "@/lib/live/state";
 import { eventFactory, lineup, points, wonSet } from "./helpers";
 
 /** computeLive senza null: nei test c'è sempre la formazione del set 1. */
@@ -317,6 +317,63 @@ describe("libero", () => {
     assert.ok(!s.rotation.includes(9));
     assert.ok(s.rotation.includes(6));
     assert.equal(s.liberoId, 9);
+  });
+});
+
+describe("libero automatico sui centrali", () => {
+  // P1..P6 = 1..6: i centrali sono 3 (P3) e 6 (P6), uno di fronte all'altro.
+  const role = (id: number) => (id === 3 || id === 6 ? "C" : "S") as "C" | "S";
+
+  test("senza i ruoli non entra da solo", () => {
+    const s = live(lineup("them"), []);
+    assert.deepEqual(s.rotation, [1, 2, 3, 4, 5, 6]);
+    assert.equal(s.liberoFor, null);
+  });
+
+  test("entra subito per il centrale in seconda linea", () => {
+    const s = live(lineup("them"), [], role);
+    assert.deepEqual(s.rotation, [1, 2, 3, 4, 5, 9]);
+    assert.equal(s.liberoFor, 6);
+    assert.equal(s.subs, 0);
+  });
+
+  test("si alterna sui due centrali: esce in P4, entra per l'altro quando perdiamo la battuta", () => {
+    const ev = eventFactory();
+    const base = [ev({ point: "us" }), ev({ point: "them" }), ev({ point: "us" })];
+    // Due cambi palla: il libero arriva in P4 ed esce, il 3 è in P1 e batte.
+    const out = live(lineup("them"), base, role);
+    assert.deepEqual(out.rotation, [3, 4, 5, 6, 1, 2]);
+    assert.equal(out.liberoFor, null);
+    // Perdiamo la battuta: il libero entra per il 3 in P1.
+    const back = live(lineup("them"), [...base, ev({ point: "them" })], role);
+    assert.deepEqual(back.rotation, [9, 4, 5, 6, 1, 2]);
+    assert.equal(back.liberoFor, 3);
+    assert.equal(back.subs, 0);
+  });
+
+  test("fatto uscire a mano non rientra finché il centrale è in seconda linea", () => {
+    const ev = eventFactory();
+    const manual = [ev({ kind: "libero", detail: { in: 6, out: 9 } }), ev({ point: "them" }), ev({ point: "us" })];
+    const s = live(lineup("them"), manual, role);
+    assert.deepEqual(s.rotation, [2, 3, 4, 5, 6, 1], "il 6 è in P5, il libero resta fuori");
+    assert.equal(s.liberoSkip, 6);
+    // Il 6 va in prima linea: si torna all'automatico, e quando perdiamo la battuta entra per il 3.
+    const later = live(lineup("them"), [...manual, ev({ point: "them" }), ev({ point: "us" }), ev({ point: "them" })], role);
+    assert.deepEqual(later.rotation, [9, 4, 5, 6, 1, 2]);
+    assert.equal(later.liberoSkip, null);
+    // A mano può sempre rientrare.
+    const again = live(lineup("them"), [...manual, ev({ kind: "libero", detail: { in: 9, out: 6 } })], role);
+    assert.equal(again.rotation[4], 9);
+    assert.equal(again.liberoSkip, null);
+  });
+
+  test("al set dopo la formazione proposta è senza libero", () => {
+    const ev = eventFactory();
+    const s = live(lineup("them"), wonSet(ev, "them"), role);
+    assert.equal(s.setN, 2);
+    assert.ok(s.rotation.includes(9), "nel set nuovo il libero rientra da solo");
+    assert.ok(!rotationWithoutLibero(s).includes(9));
+    assert.equal(rotationWithoutLibero(s).filter((id) => id === 3 || id === 6).length, 2);
   });
 });
 
