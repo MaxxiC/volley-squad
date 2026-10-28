@@ -158,12 +158,24 @@ export function computeLive(lineups: LiveLineup[], events: Iterable<LiveEvent>):
           };
         }
         break;
-      case "libero":
-        if (d.in && d.out) {
-          const entering = d.in === s.liberoId;
-          s = { ...s, rotation: replace(s.rotation, d.out, d.in), liberoFor: entering ? d.out : null };
+      case "libero": {
+        // Nessuna voce conta come cambio. { in } = libero scelto (posto vuoto); { in, out: libero } =
+        // cambio di libero (A ↔ B) o uscita (se rientra chi aveva sostituito); { in: libero, out } = entrata.
+        const { in: inn, out } = d;
+        if (!inn) break;
+        const liberoOnCourt = s.liberoId !== null && s.rotation.includes(s.liberoId);
+        if (out === undefined || (out === s.liberoId && !liberoOnCourt)) {
+          s = { ...s, liberoId: inn };
+        } else if (out === s.liberoId && inn !== s.liberoFor) {
+          // Cambio di libero in campo: il nuovo prende il posto del vecchio, per lo stesso giocatore.
+          s = { ...s, rotation: replace(s.rotation, out, inn), liberoId: inn };
+        } else if (inn === s.liberoId && s.rotation.includes(out)) {
+          s = { ...s, rotation: replace(s.rotation, out, inn), liberoFor: out };
+        } else if (out === s.liberoId) {
+          s = { ...s, rotation: replace(s.rotation, out, inn), liberoFor: null };
         }
         break;
+      }
       case "timeout":
         if (d.side) s = { ...s, timeouts: { ...s.timeouts, [d.side]: s.timeouts[d.side] + 1 } };
         break;
@@ -187,6 +199,17 @@ export function computeLive(lineups: LiveLineup[], events: Iterable<LiveEvent>):
     setWinner: setWinnerOf(s.setN, s.score),
     matchOver: s.sets.us === SETS_TO_WIN || s.sets.them === SETS_TO_WIN,
   };
+}
+
+/**
+ * Chi far uscire per il libero (scorciatoia): il centrale in seconda linea, prima P5 e P6, poi P1
+ * solo se non stiamo per battere (il libero non batte per primo nel suo turno). null = nessuno adatto.
+ */
+export function liberoTarget(s: LiveState, roleOf: (id: number) => PlayerRole): number | null {
+  if (s.liberoId === null || s.liberoFor !== null) return null;
+  const order = s.serving === "us" ? [4, 5] : [4, 5, 0];
+  const index = order.find((i) => s.rotation[i] !== s.liberoId && roleOf(s.rotation[i]) === "C");
+  return index === undefined ? null : s.rotation[index];
 }
 
 /**

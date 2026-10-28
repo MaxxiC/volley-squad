@@ -260,7 +260,7 @@ export function PrepareWizard({ match, choices, roster, current, last }: Props) 
           <div className="flex flex-col gap-3">
             <h2 className={H2}>Formazione set 1</h2>
             <span className="text-sm text-muted">{lineupHint(lineup)}</span>
-            <LineupField lineup={lineup} playerOf={(id) => byId.get(id)} />
+            <LineupField lineup={lineup} playerOf={(id) => byId.get(id)} roleOf={(id) => roles[id]} />
             {filled === 6 && <WomenWarning ids={onCourt} genderOf={genderOf} />}
           </div>
 

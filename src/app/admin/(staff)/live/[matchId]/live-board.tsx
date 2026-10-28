@@ -180,12 +180,13 @@ export function LiveBoard({ match, players, lineups, initialEvents }: Props) {
           live={live}
           playerOf={playerOf}
           bench={bench}
+          liberos={players.filter((p) => roleOf(p.id) === "L")}
           roleOf={roleOf}
           selected={mode === "avanzato" ? selected : null}
           onSelect={mode === "avanzato" && playing ? setSelected : undefined}
           onRotate={() => add({ setN, kind: "rotation", detail: { dir: 1 } })}
           onSub={(out, inn, role) => add({ setN, kind: "sub", detail: { out, in: inn, role } })}
-          onLibero={(inn, out) => add({ setN, kind: "libero", detail: { in: inn, out } })}
+          onLibero={(inn, out) => add({ setN, kind: "libero", detail: out === undefined ? { in: inn } : { in: inn, out } })}
           readOnly={!playing}
         />
         <Feed live={live} describe={(e) => describeEvent(e, playerOf, match.opponent)} />

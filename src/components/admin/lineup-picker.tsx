@@ -5,7 +5,7 @@
 // alla prossima posizione vuota.
 import { useState } from "react";
 import { COURT_ORDER, EMPTY_SLOTS, MIN_WOMEN, womenOnCourt, type Slots } from "@/lib/lineup";
-import { fullName, shortName, type PlayerGender } from "@/lib/players";
+import { ROLE_LABEL, fullName, shortName, type PlayerGender, type PlayerRole } from "@/lib/players";
 
 type PickPlayer = { id: number; number: number; firstName: string; lastName: string; gender: PlayerGender | null };
 
@@ -43,35 +43,54 @@ export function useLineup(initialSlots: Slots = EMPTY_SLOTS, initialLibero: numb
 export type LineupState = ReturnType<typeof useLineup>;
 
 /** Campo con le 6 posizioni e lo slot del libero. */
-export function LineupField({ lineup, playerOf }: { lineup: LineupState; playerOf: (id: number) => PickPlayer | undefined }) {
+export function LineupField({
+  lineup,
+  playerOf,
+  roleOf,
+}: {
+  lineup: LineupState;
+  playerOf: (id: number) => PickPlayer | undefined;
+  /** Ruolo in questa partita (mostrato in piccolo sotto il nome). */
+  roleOf: (id: number) => PlayerRole | undefined;
+}) {
   const { slots, libero, target, setTarget } = lineup;
   const lib = libero ? playerOf(libero) : undefined;
+  const tile = (i: number) => {
+    const id = slots[i];
+    const p = id !== null ? playerOf(id) : undefined;
+    const role = id !== null ? roleOf(id) : undefined;
+    const active = target === i;
+    return (
+      <button
+        key={i}
+        type="button"
+        onClick={() => setTarget(i)}
+        aria-pressed={active}
+        aria-label={`Posizione P${i + 1}${p ? `: ${fullName(p)}` : ", vuota"}`}
+        className={`relative flex min-h-20 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-tile text-ink ${active ? "border border-gold bg-surface-sel" : p ? "border border-line bg-surface" : "border border-dashed border-line-strong bg-surface"}`}
+      >
+        <span className="absolute top-1.5 left-2 text-[11px] font-semibold text-faint">P{i + 1}</span>
+        <span className={`font-display text-[30px] leading-none font-extrabold tabular-nums ${p ? "text-gold" : "text-faint"}`}>
+          {p ? p.number : "+"}
+        </span>
+        <span className="max-w-full truncate px-1 text-xs text-ink-2">{p ? shortName(p) : "vuoto"}</span>
+        {p && role && <span className="text-[10px] leading-tight text-faint">{ROLE_LABEL[role]}</span>}
+      </button>
+    );
+  };
+  // Stesso mini campo del Live: rete, prima linea, linea dei 3 metri, seconda linea.
   return (
-    <div className="flex flex-col gap-2 rounded-panel border border-line bg-surface p-3">
-      <span className="text-center text-[11px] font-semibold tracking-[.16em] text-faint uppercase">Rete</span>
-      <div className="grid grid-cols-3 gap-1.5 border-t-3 border-ink-2 pt-2">
-        {COURT_ORDER.map((i) => {
-          const id = slots[i];
-          const p = id !== null ? playerOf(id) : undefined;
-          const active = target === i;
-          return (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setTarget(i)}
-              aria-pressed={active}
-              aria-label={`Posizione P${i + 1}${p ? `: ${fullName(p)}` : ", vuota"}`}
-              className={`relative flex min-h-20 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-tile text-ink ${active ? "border border-gold bg-surface-sel" : p ? "border border-line bg-surface-2" : "border border-dashed border-line-strong bg-surface-2"}`}
-            >
-              <span className="absolute top-1.5 left-2 text-[11px] font-semibold text-faint">P{i + 1}</span>
-              <span className={`font-display text-[30px] leading-none font-extrabold tabular-nums ${p ? "text-gold" : "text-faint"}`}>
-                {p ? p.number : "+"}
-              </span>
-              <span className="max-w-full truncate px-1 text-xs text-ink-2">{p ? shortName(p) : "vuoto"}</span>
-            </button>
-          );
-        })}
+    <div className="flex flex-col gap-1.5 rounded-panel border border-line bg-surface-2 p-3">
+      <div aria-hidden className="flex items-center gap-2">
+        <span className="h-1 flex-1 rounded-pill bg-ink-2" />
+        <span className="text-[10px] font-bold tracking-[.2em] text-muted uppercase">Rete</span>
+        <span className="h-1 flex-1 rounded-pill bg-ink-2" />
       </div>
+      <span className="text-[10px] font-semibold tracking-[.16em] text-faint uppercase">Prima linea</span>
+      <div className="grid grid-cols-3 gap-1.5">{COURT_ORDER.slice(0, 3).map(tile)}</div>
+      <div aria-hidden className="my-0.5 border-t-2 border-dashed border-line-strong" />
+      <span className="text-[10px] font-semibold tracking-[.16em] text-faint uppercase">Seconda linea</span>
+      <div className="grid grid-cols-3 gap-1.5">{COURT_ORDER.slice(3).map(tile)}</div>
       <button
         type="button"
         onClick={() => setTarget("libero")}

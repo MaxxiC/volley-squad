@@ -18,7 +18,7 @@ export type EventDetail = {
   ballType?: BallType;
   /** Rotazione manuale: avanti (1) o indietro (-1). */
   dir?: 1 | -1;
-  /** Cambio / libero: chi entra, chi esce e (cambio) in che ruolo entra. */
+  /** Cambio / libero: chi entra, chi esce e (cambio) in che ruolo entra. Libero senza `out` = libero scelto. */
   in?: number;
   out?: number;
   role?: PlayerRole;
