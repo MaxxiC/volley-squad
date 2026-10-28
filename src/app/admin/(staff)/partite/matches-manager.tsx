@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { PageHeader } from "@/components/admin/page-header";
 import { BTN_PRIMARY } from "@/components/admin/styles";
-import { matchScore, matchTitle, roundLabel } from "@/lib/matches";
+import { MatchTitle } from "@/components/ui/match-title";
+import { TEAM_NAME } from "@/lib/club";
+import { matchScore, roundLabel } from "@/lib/matches";
 import type { AdminMatch } from "./match-form";
 import { MatchEditor } from "./match-editor";
 
@@ -74,25 +76,24 @@ export function MatchesManager({ seasonName, matches, opponents, venues, timeChi
               key={m.id}
               className={`overflow-hidden rounded-card border bg-surface ${open ? "border-gold" : "border-line"}`}
             >
-              <div className="grid grid-cols-[56px_minmax(0,1fr)_auto] items-center gap-3.5 px-4 py-3.5">
-                <div className="flex h-14 flex-col items-center justify-center rounded-btn bg-surface-sel">
+              {/* Telefono: titolo su tutta la larghezza accanto alla data (a 320px la colonna è stretta), sotto info e Modifica. Da sm: Modifica a destra. */}
+              <div className="grid grid-cols-[56px_minmax(0,1fr)_auto] items-center gap-x-3.5 gap-y-1.5 px-4 py-3.5">
+                <div className="row-span-2 flex h-14 flex-col items-center justify-center rounded-btn bg-surface-sel">
                   <span className="font-display text-2xl leading-none font-extrabold">{m.box?.day ?? "?"}</span>
                   <span className="font-display text-xs font-semibold tracking-[.12em] text-muted uppercase">
                     {m.box?.month ?? "data"}
                   </span>
                 </div>
-                <div className="flex min-w-0 flex-col gap-1">
-                  {/* Su due righe invece che troncato: su telefono il nome avversario è l'informazione chiave. */}
-                  <span className="line-clamp-2 font-display text-[19px] leading-[1.05] font-bold uppercase">
-                    {matchTitle(m.home, m.opponent)}
-                  </span>
-                  <span className="text-[13px] text-muted">{infoLine(m)}</span>
-                </div>
+                {/* Su più righe invece che troncato: su telefono il nome avversario è l'informazione chiave. */}
+                <span className="col-span-2 line-clamp-2 font-display sm:col-span-1 text-[19px] leading-[1.05] font-bold uppercase">
+                  <MatchTitle home={m.home ? TEAM_NAME : m.opponent} away={m.home ? m.opponent : TEAM_NAME} usHome={m.home} />
+                </span>
+                <span className="min-w-0 text-[13px] text-muted">{infoLine(m)}</span>
                 <button
                   type="button"
                   onClick={() => setOpenId(open ? null : m.id)}
                   aria-expanded={open}
-                  className="min-h-11 cursor-pointer rounded-seg border border-line-strong px-3.5 font-display text-[15px] font-semibold tracking-[.08em] text-ink uppercase hover:border-gold hover:text-gold"
+                  className="min-h-11 cursor-pointer rounded-seg sm:col-start-3 sm:row-span-2 sm:row-start-1 border border-line-strong px-3.5 font-display text-[15px] font-semibold tracking-[.08em] text-ink uppercase hover:border-gold hover:text-gold"
                 >
                   {open ? "Chiudi" : "Modifica"}
                 </button>

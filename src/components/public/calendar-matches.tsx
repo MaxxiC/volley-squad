@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { MatchTitle } from "@/components/ui/match-title";
 import { SEGMENTED, segmentClass } from "@/components/ui/segmented";
 
 /** Dati di una card partita già pronti per la UI (calcolati lato server). */
@@ -90,9 +91,7 @@ function MatchCard({ match: m }: { match: MatchCardData }) {
         </div>
 
         <span className="font-display text-[clamp(20px,4vw,26px)] leading-[1.05] font-bold uppercase">
-          <span className={m.usIsHome ? "text-gold" : "text-ink"}>{m.homeName}</span>{" "}
-          <span className="font-medium text-faint">vs</span>{" "}
-          <span className={m.usIsHome ? "text-ink" : "text-gold"}>{m.awayName}</span>
+          <MatchTitle home={m.homeName} away={m.awayName} usHome={m.usIsHome} />
         </span>
 
         {m.played && m.forfeit ? (
