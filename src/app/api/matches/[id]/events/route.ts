@@ -2,15 +2,14 @@
 // Rimandare lo stesso lotto non crea doppioni: è la base per l'offline (coda che si svuota quando torna la rete).
 import { eq, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { db } from "@/db";
 import { isForeignKeyViolation } from "@/db/errors";
 import { events, matches } from "@/db/schema";
+import { currentStaff } from "@/lib/auth-guard";
 import { EventBatchSchema } from "@/lib/live/event-schema";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  if (!(await currentStaff())) return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
 
   const matchId = Number((await params).id);
   if (!Number.isInteger(matchId)) return NextResponse.json({ error: "Partita non valida" }, { status: 400 });
