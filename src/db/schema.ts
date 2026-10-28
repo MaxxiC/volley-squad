@@ -78,6 +78,8 @@ export const teams = pgTable("teams", {
   id: serial().primaryKey(),
   name: text().notNull().unique(),
   isUs: boolean().notNull().default(false),
+  /** Id della squadra sul sito ufficiale (SportAdmin): per l'import e il logo. */
+  officialId: integer().unique(),
 });
 
 export const players = pgTable("players", {
