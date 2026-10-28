@@ -79,9 +79,9 @@ export async function finishMatch(matchId: number, mvpId: number | null): Promis
 }
 
 /**
- * Azzera il Live di una partita in corso (prove o avvio per sbaglio): via azioni, formazione,
- * presenti e parziali, la partita torna "da giocare". Mai per una partita conclusa. La conferma è
- * il nome dell'avversario, controllato anche qui.
+ * Azzera il Live di una partita in corso o conclusa (prove, avvio per sbaglio): via azioni,
+ * formazione, presenti, parziali e MVP, la partita torna "da giocare". La conferma è il nome
+ * dell'avversario, controllato anche qui.
  */
 export async function resetLive(input: ResetLiveInput): Promise<ActionResult<{ id: number }>> {
   await requireStaff();
@@ -91,7 +91,9 @@ export async function resetLive(input: ResetLiveInput): Promise<ActionResult<{ i
 
   const match = await db.query.matches.findFirst({ where: eq(matches.id, matchId), with: { opponent: true } });
   if (!match) return { ok: false, error: "Partita non trovata, ricarica la pagina" };
-  if (match.status !== "live") return { ok: false, error: "Si può azzerare solo una partita in corso" };
+  if (match.status !== "live" && match.status !== "finished") {
+    return { ok: false, error: "Si può azzerare solo una partita in corso o conclusa" };
+  }
   if (!sameName(confirm, match.opponent.name)) return { ok: false, error: `Per confermare scrivi esattamente "${match.opponent.name}"` };
 
   await runBatch([
@@ -105,5 +107,7 @@ export async function resetLive(input: ResetLiveInput): Promise<ActionResult<{ i
   revalidatePublicPages();
   revalidatePath("/admin/partite");
   revalidatePath("/admin/live");
+  revalidatePath("/admin/storico");
+  revalidatePath("/admin/giocatori");
   return { ok: true, id: matchId };
 }

@@ -1,13 +1,17 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { auth, signOut } from "@/auth";
+import { signOut } from "@/auth";
 import { LOGIN_PATH } from "@/auth.config";
 import { Logo } from "@/components/ui/logo";
+import { currentStaff } from "@/lib/auth-guard";
 import { TEAM_NAME } from "@/lib/club";
 import { AdminTabs } from "./admin-tabs";
 import { LogoutButton } from "./logout-button";
 
 const ROLE_LABEL = { admin: "Admin", coach: "Allenatore" } as const;
+
+/** Utente non più valido: si cancella la sessione e si torna al login (vedi sessione-scaduta/route.ts). */
+const SESSION_GONE = "/admin/sessione-scaduta";
 
 /** "Marco Rossi" → "Marco R." */
 function shortName(name: string) {
@@ -16,10 +20,11 @@ function shortName(name: string) {
 }
 
 export default async function StaffLayout({ children }: { children: React.ReactNode }) {
-  // Il middleware protegge già /admin; questo controllo copre il caso in cui venga saltato.
-  const session = await auth();
-  if (!session?.user) redirect(LOGIN_PATH);
-  const { name, role } = session.user;
+  // Il middleware protegge già /admin (firma della sessione); qui si controlla anche che l'utente
+  // esista ancora, e il controllo copre il caso in cui il middleware venga saltato.
+  const user = await currentStaff();
+  if (!user) redirect(SESSION_GONE);
+  const { name, role } = user;
 
   return (
     <div className="min-h-screen">

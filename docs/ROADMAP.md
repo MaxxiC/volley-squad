@@ -54,22 +54,32 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] Campo come mini campo (rete, prima/seconda linea, ruoli) anche in Prepara Live e formazione set; **posto del libero sempre visibile**: entrata con un tocco per il centrale in seconda linea (non per chi sta per battere), uscita, scambio libero A ↔ B e scelta del libero a set iniziato, mai conteggiati come cambi
 - [x] **Azzera il Live** (Prepara Live, solo partite in corso, doppia conferma con il nome dell'avversario, controllata anche dal server): via azioni, formazione e presenti, la partita torna da giocare; la copia del telefono è legata al Live (formazione del 1° set) e quella di un Live precedente si scarta da sola
 - [x] **Libero automatico sui centrali** (pallino blu sui centrali): entra da solo per il centrale in seconda linea e si alterna sui due (esce in P4, entra per l'altro; se il centrale è in P1 e batte, entra quando perdiamo la battuta). Uscito a mano non rientra da solo finché quel centrale è in seconda linea; tutti i bottoni manuali restano. È calcolato dallo stato (nessun evento): sul server, senza ruoli, i parziali non cambiano
-- Limiti noti del Live (da valutare): MVP obbligatorio per chiudere la partita, la pila Annulla/Ripeti si azzera ricaricando la pagina (gli eventi restano tutti).
+- Limiti noti del Live (da valutare): la pila Annulla/Ripeti si azzera ricaricando la pagina (gli eventi restano tutti).
+- [x] MVP facoltativo alla chiusura ("Concludi senza MVP"); si sceglie o si cambia anche dopo dallo Storico.
+- [x] Partita conclusa: dallo Storico "Riapri nel Live" (torna in corso con tutte le azioni, parziali tolti fino alla nuova chiusura, l'MVP salvato resta proposto) e "Azzera il Live" (doppia conferma, via anche risultato e MVP). Per le prove: partita futura → Live → conclusa → Azzera.
 - [x] Chiusura (28/10/2026): prove di Max su iPhone (Vercel), E2E verdi su dev e su build di produzione con service worker, DB ripristinato e verificato; partita e squadra TEST-volley eliminate (per le prove si usa una partita futura e poi "Azzera il Live"). Merge `feat/live` → `dev` → `main` a cura di Max.
 
-## 5 · Storico, statistiche, riepilogo pubblico
+## 5 · Storico, statistiche, riepilogo pubblico 🌿 `feat/storico` ✅
 - Decisioni (28/10/2026): nello Storico si correggono **solo le partite concluse** (quelle in corso in sola lettura, così Storico e telefono del Live non si sovrascrivono). Le partite con il risultato inserito a mano (es. n. 15 con Stordyteam) non hanno azioni: niente Storico né statistiche per loro.
-- [ ] Storico live: tab partita, set, lista eventi editabile, filtri, "Salva e prossima →", ricalcolo punteggi
-- [ ] Giocatori: efficienza per fondamentale, presenze / stelline / MVP
-- [ ] Grafico Andamento (ultime 12, bande migliore/peggiore finestra di 3)
-- [ ] Pagina pubblica `/partite/[id]`: score, parziali, MVP, come abbiamo fatto punto, migliori, confronto
+- [x] Storico live (`/admin/storico`, 🌿 `feat/storico`): partite registrate col Live (dalla più recente), set con il numero di azioni da completare, filtri Tutte / Da completare · N / Solo ★, azioni dalla più recente con il punteggio ricalcolato; modifica di fondamentale, esito, giocatore e ★ (il punto si ricava dall'esito), Elimina (come nel Live: resta nel registro annullato), "+ Aggiungi azione" in fondo al set o dopo un'azione, "Salva e prossima →". Ogni modifica ricalcola sul server tutta la partita e riscrive i parziali; è rifiutata se la partita non risulta più finita o un set chiuso non ha un punteggio di fine set (per spostare un punto si aggiunge prima l'azione che manca). Le partite in corso sono in sola lettura e l'API del Live rifiuta (422) azioni per partite concluse. Logica in `src/lib/live/storico.ts`, test in `tests/unit/live-storico.test.ts`
+- [x] Giocatori: efficienza per fondamentale (formule del README, % intera, oro ≥50 / rosso <30) dalle partite **concluse** registrate col Live; card dei fondamentali dei ruoli giocati più quelli fuori ruolo con azioni; ogni partita conta nel **ruolo di quel giorno** (presenti di Prepara Live, o ruolo del cambio con cui è entrato) e con più ruoli si sceglie "Tutti / Centrale · N / Banda · N". Nota in scheda: in Semplice si segnano solo punti ed errori. Logica in `src/lib/stats.ts`, test in `tests/unit/stats.test.ts`
+- [x] Grafico Andamento nella scheda giocatore (`trend-chart.tsx`, SVG a mano): ultime 12 partite con azioni del fondamentale scelto (segue anche il ruolo scelto), linea oro, griglia ogni 50% (scende sotto lo 0 quando l'efficienza è negativa), bande della finestra di 3 partite migliore (oro) e peggiore (rossa) con legenda; si tocca un punto per leggere partita, % e azioni (sul telefono non c'è hover), "Vedi i numeri" apre l'elenco. Area di disegno ridotta rispetto al prototipo (640×240) perché a 320px le scritte restino leggibili. Compare da 2 partite
+- [x] Pagina pubblica `/partite/[id]` (solo partite concluse, altrimenti 404): meta (giornata, n. gara, data, palestra), score grande casa → ospite con VINTA/PERSA, parziali, MVP (ruolo, punti, % in attacco, ★), come abbiamo fatto punto (attacco / muro / ace / errori avversari, "Altro" per i punti mai completati), i migliori (attacco, muro, battuta, ricezione con almeno 3 ricezioni), squadra a confronto (punti totali, conquistati, regalati con errori, serie più lunga: dell'avversario si conoscono solo punti ed errori). Partite col solo risultato o a tavolino: risultato e parziali con una nota. Si aggiorna con `revalidatePublicPages()` (anche dallo Storico). Logica in `src/lib/match-report.ts`, test in `tests/unit/match-report.test.ts`; l'E2E del Live ora prova anche Storico e riepilogo pubblico
 
 ## 6 · PWA + deploy
 - [x] Manifest + icone 192/512 (+ maskable, apple-touch 180) dal logo su fondo `bg`: due app installabili, "CUSBros" (da sito pubblico, apre `/`) e "CUSBros Staff" (da `/admin/**`, apre `/admin`), schermo intero (`display: standalone`)
-- [ ] Progetto Vercel collegato al repo, env `DATABASE_URL` + `AUTH_SECRET`
-- [ ] Verifica su telefono reale: installazione PWA, live offline in palestra
+- [x] Progetto Vercel collegato al repo (deploy da `main`, https://volley-squad.vercel.app), env `DATABASE_URL` + `AUTH_SECRET`, funzioni in `fra1` (`vercel.json`) vicino a Neon `eu-central-1`
+- [~] Verifica su telefono reale: Live provato da Max su iPhone (28/10/2026), app installata a schermo intero; manca la prova **offline in palestra** in una partita vera
 - [ ] **iPhone:** Safari cancella cache e dati di un sito non aperto da 7 giorni se non è installato sulla Home → installazione PWA consigliata per chi registra il Live; in ogni caso aprire il Live con la rete prima della partita
 - [ ] Merge finale `dev` → `main`
+
+## 🔒 Sicurezza (sito online)
+- [x] Controllo del 28/10/2026: middleware su `/admin/**` + controllo in pagine, server action e API; login con bcrypt, messaggio e tempi uguali per email sconosciuta o password sbagliata, redirect solo interni; segreti solo in `.env`; area staff `noindex`.
+- [x] Utente eliminato → accesso finito subito (prima restava valido il JWT fino a 30 giorni): `currentStaff()` ricontrolla l'utente nel DB, `/admin/sessione-scaduta` chiude la sessione senza giri di redirect.
+- [x] Intestazioni di sicurezza su tutte le pagine (`X-Frame-Options`, CSP `frame-ancestors 'none'`/`form-action 'self'`/`object-src 'none'`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`), niente `X-Powered-By`.
+- [x] Test: `tests/e2e/security.spec.ts` (accesso, API, intestazioni, noindex, login, redirect, utente eliminato) e `tests/unit/security.test.ts` (redirect del login).
+- [x] **Limite ai tentativi di accesso** (tabella `login_attempts`, migrazione `0005`): in 15 minuti 5 errori per email+connessione, 20 per connessione, 50 per email (largo apposta: chi conosce un'email non può bloccare il proprietario con pochi tentativi). Controllato dentro Auth.js (`authorize`), così vale anche chiamando l'endpoint direttamente; dopo un accesso riuscito si azzerano i tentativi dell'email. Logica in `src/lib/login-limit.ts`, test unitari ed E2E.
+- [ ] CSP completa anche per script e stili: richiede i nonce di Next, da valutare solo se serve.
 
 ## 💡 Idee future
 - [ ] **Import dal calendario ufficiale** (SportAdmin): bottone in admin che rilegge calendario, risultati e classifica del girone e propone gli aggiornamenti.
@@ -102,7 +112,6 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - **Classifica:** oggi inserita a mano da Admin Partite → Classifica (le partite delle altre squadre non le registriamo). Decisione definitiva in "Da fare".
 - **npm audit:** 2 avvisi su `postcss` interno a Next 15 (solo build-time). La "fix" proposta è passare a Next 16: non applicata, si rivaluta quando esce una patch 15.x. Altri avvisi `esbuild` arrivano da `drizzle-kit` (solo CLI in locale, non va in produzione).
 - **Auth.js v5** è ancora in beta: versione bloccata a `5.0.0-beta.32`, aggiornare solo di proposito.
-- **Login:** nessun limite di tentativi per ora (uso interno, 3 utenti). Da rivalutare prima del deploy.
+- **Login:** nessun limite di tentativi per ora (uso interno, 3 utenti): il sito è online, vedi la sezione Sicurezza.
 - **Password dimenticata:** per ora solo messaggio "contatta l'admin".
-- **`/partite/[id]`:** le card giocate ci linkano già; finché la pagina non esiste (step 5) danno 404.
-- **Stato al 28/10/2026:** step 0–4 completati (step 4 su `feat/live`, merge a cura di Max); prossimo lo step 5.1 Storico live. Il dev server si avvia con `npm run dev` (porta 3001).
+- **Stato al 28/10/2026:** step 0–4 completati (step 4 su `feat/live`, merge a cura di Max); step 5.1 Storico live fatto su `feat/storico`; step 5 completato su `feat/storico` (Storico, statistiche, andamento, riepilogo pubblico), E2E verdi il 28/10/2026; merge su `dev`/`main` a cura di Max. Il dev server si avvia con `npm run dev` (porta 3001).

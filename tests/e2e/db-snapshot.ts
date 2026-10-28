@@ -37,6 +37,8 @@ async function specs(): Promise<Spec[]> {
     { name: "match_players", table: s.matchPlayers, key: ["matchId", "playerId"] },
     { name: "lineups", table: s.lineups, key: ["id"] },
     { name: "events", table: s.events, key: ["id"] },
+    // I login sbagliati dei test lasciano tentativi falliti: il ripristino li toglie.
+    { name: "login_attempts", table: s.loginAttempts, key: ["id"] },
   ];
 }
 
