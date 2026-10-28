@@ -4,9 +4,10 @@ import { useRef, useState } from "react";
 import { PageHeader } from "@/components/admin/page-header";
 import { BTN_PRIMARY } from "@/components/admin/styles";
 import { GENDER_LABEL, ROLE_LABEL, fullName, type PlayerRole } from "@/lib/players";
-import { efficiencyTone } from "@/lib/stats";
+import { STAT_LABEL, TREND_MATCHES, efficiencyTone, formatPct, type StatSkill } from "@/lib/stats";
 import type { AdminPlayer, PlayerStats } from "./player-form";
 import { PlayerEditor } from "./player-editor";
+import { TrendChart } from "./trend-chart";
 
 type Props = { players: AdminPlayer[]; matchesPlayed: number };
 
@@ -179,18 +180,63 @@ function Efficiency({ stats }: { stats: PlayerStats }) {
               <div key={l.skill} className="flex flex-col gap-1.5 rounded-tile border border-line p-3.5">
                 <span className="text-[13px] font-semibold tracking-[.08em] text-muted uppercase">{l.label}</span>
                 <span className={`font-display text-[34px] leading-none font-extrabold tabular-nums ${TONE[efficiencyTone(l.eff)]}`}>
-                  {l.eff === null ? "—" : `${l.eff}%`}
+                  {formatPct(l.eff)}
                 </span>
                 <span className="text-[13px] text-ink-2">{l.total ? l.detail : "Nessuna azione"}</span>
               </div>
             ))}
           </div>
+          <Trend stats={stats} view={view} />
           <p className="text-[13px] text-faint">
             {stats.matches === 1 ? "1 partita registrata" : `${stats.matches} partite registrate`} con il Live
             {stats.roles.length === 1 ? ` (${ROLE_LABEL[stats.roles[0].role].toLowerCase()})` : ""}. In modalità Semplice si
             segnano solo i punti e gli errori: l&apos;efficienza completa viene dalla modalità Avanzata.
           </p>
         </>
+      )}
+    </div>
+  );
+}
+
+/** Andamento delle ultime partite (del ruolo scelto) per il fondamentale scelto. */
+function Trend({ stats, view }: { stats: PlayerStats; view: "all" | PlayerRole }) {
+  const matches = stats.trend.filter((m) => view === "all" || m.role === view);
+  const skills = (stats.lines[view] ?? stats.lines.all ?? []).map((l) => l.skill).filter((k) => matches.some((m) => m.skills[k]));
+  const [chosen, setChosen] = useState<StatSkill | null>(null);
+  const skill = chosen && skills.includes(chosen) ? chosen : skills[0];
+  const points = skill
+    ? matches.flatMap((m) => {
+        const v = m.skills[skill];
+        return v ? [{ label: m.label, title: m.title, value: v.eff, total: v.total }] : [];
+      }).slice(-TREND_MATCHES)
+    : [];
+
+  return (
+    <div className="flex flex-col gap-3 pt-2">
+      <div className="flex flex-wrap items-center justify-between gap-2.5">
+        <span className="font-display text-sm font-bold tracking-[.2em] text-gold uppercase">Andamento · ultime {TREND_MATCHES} partite</span>
+        {skills.length > 1 && (
+          <div role="group" aria-label="Fondamentale" className="flex max-w-full gap-1 overflow-x-auto rounded-btn border border-line p-0.5">
+            {skills.map((k) => (
+              <button
+                key={k}
+                type="button"
+                aria-pressed={k === skill}
+                onClick={() => setChosen(k)}
+                className={`min-h-11 cursor-pointer rounded-chip px-2.5 font-display text-sm font-semibold tracking-[.06em] whitespace-nowrap uppercase ${k === skill ? "bg-gold text-bg" : "text-muted"}`}
+              >
+                {STAT_LABEL[k]}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      {skill && points.length >= 2 ? (
+        <TrendChart key={`${view}-${skill}`} points={points} skillLabel={STAT_LABEL[skill]} />
+      ) : (
+        <p className="rounded-tile border border-dashed border-line p-3.5 text-sm text-muted">
+          L&apos;andamento compare da 2 partite con azioni{skill ? ` di ${STAT_LABEL[skill].toLowerCase()}` : ""}.
+        </p>
       )}
     </div>
   );

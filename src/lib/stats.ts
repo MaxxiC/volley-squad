@@ -92,6 +92,12 @@ export function efficiency(skill: StatSkill, c: Counts): number | null {
   return total ? Math.round(value * 100) : null;
 }
 
+/** "35%", "−33%" (segno meno tipografico), "—" se non c'è. */
+export function formatPct(eff: number | null) {
+  if (eff === null) return "—";
+  return eff < 0 ? `−${-eff}%` : `${eff}%`;
+}
+
 /** Colore dell'efficienza: ≥50% oro, <30% rosso, altrimenti normale. */
 export function efficiencyTone(eff: number | null): "gold" | "red" | "ink" {
   if (eff === null) return "ink";
@@ -126,4 +132,24 @@ export function matchRoles(
   const subs = [...events].filter((e) => e.kind === "sub" && !e.deleted && e.detail?.in && e.detail.role).sort((a, b) => a.seq - b.seq);
   for (const e of subs) roles.set(e.detail!.in!, e.detail!.role!);
   return roles;
+}
+
+/** Partite mostrate nel grafico Andamento. */
+export const TREND_MATCHES = 12;
+
+/**
+ * Finestre di `size` partite consecutive con la media più alta e più bassa (bande del grafico
+ * Andamento). null se le partite non bastano a distinguerle o se le medie sono tutte uguali.
+ */
+export function bestWorstWindows(values: number[], size = 3) {
+  if (values.length <= size) return null;
+  let best = { start: 0, avg: -Infinity };
+  let worst = { start: 0, avg: Infinity };
+  for (let i = 0; i + size <= values.length; i++) {
+    const avg = values.slice(i, i + size).reduce((a, b) => a + b, 0) / size;
+    if (avg > best.avg) best = { start: i, avg };
+    if (avg < worst.avg) worst = { start: i, avg };
+  }
+  if (best.avg === worst.avg) return null;
+  return { best: { ...best, avg: Math.round(best.avg) }, worst: { ...worst, avg: Math.round(worst.avg) }, size };
 }

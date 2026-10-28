@@ -3,10 +3,12 @@ import type { Metadata } from "next";
 import { db } from "@/db";
 import { events, matchPlayers, matches, players } from "@/db/schema";
 import { getCurrentSeason } from "@/lib/data";
+import { formatShortDate } from "@/lib/format";
 import type { EventDetail } from "@/lib/live/types";
 import { PLAYER_ROLES, type PlayerRole } from "@/lib/players";
-import { countsByPlayer, emptyCounts, matchRoles, mergeCounts, skillLines, type Counts } from "@/lib/stats";
-import type { AdminPlayer, PlayerStats } from "./player-form";
+import { STAT_SKILLS, countsByPlayer, efficiency, emptyCounts, matchRoles, mergeCounts, skillLines, type Counts } from "@/lib/stats";
+import { roundLabel, shortTeamName } from "@/lib/matches";
+import type { AdminPlayer, PlayerStats, TrendMatch } from "./player-form";
 import { PlayersManager } from "./players-manager";
 
 export const metadata: Metadata = { title: "Giocatori" };
@@ -57,10 +59,19 @@ async function seasonStats(seasonId: number): Promise<(playerId: number) => Play
     .from(matches)
     .innerJoin(events, eq(events.matchId, matches.id))
     .where(and(eq(matches.seasonId, seasonId), eq(matches.status, "finished")));
-  const ids = finished.map((m) => m.id);
-  const empty: PlayerStats = { matches: 0, roles: [], lines: {} };
-  if (!ids.length) return () => empty;
+  const empty: PlayerStats = { matches: 0, roles: [], lines: {}, trend: [] };
+  if (!finished.length) return () => empty;
 
+  // In ordine di data: è l'ordine del grafico Andamento.
+  const list = await db.query.matches.findMany({
+    where: inArray(
+      matches.id,
+      finished.map((m) => m.id),
+    ),
+    with: { opponent: true },
+    orderBy: [asc(matches.startsAt), asc(matches.round)],
+  });
+  const ids = list.map((m) => m.id);
   const [present, rows] = await Promise.all([
     db.select({ matchId: matchPlayers.matchId, playerId: matchPlayers.playerId, role: matchPlayers.role }).from(matchPlayers).where(inArray(matchPlayers.matchId, ids)),
     db
@@ -79,13 +90,17 @@ async function seasonStats(seasonId: number): Promise<(playerId: number) => Play
   ]);
 
   // Per giocatore: una voce per partita, con il ruolo di quel giorno e i conteggi.
-  const played = new Map<number, { role: PlayerRole; counts: Counts }[]>();
-  for (const matchId of ids) {
-    const evs = rows.filter((r) => r.matchId === matchId).map((r) => ({ ...r, detail: r.detail as EventDetail | null }));
-    const roles = matchRoles(present.filter((p) => p.matchId === matchId), evs);
+  const played = new Map<number, { role: PlayerRole; counts: Counts; label: string; title: string }[]>();
+  for (const m of list) {
+    const evs = rows.filter((r) => r.matchId === m.id).map((r) => ({ ...r, detail: r.detail as EventDetail | null }));
+    const roles = matchRoles(present.filter((p) => p.matchId === m.id), evs);
     const counts = countsByPlayer(evs);
+    const label = `${m.phase === "andata" ? "A" : "R"}${m.round}`;
+    const title = [roundLabel(m), `${m.home ? "vs " : ""}${shortTeamName(m.opponent.name)}`, m.startsAt && formatShortDate(m.startsAt)]
+      .filter(Boolean)
+      .join(" · ");
     for (const [playerId, role] of roles) {
-      played.set(playerId, [...(played.get(playerId) ?? []), { role, counts: counts.get(playerId) ?? emptyCounts() }]);
+      played.set(playerId, [...(played.get(playerId) ?? []), { role, counts: counts.get(playerId) ?? emptyCounts(), label, title }]);
     }
   }
 
@@ -100,6 +115,18 @@ async function seasonStats(seasonId: number): Promise<(playerId: number) => Play
     if (roles.length > 1) {
       for (const { role } of roles) lines[role] = skillLines(mergeCounts(list.filter((m) => m.role === role).map((m) => m.counts)), [role]);
     }
-    return { matches: list.length, roles, lines };
+    const trend: TrendMatch[] = list.map((m) => ({
+      label: m.label,
+      title: m.title,
+      role: m.role,
+      skills: Object.fromEntries(
+        STAT_SKILLS.flatMap((skill) => {
+          const eff = efficiency(skill, m.counts);
+          const total = Object.values(m.counts[skill]).reduce((a, b) => a + b, 0);
+          return eff === null ? [] : [[skill, { eff, total }]];
+        }),
+      ),
+    }));
+    return { matches: list.length, roles, lines, trend };
   };
 }

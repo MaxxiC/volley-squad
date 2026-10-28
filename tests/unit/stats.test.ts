@@ -1,7 +1,7 @@
 // Statistiche dei giocatori: conteggi, efficienza, card per ruolo, ruolo di partita (src/lib/stats.ts).
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { countsByPlayer, efficiency, efficiencyTone, matchRoles, mergeCounts, skillLines } from "@/lib/stats";
+import { bestWorstWindows, countsByPlayer, efficiency, efficiencyTone, formatPct, matchRoles, mergeCounts, skillLines } from "@/lib/stats";
 import { eventFactory } from "./helpers";
 
 const ev = eventFactory();
@@ -53,6 +53,7 @@ describe("efficienza (formule del README)", () => {
   test("senza azioni: nessuna efficienza; colori a 50 e 30", () => {
     assert.equal(efficiency("set", counts("attack", { kill: 1 })), null);
     assert.deepEqual([50, 49, 30, 29, null].map(efficiencyTone), ["gold", "ink", "ink", "red", "ink"]);
+    assert.deepEqual([35, 0, -33, null].map(formatPct), ["35%", "0%", "−33%", "—"]);
   });
 });
 
@@ -77,5 +78,24 @@ describe("ruolo di partita", () => {
     );
     assert.equal(roles.get(5), "C", "cambio annullato: non conta");
     assert.equal(roles.get(7), "O");
+  });
+});
+
+describe("andamento: periodo migliore e peggiore", () => {
+  test("finestre di 3 partite con la media più alta e più bassa", () => {
+    assert.deepEqual(bestWorstWindows([40, 10, 20, 30, 80, 70, 60]), {
+      best: { start: 4, avg: 70 },
+      worst: { start: 1, avg: 20 },
+      size: 3,
+    });
+  });
+
+  test("a parità vince la prima finestra", () => {
+    assert.equal(bestWorstWindows([50, 50, 50, 10, 50, 50, 50])?.best.start, 0);
+  });
+
+  test("poche partite o tutte uguali: nessuna banda", () => {
+    assert.equal(bestWorstWindows([10, 20, 30]), null);
+    assert.equal(bestWorstWindows([40, 40, 40, 40]), null);
   });
 });
