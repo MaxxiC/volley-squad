@@ -46,6 +46,7 @@ export default async function LiveMatchPage({ params }: { params: Promise<{ matc
       }}
       players={present satisfies LivePlayer[]}
       lineups={log.lineups}
+      startId={log.startId}
       initialEvents={log.events}
     />
   );

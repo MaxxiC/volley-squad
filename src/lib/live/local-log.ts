@@ -8,7 +8,8 @@ import type { LiveEvent } from "./types";
 const DB_NAME = "cusbros-live";
 const STORE = "events";
 
-type Row = LocalEntry & { id: string; matchId: number };
+/** start = Live a cui appartiene la riga (id della formazione del 1° set, vedi loadLiveLog). */
+type Row = LocalEntry & { id: string; matchId: number; start?: number | null };
 
 let opening: Promise<IDBDatabase> | null = null;
 
@@ -48,9 +49,14 @@ const request = <T>(req: IDBRequest<T>) =>
     req.onerror = () => reject(req.error);
   });
 
-export async function loadLocalLog(matchId: number): Promise<LocalEntry[]> {
+/** Copia locale di questo Live; le righe di un Live precedente della stessa partita si cancellano. */
+export async function loadLocalLog(matchId: number, start: number | null): Promise<LocalEntry[]> {
   try {
-    const rows = await tx("readonly", (s) => request(s.index("matchId").getAll(matchId) as IDBRequest<Row[]>));
+    const rows = await tx("readwrite", async (s) => {
+      const all = (await request(s.index("matchId").getAll(matchId))) as Row[];
+      for (const r of all) if (r.start !== start) s.delete(r.id);
+      return all.filter((r) => r.start === start);
+    });
     return rows.map(({ event, pending }) => ({ event, pending }));
   } catch {
     return [];
@@ -58,9 +64,9 @@ export async function loadLocalLog(matchId: number): Promise<LocalEntry[]> {
 }
 
 /** Salva una versione di un evento come "da inviare". */
-export async function saveLocal(matchId: number, event: LiveEvent) {
+export async function saveLocal(matchId: number, start: number | null, event: LiveEvent) {
   try {
-    await tx("readwrite", (s) => void s.put({ id: event.id, matchId, event, pending: true } satisfies Row));
+    await tx("readwrite", (s) => void s.put({ id: event.id, matchId, start, event, pending: true } satisfies Row));
   } catch {
     // Solo in memoria.
   }
