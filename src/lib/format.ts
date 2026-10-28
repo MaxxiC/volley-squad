@@ -33,6 +33,36 @@ export function formatTime(date: Date) {
   return `${p.hour}:${p.minute}`;
 }
 
+/** Valore per <input type="date">: "2026-10-31" */
+export function toDateInput(date: Date) {
+  const p = dateParts(date, { year: "numeric", month: "2-digit", day: "2-digit" });
+  return `${p.year}-${p.month}-${p.day}`;
+}
+
+/** Valore per <input type="time">: "21:00" */
+export const toTimeInput = formatTime;
+
+/** Da data e ora inserite (ora di Bologna) all'istante UTC, gestendo l'ora legale. */
+export function fromRomeInput(date: string, time: string) {
+  const [y, mo, d] = date.split("-").map(Number);
+  const [h, mi] = time.split(":").map(Number);
+  const wall = Date.UTC(y, mo - 1, d, h, mi);
+  const offsetAt = (ts: number) => {
+    const p = dateParts(new Date(ts), {
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      hourCycle: "h23",
+    });
+    return Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute) - ts;
+  };
+  // Due passaggi: il secondo corregge i casi a cavallo del cambio d'ora.
+  const first = wall - offsetAt(wall);
+  return new Date(wall - offsetAt(first));
+}
+
 /** Giorno e mese breve per il box data: { day: "31", month: "ott" } */
 export function dateBox(date: Date) {
   const p = dateParts(date, { day: "numeric", month: "short" });

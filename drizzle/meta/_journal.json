@@ -8,6 +8,34 @@
       "when": 1793114754137,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793116918869,
+      "tag": "0001_fase_e_numero_gara",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793133226134,
+      "tag": "0002_stati_partita_sesso_ruolo_partita",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793134271105,
+      "tag": "0003_battuta_iniziale_set",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793137188317,
+      "tag": "0004_eventi_libero_timeout_correzione_formazione",
+      "breakpoints": true
     }
   ]
 }

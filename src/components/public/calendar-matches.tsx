@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { SEGMENTED, segmentClass } from "@/components/ui/segmented";
 
 /** Dati di una card partita già pronti per la UI (calcolati lato server). */
 export type MatchCardData = {
   id: number;
-  round: number;
+  /** "Andata 2ª" */
+  roundLabel: string;
   dateLabel: string;
   home: boolean;
   homeName: string;
@@ -14,6 +16,10 @@ export type MatchCardData = {
   usIsHome: boolean;
   isNext: boolean;
   played: boolean;
+  /** Rinviata: data da ridefinire. */
+  postponed: boolean;
+  /** Risultato assegnato a tavolino: niente parziali da mostrare. */
+  forfeit: boolean;
   sets: { id: number; label: string; won: boolean }[];
   score: string;
   won: boolean;
@@ -37,14 +43,14 @@ export function CalendarMatches({ matches }: { matches: MatchCardData[] }) {
 
   return (
     <section className="flex flex-col gap-4.5">
-      <div role="group" aria-label="Filtra partite" className="flex max-w-full gap-1 self-start rounded-tile border border-line p-1">
+      <div role="group" aria-label="Filtra partite" className={SEGMENTED}>
         {FILTERS.map((f) => (
           <button
             key={f.key}
             type="button"
             aria-pressed={filter === f.key}
             onClick={() => setFilter(f.key)}
-            className={`min-h-11 cursor-pointer rounded-seg px-4.5 font-display text-base font-semibold tracking-[.08em] whitespace-nowrap uppercase ${filter === f.key ? "bg-gold text-bg" : "bg-transparent text-ink"}`}
+            className={segmentClass(filter === f.key)}
           >
             {f.label}
           </button>
@@ -74,10 +80,13 @@ function MatchCard({ match: m }: { match: MatchCardData }) {
       <div className="flex min-w-0 flex-col gap-2.5">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-display text-sm font-semibold tracking-[.1em] uppercase">
           <span className="text-muted">
-            {m.round}ª · {m.dateLabel}
+            {m.roundLabel} · {m.dateLabel}
           </span>
           <span className={m.home ? "text-blue" : "text-muted"}>{m.home ? "Casa" : "Trasferta"}</span>
           {m.isNext && <span className="rounded-badge bg-gold px-2 py-0.5 font-bold text-bg">Prossima</span>}
+          {m.postponed && (
+            <span className="rounded-badge border border-line-strong px-2 py-0.5 font-bold text-ink-2">Rinviata</span>
+          )}
         </div>
 
         <span className="font-display text-[clamp(20px,4vw,26px)] leading-[1.05] font-bold uppercase">
@@ -86,7 +95,9 @@ function MatchCard({ match: m }: { match: MatchCardData }) {
           <span className={m.usIsHome ? "text-ink" : "text-gold"}>{m.awayName}</span>
         </span>
 
-        {m.played ? (
+        {m.played && m.forfeit ? (
+          <span className="text-sm text-muted">Risultato a tavolino</span>
+        ) : m.played ? (
           <div className="flex flex-wrap gap-1.5">
             {m.sets.map((s) => (
               <span
@@ -99,7 +110,7 @@ function MatchCard({ match: m }: { match: MatchCardData }) {
           </div>
         ) : (
           <span className="text-sm text-muted">
-            {m.time} · {m.venue}
+            {m.postponed ? "Nuova data da definire" : m.time} · {m.venue}
           </span>
         )}
       </div>
@@ -110,7 +121,9 @@ function MatchCard({ match: m }: { match: MatchCardData }) {
           <span className="font-display text-[13px] font-bold tracking-[.14em] uppercase">{m.won ? "Vinta" : "Persa"}</span>
         </div>
       ) : (
-        <div className="flex size-16 flex-col items-center justify-center rounded-tile border border-line">
+        <div
+          className={`flex size-16 flex-col items-center justify-center rounded-tile border border-line ${m.postponed ? "opacity-45" : ""}`}
+        >
           <span className="font-display text-[28px] leading-none font-extrabold">{m.day}</span>
           <span className="font-display text-[13px] font-semibold tracking-[.12em] text-muted uppercase">{m.month}</span>
         </div>

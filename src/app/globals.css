@@ -24,6 +24,8 @@
   --color-blue: #7f9fe0;
   --color-red: #e08a7c;
   --color-red-line: #5a2f29;
+  /* Stato "dati salvati / sincronizzato" (design Prepara Live). */
+  --color-green: #7fbf8a;
 
   --radius-*: initial;
   --radius-badge: 4px;
@@ -34,6 +36,16 @@
   --radius-card: 12px;
   --radius-panel: 14px;
   --radius-pill: 999px;
+
+  /* Il design usa l'interlinea di default del browser ("normal"): le taglie di testo di
+     Tailwind non devono imporne una propria. Dove serve si usa leading-*. */
+  --text-xs--line-height: normal;
+  --text-sm--line-height: normal;
+  --text-base--line-height: normal;
+  --text-lg--line-height: normal;
+  --text-xl--line-height: normal;
+  --text-2xl--line-height: normal;
+  --text-5xl--line-height: normal;
 }
 
 /* Font caricati con next/font nel root layout. */
@@ -45,6 +57,8 @@
 @layer base {
   html {
     color-scheme: dark;
+    /* Preflight di Tailwind imposta 1.5: il design usa l'interlinea normale. */
+    line-height: normal;
   }
 
   body {
@@ -70,4 +84,14 @@
 /* Margine laterale delle pagine pubbliche. */
 @utility px-gutter {
   padding-inline: clamp(20px, 5vw, 48px);
+}
+
+/* Margine laterale dell'area staff. */
+@utility px-admin {
+  padding-inline: clamp(16px, 4vw, 40px);
+}
+
+/* Fa uscire un elemento fino ai bordi dell'area staff (es. barra azioni fissa in basso). */
+@utility -mx-admin {
+  margin-inline: calc(-1 * clamp(16px, 4vw, 40px));
 }
