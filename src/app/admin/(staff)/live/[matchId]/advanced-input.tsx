@@ -24,7 +24,8 @@ export function AdvancedInput({ opponent, player, onClearPlayer, onAction, onOpp
 
   return (
     <section className={PANEL}>
-      <div className="flex min-h-7 items-center gap-2.5">
+      {/* Alta come il bottone ×: selezionando un giocatore la riga non cambia altezza. */}
+      <div className="flex min-h-11 items-center gap-2.5">
         <span className="text-[13px] font-semibold tracking-[.1em] text-muted uppercase">Giocatore</span>
         <span className={`mr-auto font-display text-xl font-bold uppercase ${player ? "text-gold" : "text-faint"}`}>
           {player ? playerLabel(player) : "Tocca un giocatore in campo"}

@@ -47,6 +47,7 @@ Next.js 15 App Router + TypeScript · Tailwind v4 (token in `@theme` dentro `src
 **Test:** logica in `tests/unit/` (`node:test` via `tsx`, niente DB); E2E in `tests/e2e/` (Playwright). Nuove regole del Live o delle validazioni → nuovo caso in `tests/unit/`.
 
 **Test sul DB reale (Neon):** sempre con **copia delle tabelle prima e ripristino identico dopo**, verificato (in passato un test ha cancellato un giocatore e cambiato date: recuperati). Negli E2E lo fa già `tests/e2e/global-setup.ts` (copia anche su file, partita e utente temporanei, ripristino in transazione, verifica); usare quello anche per nuovi E2E. Script a parte: stessa regola, con utente temporaneo via `npm run user:create` + `NEW_USER_PASSWORD`, eliminato alla fine.
+- **Mai E2E mentre qualcuno usa l'app sul DB reale** (es. Max che prova dal telefono): il ripristino riporta il DB a com'era all'avvio del test e cancellerebbe le sue azioni. Chiedere prima.
 - Porta fissa **3001** per `npm run dev` e `npm start` (sulla 3000 gira un'altra app di Max). Gli E2E puntano lì; per un'altra porta `E2E_BASE_URL` (il setup si rifiuta di partire se il server non è CUSBros).
 
 ## Insidie note (Windows)
