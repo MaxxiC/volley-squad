@@ -9,4 +9,7 @@ export const HOME_VENUE = "Palestra ITIG O. BELLUZZI-L. DA VINCI - CAMPO B — R
 /** Calendario e classifica ufficiali del comitato (SportAdmin). */
 export const OFFICIAL_CALENDAR_URL = "https://sportadmin.net/s/libertas-volley-comitato-provinciale-rimini";
 
+/** Girone sul sito ufficiale (nome del blocco nella pagina del comitato). */
+export const OFFICIAL_GROUP = "CHALLENGE";
+
 export const COMPETITION_NAME = "Libertas Cup Mix 2027 · Challenge";

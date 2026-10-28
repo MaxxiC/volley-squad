@@ -43,6 +43,13 @@
       "when": 1793205006555,
       "tag": "0005_tentativi_di_accesso",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793207054810,
+      "tag": "0006_id_ufficiale_squadre",
+      "breakpoints": true
     }
   ]
 }

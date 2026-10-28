@@ -54,7 +54,7 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] Campo come mini campo (rete, prima/seconda linea, ruoli) anche in Prepara Live e formazione set; **posto del libero sempre visibile**: entrata con un tocco per il centrale in seconda linea (non per chi sta per battere), uscita, scambio libero A ↔ B e scelta del libero a set iniziato, mai conteggiati come cambi
 - [x] **Azzera il Live** (Prepara Live, solo partite in corso, doppia conferma con il nome dell'avversario, controllata anche dal server): via azioni, formazione e presenti, la partita torna da giocare; la copia del telefono è legata al Live (formazione del 1° set) e quella di un Live precedente si scarta da sola
 - [x] **Libero automatico sui centrali** (pallino blu sui centrali): entra da solo per il centrale in seconda linea e si alterna sui due (esce in P4, entra per l'altro; se il centrale è in P1 e batte, entra quando perdiamo la battuta). Uscito a mano non rientra da solo finché quel centrale è in seconda linea; tutti i bottoni manuali restano. È calcolato dallo stato (nessun evento): sul server, senza ruoli, i parziali non cambiano
-- Limiti noti del Live (da valutare): la pila Annulla/Ripeti si azzera ricaricando la pagina (gli eventi restano tutti).
+- [x] Annulla/Ripeti anche dopo un ricaricamento: la pila si salva sul telefono a ogni tocco (`undo-store.ts`, legata al Live in corso, ultime 300 operazioni) e si riprende identica; se manca o non torna col registro (azioni fatte altrove, dati cancellati) si ricostruisce dal registro (`restoreHistory` in `history.ts`: Annulla toglie l'ultima azione valida, poi la precedente). Si cancella con la copia del registro (fine partita, azzeramento, nuovo Live, Esci).
 - [x] MVP facoltativo alla chiusura ("Concludi senza MVP"); si sceglie o si cambia anche dopo dallo Storico.
 - [x] Partita conclusa: dallo Storico "Riapri nel Live" (torna in corso con tutte le azioni, parziali tolti fino alla nuova chiusura, l'MVP salvato resta proposto) e "Azzera il Live" (doppia conferma, via anche risultato e MVP). Per le prove: partita futura → Live → conclusa → Azzera.
 - [x] Chiusura (28/10/2026): prove di Max su iPhone (Vercel), E2E verdi su dev e su build di produzione con service worker, DB ripristinato e verificato; partita e squadra TEST-volley eliminate (per le prove si usa una partita futura e poi "Azzera il Live"). Merge `feat/live` → `dev` → `main` a cura di Max.
@@ -82,7 +82,7 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [ ] CSP completa anche per script e stili: richiede i nonce di Next, da valutare solo se serve.
 
 ## 💡 Idee future
-- [ ] **Import dal calendario ufficiale** (SportAdmin): bottone in admin che rilegge calendario, risultati e classifica del girone e propone gli aggiornamenti.
+- [x] **Import dal sito ufficiale** (SportAdmin) 🌿 `feat/import`: Admin → Partite → **Ufficiale**, bottone "Controlla il sito ufficiale" (la pagina si legge solo su richiesta) → differenze → "Applica". Nostre partite riconosciute dal numero gara (data, ora, palestra, casa/trasferta, avversario, risultato se non registrate col Live; con il Live solo un avviso), partite nuove create, squadre collegate con l'id ufficiale (`teams.official_id`, migrazione `0006`) o create, classifica copiata dal sito (punti, G, V, P) con i set calcolati dai parziali. Lettura in `src/lib/official/parse.ts` (`node-html-parser`), confronto in `diff.ts`, test con una pagina finta in `tests/unit/fixtures/`.
 - [ ] **Giornate di riposo** nel Calendario pubblico ("Riposa CUSBros", 7ª andata e ritorno), come sul sito ufficiale.
 - [ ] **Loghi delle squadre** accanto ai nomi (come sul sito ufficiale).
 - [ ] **Animazioni leggere tra le pagine:** transizioni morbide (fade/slide brevi) senza librerie pesanti, es. View Transitions API del browser o CSS puro; rispettare `prefers-reduced-motion`.
@@ -94,7 +94,7 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] **Utente admin** creato.
 - [ ] **Allenatori:** crea i 2 utenti `coach` con `npm run user:create -- <email> "<nome>" coach`.
 - [ ] **Sesso dei giocatori** in Admin Giocatori (serve all'avviso "almeno 2 donne in campo").
-- [ ] **Classifica:** decidere se inserita a mano o calcolata. Il DB ha già la tabella `standings` (va bene per entrambe le strade).
+- [x] **Classifica:** si copia dal sito ufficiale con "Applica" (resta modificabile a mano da Partite → Classifica).
 - [x] **"Andata" nel Calendario:** aggiunta la fase (andata/ritorno) e il numero gara ufficiale.
 - [x] **Rosa vera:** 14 giocatori caricati (27/10/2026).
 - [ ] **Numeri di maglia veri** (ora provvisori 1–14) e **cognomi mancanti** (Claudio, Kevi, Francesco, Maria Chiara, Rebecca): si sistemano da Admin Giocatori.
@@ -109,7 +109,7 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 
 ## Note e decisioni aperte
 - **Campionato reale:** Libertas Cup Mix 2027, girone Challenge (Rimini). Fonte: [calendario ufficiale SportAdmin](https://sportadmin.net/s/libertas-volley-comitato-provinciale-rimini). I dati dei prototipi (Bologna, PalaCUS, squadre) erano inventati e sono stati sostituiti il 27/10/2026.
-- **Classifica:** oggi inserita a mano da Admin Partite → Classifica (le partite delle altre squadre non le registriamo). Decisione definitiva in "Da fare".
+- **Classifica:** dal sito ufficiale (Partite → Ufficiale → Applica), con i set calcolati dai parziali di tutte le gare del girone; la modifica a mano resta possibile.
 - **npm audit:** 2 avvisi su `postcss` interno a Next 15 (solo build-time). La "fix" proposta è passare a Next 16: non applicata, si rivaluta quando esce una patch 15.x. Altri avvisi `esbuild` arrivano da `drizzle-kit` (solo CLI in locale, non va in produzione).
 - **Auth.js v5** è ancora in beta: versione bloccata a `5.0.0-beta.32`, aggiornare solo di proposito.
 - **Login:** nessun limite di tentativi per ora (uso interno, 3 utenti): il sito è online, vedi la sezione Sicurezza.

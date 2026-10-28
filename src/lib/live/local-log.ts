@@ -3,6 +3,7 @@
 // alla riapertura la coda riparte. Se IndexedDB non è disponibile (es. navigazione privata) le
 // funzioni non falliscono: il Live continua a funzionare solo in memoria.
 import { sameVersion, type LocalEntry } from "./merge";
+import { clearUndo } from "./undo-store";
 import type { LiveEvent } from "./types";
 
 const DB_NAME = "cusbros-live";
@@ -100,6 +101,7 @@ export async function pendingCount() {
 export async function clearIfSynced() {
   const pending = await pendingCount();
   if (pending > 0) return pending;
+  clearUndo();
   try {
     await tx("readwrite", (s) => void s.clear());
   } catch {
@@ -110,6 +112,7 @@ export async function clearIfSynced() {
 
 /** Partita conclusa: la copia locale non serve più. */
 export async function clearLocalLog(matchId: number) {
+  clearUndo(matchId);
   try {
     await tx("readwrite", async (s) => {
       const keys = await request(s.index("matchId").getAllKeys(matchId));

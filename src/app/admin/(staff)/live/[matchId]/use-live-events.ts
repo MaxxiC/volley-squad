@@ -5,9 +5,10 @@
 // (IndexedDB, sopravvive alla chiusura dell'app) e va in coda per il server, dove si salva per id
 // (upsert idempotente): reinviare non crea doppioni.
 import { useCallback, useEffect, useRef, useState } from "react";
-import { EMPTY_HISTORY, record, redo as redoOp, undo as undoOp, type History } from "@/lib/live/history";
+import { EMPTY_HISTORY, record, redo as redoOp, restoreHistory, undo as undoOp, type History } from "@/lib/live/history";
 import { loadLocalLog, markSynced, saveLocal } from "@/lib/live/local-log";
 import { mergeLogs } from "@/lib/live/merge";
+import { loadUndo, saveUndo } from "@/lib/live/undo-store";
 import type { LiveEvent } from "@/lib/live/types";
 import { uuid } from "@/lib/uuid";
 
@@ -134,15 +135,23 @@ export function useLiveEvents(matchId: number, start: number | null, initial: Li
     void loadLocalLog(matchId, start).then((local) => {
       if (cancelled) return;
       setSync((s) => ({ ...s, restoring: false }));
-      if (local.length === 0) return;
-      const { events: merged, toSend } = mergeLogs([...eventsRef.current.values()], local);
-      // Azioni fatte nel frattempo (già in coda) hanno la precedenza.
-      for (const e of queue.current.values()) merged.set(e.id, e);
-      eventsRef.current = merged;
-      setEvents(merged);
-      for (const e of toSend) if (!queue.current.has(e.id)) queue.current.set(e.id, e);
-      setSync((s) => ({ ...s, pending: queue.current.size }));
-      if (queue.current.size > 0) scheduleFlush();
+      if (local.length > 0) {
+        const { events: merged, toSend } = mergeLogs([...eventsRef.current.values()], local);
+        // Azioni fatte nel frattempo (già in coda) hanno la precedenza.
+        for (const e of queue.current.values()) merged.set(e.id, e);
+        eventsRef.current = merged;
+        setEvents(merged);
+        for (const e of toSend) if (!queue.current.has(e.id)) queue.current.set(e.id, e);
+        setSync((s) => ({ ...s, pending: queue.current.size }));
+        if (queue.current.size > 0) scheduleFlush();
+      }
+      // Annulla/Ripeti dopo un ricaricamento: la pila salvata sul telefono, o ricostruita dal registro.
+      // Le operazioni fatte durante la lettura (pochi millisecondi) restano in cima.
+      const restored = restoreHistory(loadUndo(matchId, start), eventsRef.current);
+      const meanwhile = historyRef.current;
+      const next = meanwhile.done.length || meanwhile.undone.length ? { done: [...restored.done, ...meanwhile.done], undone: meanwhile.undone } : restored;
+      historyRef.current = next;
+      setHistory(next);
     });
     return () => {
       cancelled = true;
@@ -186,10 +195,14 @@ export function useLiveEvents(matchId: number, start: number | null, initial: Li
     [matchId, start, scheduleFlush],
   );
 
-  const setHistoryBoth = (h: History) => {
-    historyRef.current = h;
-    setHistory(h);
-  };
+  const setHistoryBoth = useCallback(
+    (h: History) => {
+      historyRef.current = h;
+      setHistory(h);
+      saveUndo(matchId, start, h);
+    },
+    [matchId, start],
+  );
 
   /** Nuovo evento in coda al registro; restituisce l'evento creato. */
   const add = useCallback(
@@ -213,7 +226,7 @@ export function useLiveEvents(matchId: number, start: number | null, initial: Li
       setHistoryBoth(record(historyRef.current, { before: null, after: event }));
       return event;
     },
-    [apply],
+    [apply, setHistoryBoth],
   );
 
   /** Modifica un evento esistente (es. completare "come" e "chi" di un punto). */
@@ -225,7 +238,7 @@ export function useLiveEvents(matchId: number, start: number | null, initial: Li
       apply(after);
       setHistoryBoth(record(historyRef.current, { before, after }));
     },
-    [apply],
+    [apply, setHistoryBoth],
   );
 
   const undo = useCallback(() => {
@@ -233,14 +246,14 @@ export function useLiveEvents(matchId: number, start: number | null, initial: Li
     if (!res) return;
     apply(res.apply);
     setHistoryBoth(res.history);
-  }, [apply]);
+  }, [apply, setHistoryBoth]);
 
   const redo = useCallback(() => {
     const res = redoOp(historyRef.current);
     if (!res) return;
     apply(res.apply);
     setHistoryBoth(res.history);
-  }, [apply]);
+  }, [apply, setHistoryBoth]);
 
   return {
     events,
