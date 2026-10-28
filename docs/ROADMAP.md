@@ -60,7 +60,7 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [ ] Pagina pubblica `/partite/[id]`: score, parziali, MVP, come abbiamo fatto punto, migliori, confronto
 
 ## 6 · PWA + deploy
-- [ ] Manifest + icone 192/512 dal logo
+- [x] Manifest + icone 192/512 (+ maskable, apple-touch 180) dal logo su fondo `bg`: due app installabili, "CUSBros" (da sito pubblico, apre `/`) e "CUSBros Staff" (da `/admin/**`, apre `/admin`), schermo intero (`display: standalone`)
 - [ ] Progetto Vercel collegato al repo, env `DATABASE_URL` + `AUTH_SECRET`
 - [ ] Verifica su telefono reale: installazione PWA, live offline in palestra
 - [ ] **iPhone:** Safari cancella cache e dati di un sito non aperto da 7 giorni se non è installato sulla Home → installazione PWA consigliata per chi registra il Live; in ogni caso aprire il Live con la rete prima della partita
