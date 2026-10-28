@@ -14,7 +14,8 @@
     "user:create": "tsx scripts/create-user.ts",
     "test": "tsx --test --test-reporter=spec \"tests/unit/**/*.test.ts\"",
     "test:e2e": "playwright test",
-    "test:restore": "tsx tests/e2e/restore.ts"
+    "test:restore": "tsx tests/e2e/restore.ts",
+    "test:manual": "tsx tests/e2e/manual-start.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",

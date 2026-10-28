@@ -40,6 +40,7 @@ Area staff: http://localhost:3001/admin (non linkata dal sito pubblico).
 | `npm test` | test della logica (Live, validazioni, date, formazione): pochi secondi, non usa il DB |
 | `npm run test:e2e` | E2E Playwright del Live sul **DB reale**, con copia e ripristino verificato (vedi sotto) |
 | `npm run test:restore` | dopo un E2E interrotto: mostra le differenze dalla copia; con `-- --apply` ripristina |
+| `npm run test:manual` | prova a mano sul DB reale (es. dal telefono): copia del DB + partita "Prova telefono"; si chiude con `test:restore` |
 
 Modificare lo schema: cambia `src/db/schema.ts` → `npm run db:generate` → controlla l'SQL in `drizzle/` → `npm run db:migrate`.
 
