@@ -55,8 +55,8 @@ export function outcomeOf(skill: Skill, key: string) {
   return OUTCOMES[skill].find((o) => o.key === key) ?? null;
 }
 
-/** Errore avversario: su palla semplice (free) o durante un'azione (rally). */
-export const BALL_TYPE_LABEL = { free: "palla semplice", rally: "azione" } as const;
+/** Errore avversario: su una nostra palla semplice (free) o durante una loro azione (rally). */
+export const BALL_TYPE_LABEL = { free: "palla semplice nostra", rally: "azione loro" } as const;
 export type BallType = keyof typeof BALL_TYPE_LABEL;
 
 /**
