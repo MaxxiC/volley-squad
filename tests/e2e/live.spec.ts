@@ -131,12 +131,19 @@ test("Live completo sul DB reale (con ripristino)", async ({ page }) => {
     await expect(page.getByRole("button", { name: /^Cambio 1\/6/ })).toBeVisible();
   });
 
-  await test.step("libero: entra per il centrale, cambio libero A ↔ B, esce da solo in P4", async () => {
-    // Scorciatoia: il centrale in seconda linea (P5 dopo la rotazione) esce per il libero.
+  await test.step("libero: automatico sul centrale, uscita e rientro a mano, cambio A ↔ B, esce da solo in P4", async () => {
+    // "Riempi in ordine" (P S C O S C): il centrale in P6 all'inizio, in P5 dopo la rotazione, ha già il libero al suo posto.
     const centrale = player(slots[5]);
-    await page.getByRole("button", { name: `Entra per ${playerLabel(centrale)} (centrale)` }).click();
     await expect(pos(page, 5)).toHaveAttribute("aria-label", /\(libero\)/);
     await expect(page.getByText(`In campo al posto di ${playerLabel(centrale)}`)).toBeVisible();
+
+    // Fatto uscire a mano non rientra da solo; si rimette con la scorciatoia.
+    await page.getByRole("button", { name: `Esce · rientra ${playerLabel(centrale)}` }).click();
+    await expect(pos(page, 5)).toHaveAttribute("aria-label", `P5: ${playerLabel(centrale)}`);
+    await expect(page.getByText(`Uscito a mano: non rientra da solo per ${playerLabel(centrale)}`)).toBeVisible();
+    await expect(feedTop(page)).toContainText(`Libero esce · rientra ${playerLabel(centrale)}`);
+    await page.getByRole("button", { name: `Entra per ${playerLabel(centrale)} (centrale)` }).click();
+    await expect(pos(page, 5)).toHaveAttribute("aria-label", /\(libero\)/);
     await expect(feedTop(page)).toContainText(`Libero entra per ${playerLabel(centrale)}`);
 
     // L'altro libero prende il suo posto senza consumare cambi.
