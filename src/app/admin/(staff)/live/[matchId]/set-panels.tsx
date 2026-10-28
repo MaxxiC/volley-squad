@@ -41,7 +41,7 @@ export function NextSetLineup({
       <span className="text-sm text-muted">
         Proposta: la rotazione di fine set. {lineupHint(lineup)}.
       </span>
-      <LineupField lineup={lineup} playerOf={(id) => byId.get(id)} />
+      <LineupField lineup={lineup} playerOf={(id) => byId.get(id)} roleOf={(id) => live.roles[id] ?? byId.get(id)?.role} />
       <LineupPool lineup={lineup} players={players} tagOf={(p) => p.role} />
       <WomenWarning ids={lineup.slots.filter((x): x is number => x !== null)} genderOf={(id) => byId.get(id)?.gender ?? null} />
 

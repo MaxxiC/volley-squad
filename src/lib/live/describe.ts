@@ -27,8 +27,15 @@ export function describeEvent(e: LiveEvent, playerOf: (id: number) => LivePlayer
       const role = d.role ? ` (${ROLE_LABEL[d.role]})` : "";
       return `Cambio · entra ${playerLabel(playerOf(d.in ?? 0))}${role}, esce ${playerLabel(playerOf(d.out ?? 0))}`;
     }
-    case "libero":
-      return `Libero · entra ${playerLabel(playerOf(d.in ?? 0))}, esce ${playerLabel(playerOf(d.out ?? 0))}`;
+    case "libero": {
+      const inn = playerOf(d.in ?? 0);
+      if (!d.out) return `Libero scelto · ${playerLabel(inn)}`;
+      const out = playerOf(d.out);
+      if (inn?.role === "L" && out?.role === "L") return `Cambio libero · entra ${playerLabel(inn)}, esce ${playerLabel(out)}`;
+      if (inn?.role === "L") return `Libero entra per ${playerLabel(out)}`;
+      if (out?.role === "L") return `Libero esce · rientra ${playerLabel(inn)}`;
+      return `Libero · entra ${playerLabel(inn)}, esce ${playerLabel(out)}`;
+    }
   }
   if (e.skill === "opp_point") return `Punto ${opponent}`;
   if (e.skill === "opp_error") {

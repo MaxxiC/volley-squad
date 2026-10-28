@@ -9,6 +9,7 @@ const roster = new Map<number, LivePlayer>([
   [2, { id: 2, number: 7, firstName: "Mattia", lastName: "Botticelli", role: "S", gender: "M" }],
   [3, { id: 3, number: 3, firstName: "Claudio", lastName: "", role: "S", gender: null }],
   [9, { id: 9, number: 2, firstName: "Alessia", lastName: "Federici", role: "L", gender: "F" }],
+  [19, { id: 19, number: 9, firstName: "Daniel", lastName: "Casadei", role: "L", gender: "M" }],
 ]);
 const playerOf = (id: number) => roster.get(id);
 const OPP = "Dinamite";
@@ -50,5 +51,8 @@ test("eventi di gestione della partita", () => {
 test("cambi e libero", () => {
   assert.equal(text({ kind: "sub", detail: { in: 2, out: 3, role: "O" } }), "Cambio · entra #7 Botticelli (Opposto), esce #3 Claudio");
   assert.equal(text({ kind: "sub", detail: { in: 2, out: 3 } }), "Cambio · entra #7 Botticelli, esce #3 Claudio");
-  assert.equal(text({ kind: "libero", detail: { in: 9, out: 2 } }), "Libero · entra #2 Federici, esce #7 Botticelli");
+  assert.equal(text({ kind: "libero", detail: { in: 9, out: 2 } }), "Libero entra per #7 Botticelli");
+  assert.equal(text({ kind: "libero", detail: { in: 2, out: 9 } }), "Libero esce · rientra #7 Botticelli");
+  assert.equal(text({ kind: "libero", detail: { in: 9 } }), "Libero scelto · #2 Federici");
+  assert.equal(text({ kind: "libero", detail: { in: 19, out: 9 } }), "Cambio libero · entra #9 Casadei, esce #2 Federici");
 });

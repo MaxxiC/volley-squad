@@ -1,7 +1,7 @@
 // Stato del Live ricostruito dal registro eventi (src/lib/live/state.ts).
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { computeLive, rotateClockwise, setWinnerOf, subWarning, type LiveState } from "@/lib/live/state";
+import { computeLive, liberoTarget, rotateClockwise, setWinnerOf, subWarning, type LiveState } from "@/lib/live/state";
 import { eventFactory, lineup, points, wonSet } from "./helpers";
 
 /** computeLive senza null: nei test c'è sempre la formazione del set 1. */
@@ -258,6 +258,57 @@ describe("libero", () => {
     const s = live(lineup("us"), [ev({ kind: "libero", detail: { in: 9, out: 6 } }), ev({ kind: "libero", detail: { in: 6, out: 9 } })]);
     assert.deepEqual(s.rotation, [1, 2, 3, 4, 5, 6]);
     assert.equal(s.liberoFor, null);
+  });
+
+  test("cambio di libero in panchina (A ↔ B): nessun cambio consumato", () => {
+    const ev = eventFactory();
+    const s = live(lineup("us"), [ev({ kind: "libero", detail: { in: 19, out: 9 } })]);
+    assert.equal(s.liberoId, 19);
+    assert.deepEqual(s.rotation, [1, 2, 3, 4, 5, 6]);
+    assert.equal(s.subs, 0);
+  });
+
+  test("cambio di libero in campo: il nuovo resta al posto dello stesso giocatore", () => {
+    const ev = eventFactory();
+    const s = live(lineup("us"), [ev({ kind: "libero", detail: { in: 9, out: 5 } }), ev({ kind: "libero", detail: { in: 19, out: 9 } })]);
+    assert.deepEqual(s.rotation, [1, 2, 3, 4, 19, 6]);
+    assert.equal(s.liberoId, 19);
+    assert.equal(s.liberoFor, 5);
+    assert.equal(s.subs, 0);
+    // E poi esce: rientra il giocatore sostituito.
+    const out = live(lineup("us"), [
+      ev({ kind: "libero", detail: { in: 9, out: 5 } }),
+      ev({ kind: "libero", detail: { in: 19, out: 9 } }),
+      ev({ kind: "libero", detail: { in: 5, out: 19 } }),
+    ]);
+    assert.deepEqual(out.rotation, [1, 2, 3, 4, 5, 6]);
+    assert.equal(out.liberoFor, null);
+    assert.equal(out.liberoId, 19);
+  });
+
+  test("libero scelto a set iniziato se il posto era vuoto", () => {
+    const ev = eventFactory();
+    const s = live(lineup("us", { liberoId: null }), [ev({ point: "us" }), ev({ kind: "libero", detail: { in: 9 } })]);
+    assert.equal(s.liberoId, 9);
+    assert.equal(s.liberoFor, null);
+    assert.equal(s.subs, 0);
+  });
+
+  test("scorciatoia: il libero entra per il centrale in seconda linea", () => {
+    const ev = eventFactory();
+    const roles: Record<number, "C" | "S"> = { 3: "C", 6: "C" };
+    const roleOf = (id: number) => roles[id] ?? "S";
+    // Battono loro, P1..P6 = 1..6: il centrale 6 è in P6.
+    assert.equal(liberoTarget(live(lineup("them"), []), roleOf), 6);
+    // Dopo due rotazioni il centrale 3 è in P1 e il 6 in P4 (prima linea).
+    const rotated = live(lineup("them"), [ev({ kind: "rotation", detail: { dir: 1 } }), ev({ kind: "rotation", detail: { dir: 1 } })]);
+    assert.deepEqual(rotated.rotation, [3, 4, 5, 6, 1, 2]);
+    assert.equal(liberoTarget(rotated, roleOf), 3, "in P1 se batte l'avversario");
+    assert.equal(liberoTarget({ ...rotated, serving: "us" }, roleOf), null, "non al posto di chi sta per battere");
+    // Libero già in campo o non designato: nessuna proposta.
+    const onCourt = live(lineup("them"), [ev({ kind: "libero", detail: { in: 9, out: 6 } })]);
+    assert.equal(liberoTarget(onCourt, roleOf), null);
+    assert.equal(liberoTarget(live(lineup("them", { liberoId: null }), []), roleOf), null);
   });
 
   test("a fine set torna in panchina", () => {
