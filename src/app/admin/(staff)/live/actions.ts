@@ -8,8 +8,8 @@ import { invalid, revalidatePublicPages, type ActionResult } from "@/lib/actions
 import { requireStaff } from "@/lib/auth-guard";
 import { loadLiveLog } from "@/lib/live/db";
 import { computeLive } from "@/lib/live/state";
-import type { StartMatchInput } from "./prepare-form";
-import { StartMatchSchema } from "./prepare-schema";
+import { sameName, type ResetLiveInput, type StartMatchInput } from "./prepare-form";
+import { ResetLiveSchema, StartMatchSchema } from "./prepare-schema";
 
 /** Salva presenze (con ruolo di partita) e formazione del 1° set, e mette la partita "in corso". */
 export async function startMatch(input: StartMatchInput): Promise<ActionResult<{ id: number }>> {
@@ -75,5 +75,35 @@ export async function finishMatch(matchId: number, mvpId: number | null): Promis
   revalidatePath("/admin/partite");
   revalidatePath("/admin/live");
   revalidatePath("/admin/giocatori");
+  return { ok: true, id: matchId };
+}
+
+/**
+ * Azzera il Live di una partita in corso (prove o avvio per sbaglio): via azioni, formazione,
+ * presenti e parziali, la partita torna "da giocare". Mai per una partita conclusa. La conferma è
+ * il nome dell'avversario, controllato anche qui.
+ */
+export async function resetLive(input: ResetLiveInput): Promise<ActionResult<{ id: number }>> {
+  await requireStaff();
+  const parsed = ResetLiveSchema.safeParse(input);
+  if (!parsed.success) return invalid(parsed.error);
+  const { matchId, confirm } = parsed.data;
+
+  const match = await db.query.matches.findFirst({ where: eq(matches.id, matchId), with: { opponent: true } });
+  if (!match) return { ok: false, error: "Partita non trovata, ricarica la pagina" };
+  if (match.status !== "live") return { ok: false, error: "Si può azzerare solo una partita in corso" };
+  if (!sameName(confirm, match.opponent.name)) return { ok: false, error: `Per confermare scrivi esattamente "${match.opponent.name}"` };
+
+  await runBatch([
+    db.delete(events).where(eq(events.matchId, matchId)),
+    db.delete(lineups).where(eq(lineups.matchId, matchId)),
+    db.delete(matchPlayers).where(eq(matchPlayers.matchId, matchId)),
+    db.delete(matchSets).where(eq(matchSets.matchId, matchId)),
+    db.update(matches).set({ status: "scheduled", forfeit: false, mvpPlayerId: null }).where(eq(matches.id, matchId)),
+  ]);
+
+  revalidatePublicPages();
+  revalidatePath("/admin/partite");
+  revalidatePath("/admin/live");
   return { ok: true, id: matchId };
 }

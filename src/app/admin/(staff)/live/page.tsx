@@ -1,7 +1,7 @@
-import { and, asc, desc, eq, inArray, ne } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, ne } from "drizzle-orm";
 import type { Metadata } from "next";
 import { db } from "@/db";
-import { lineups, matchPlayers, matches, players } from "@/db/schema";
+import { events, lineups, matchPlayers, matches, players } from "@/db/schema";
 import { PageHeader } from "@/components/admin/page-header";
 import { getCurrentSeason } from "@/lib/data";
 import { formatShortDate, formatTime } from "@/lib/format";
@@ -51,10 +51,12 @@ export default async function LivePage({ searchParams }: { searchParams: Promise
     .orderBy(desc(matches.startsAt))
     .limit(1);
 
-  const [roster, current, last] = await Promise.all([
+  const [roster, current, last, [actions]] = await Promise.all([
     db.query.players.findMany({ where: eq(players.active, true), orderBy: [asc(players.number)] }),
     loadSetup(match.id),
     lastPrepared ? loadSetup(lastPrepared.id) : null,
+    // Azioni registrate (non annullate): le conta l'avviso di "Azzera il Live".
+    db.select({ n: count() }).from(events).where(and(eq(events.matchId, match.id), eq(events.deleted, false))),
   ]);
 
   const kicker = [roundLabel(match), match.startsAt && `${formatShortDate(match.startsAt)} · ${formatTime(match.startsAt)}`]
@@ -63,9 +65,16 @@ export default async function LivePage({ searchParams }: { searchParams: Promise
 
   return (
     <PrepareWizard
-      // Cambiando partita il wizard riparte da zero.
-      key={match.id}
-      match={{ id: match.id, kicker, title: matchTitle(match.home, match.opponent.name), opponent: match.opponent.name, live: match.status === "live" }}
+      // Cambiando partita (o dopo l'azzeramento del Live) il wizard riparte da zero.
+      key={`${match.id}-${match.status}`}
+      match={{
+        id: match.id,
+        kicker,
+        title: matchTitle(match.home, match.opponent.name),
+        opponent: match.opponent.name,
+        live: match.status === "live",
+        actions: actions?.n ?? 0,
+      }}
       choices={playable.map((m) => ({ id: m.id, label: `${roundLabel(m)} · ${matchTitle(m.home, m.opponent.name)}` }))}
       roster={roster.map(({ id, number, firstName, lastName, role, gender }): PreparePlayer => ({ id, number, firstName, lastName, role, gender }))}
       current={current}

@@ -31,3 +31,12 @@ export type LiveMode = "semplice" | "avanzato";
 
 /** Modalità scelta in Prepara Live e letta dal Live; vive solo su questo telefono. */
 export const LIVE_MODE_KEY = "cusbros:live-mode";
+
+/** Ciò che il wizard invia a resetLive: la conferma è il nome dell'avversario scritto a mano. */
+export type ResetLiveInput = { matchId: number; confirm: string };
+
+/** Confronto del nome scritto per confermare: senza maiuscole e spazi in più. */
+export function sameName(a: string, b: string) {
+  const norm = (s: string) => s.trim().replace(/\s+/g, " ").toLocaleLowerCase("it");
+  return norm(a) !== "" && norm(a) === norm(b);
+}

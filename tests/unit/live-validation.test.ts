@@ -1,8 +1,8 @@
 // Validazione lato server del Live: eventi inviati all'API e "Inizia partita" di Prepara Live.
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { StartMatchSchema } from "@/app/admin/(staff)/live/prepare-schema";
-import type { StartMatchInput } from "@/app/admin/(staff)/live/prepare-form";
+import { ResetLiveSchema, StartMatchSchema } from "@/app/admin/(staff)/live/prepare-schema";
+import { sameName, type StartMatchInput } from "@/app/admin/(staff)/live/prepare-form";
 import { EventBatchSchema, LiveEventSchema } from "@/lib/live/event-schema";
 import { eventFactory } from "./helpers";
 
@@ -81,5 +81,24 @@ describe("Inizia partita", () => {
 
   test("chi batte è obbligatorio", () => {
     assert.match(errorOf({ serveFirst: null as unknown as "us" }), /batte/);
+  });
+});
+
+describe("Azzera il Live", () => {
+  test("conferma con il nome dell'avversario: maiuscole e spazi in più non contano", () => {
+    assert.ok(sameName("  test-VOLLEY ", "TEST-volley"));
+    assert.ok(sameName("Ghedauto  Iveco Volley", "Ghedauto Iveco Volley"));
+  });
+
+  test("nome diverso o vuoto: niente azzeramento", () => {
+    assert.ok(!sameName("TEST", "TEST-volley"));
+    assert.ok(!sameName("", ""));
+    assert.ok(!sameName("   ", "TEST-volley"));
+  });
+
+  test("la conferma è obbligatoria anche sul server", () => {
+    assert.ok(ResetLiveSchema.safeParse({ matchId: 76, confirm: "TEST-volley" }).success);
+    assert.ok(!ResetLiveSchema.safeParse({ matchId: 76, confirm: "  " }).success);
+    assert.ok(!ResetLiveSchema.safeParse({ matchId: 0, confirm: "TEST-volley" }).success);
   });
 });
