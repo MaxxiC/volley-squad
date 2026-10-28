@@ -70,6 +70,8 @@ export function LineupField({
         className={`relative flex min-h-20 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-tile text-ink ${active ? "border border-gold bg-surface-sel" : p ? "border border-line bg-surface" : "border border-dashed border-line-strong bg-surface"}`}
       >
         <span className="absolute top-1.5 left-2 text-[11px] font-semibold text-faint">P{i + 1}</span>
+        {/* Come nel Live: pallino blu sui centrali, per loro entra il libero in seconda linea. */}
+        {role === "C" && libero !== null && <span aria-hidden className="absolute right-2 bottom-2 size-2 rounded-full bg-blue" />}
         <span className={`font-display text-[30px] leading-none font-extrabold tabular-nums ${p ? "text-gold" : "text-faint"}`}>
           {p ? p.number : "+"}
         </span>

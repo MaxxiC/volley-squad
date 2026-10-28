@@ -29,6 +29,8 @@ export type LiveState = {
   liberoId: number | null;
   /** Giocatore sostituito dal libero; null = libero in panchina. */
   liberoFor: number | null;
+  /** Centrale per cui il libero è stato fatto uscire a mano: non rientra da solo finché è in seconda linea. */
+  liberoSkip: number | null;
   /** Cambi del set in corso. */
   subs: number;
   /** Coppie del set: chi è uscito → chi è entrato al suo posto (regola del rientro). */
@@ -85,9 +87,35 @@ function liberoLeavesFrontRow(s: LiveState): LiveState {
   return { ...s, rotation: replace(s.rotation, s.liberoId, s.liberoFor), liberoFor: null };
 }
 
-export function computeLive(lineups: LiveLineup[], events: Iterable<LiveEvent>): LiveState | null {
+/**
+ * Il libero entra da solo per il centrale in seconda linea (P5, P6; P1 solo se non battiamo noi):
+ * così si alterna sui due centrali. Non entra per chi è stato fatto uscire a mano finché è dietro.
+ */
+function liberoEntersForCentre(s: LiveState, isCentre: (id: number) => boolean): LiveState {
+  const skip = s.liberoSkip !== null && (BACK_ROW as readonly number[]).includes(s.rotation.indexOf(s.liberoSkip)) ? s.liberoSkip : null;
+  if (skip !== s.liberoSkip) s = { ...s, liberoSkip: skip };
+  if (s.liberoId === null || s.liberoFor !== null || s.rotation.includes(s.liberoId)) return s;
+  const order = s.serving === "us" ? [4, 5] : [4, 5, 0];
+  const index = order.find((i) => s.rotation[i] !== skip && isCentre(s.rotation[i]));
+  if (index === undefined) return s;
+  const out = s.rotation[index];
+  return { ...s, rotation: replace(s.rotation, out, s.liberoId), liberoFor: out };
+}
+
+/**
+ * @param baseRole ruolo dei presenti in questa partita: se c'è, il libero entra ed esce da solo sui
+ *   centrali. Senza (es. sul server per i parziali) il libero si muove solo con gli eventi.
+ */
+export function computeLive(
+  lineups: LiveLineup[],
+  events: Iterable<LiveEvent>,
+  baseRole?: (id: number) => PlayerRole | undefined,
+): LiveState | null {
   const first = lineups.find((l) => l.setN === 1);
   if (!first) return null;
+
+  const auto = (s: LiveState) =>
+    baseRole ? liberoEntersForCentre(s, (id) => (s.roles[id] ?? baseRole(id)) === "C") : s;
 
   /** Nuovo set: formazione del set (se c'è) o stessa rotazione, batte per primo chi prima riceveva. */
   const startSet = (setN: number, previous?: LiveState): LiveState => {
@@ -107,6 +135,7 @@ export function computeLive(lineups: LiveLineup[], events: Iterable<LiveEvent>):
       rotation: lineup ? [...lineup.slots] : [...(carried ?? first.slots)],
       liberoId: lineup ? lineup.liberoId : (previous?.liberoId ?? null),
       liberoFor: null,
+      liberoSkip: null,
       subs: 0,
       subPairs: {},
       roles: previous?.roles ?? {},
@@ -118,17 +147,19 @@ export function computeLive(lineups: LiveLineup[], events: Iterable<LiveEvent>):
     };
   };
 
-  let s = startSet(1);
+  let s = auto(startSet(1));
   for (const e of activeEvents(events)) {
     const d = e.detail ?? {};
     switch (e.kind) {
       case "set_end": {
         const winner = setWinnerOf(s.setN, s.score) ?? (s.score.us > s.score.them ? "us" : "them");
-        s = startSet(s.setN + 1, {
-          ...s,
-          sets: { ...s.sets, [winner]: s.sets[winner] + 1 },
-          finishedSets: [...s.finishedSets, { n: s.setN, ...s.score }],
-        });
+        s = auto(
+          startSet(s.setN + 1, {
+            ...s,
+            sets: { ...s.sets, [winner]: s.sets[winner] + 1 },
+            finishedSets: [...s.finishedSets, { n: s.setN, ...s.score }],
+          }),
+        );
         continue;
       }
       case "lineup":
@@ -139,6 +170,7 @@ export function computeLive(lineups: LiveLineup[], events: Iterable<LiveEvent>):
             rotation: [...d.slots],
             liberoId: d.liberoId ?? null,
             liberoFor: null,
+            liberoSkip: null,
             serving: d.serveFirst ?? s.serving,
             serveFirst: d.serveFirst ?? s.serveFirst,
           };
@@ -170,9 +202,10 @@ export function computeLive(lineups: LiveLineup[], events: Iterable<LiveEvent>):
           // Cambio di libero in campo: il nuovo prende il posto del vecchio, per lo stesso giocatore.
           s = { ...s, rotation: replace(s.rotation, out, inn), liberoId: inn };
         } else if (inn === s.liberoId && s.rotation.includes(out)) {
-          s = { ...s, rotation: replace(s.rotation, out, inn), liberoFor: out };
+          s = { ...s, rotation: replace(s.rotation, out, inn), liberoFor: out, liberoSkip: null };
         } else if (out === s.liberoId) {
-          s = { ...s, rotation: replace(s.rotation, out, inn), liberoFor: null };
+          // Uscita a mano: per chi rientra il libero non torna da solo finché resta in seconda linea.
+          s = { ...s, rotation: replace(s.rotation, out, inn), liberoFor: null, liberoSkip: inn };
         }
         break;
       }
@@ -191,6 +224,7 @@ export function computeLive(lineups: LiveLineup[], events: Iterable<LiveEvent>):
         }
         break;
     }
+    s = auto(s);
     if (e.kind !== "lineup") s = { ...s, setNotStarted: false };
     s = { ...s, timeline: [...s.timeline, { event: e, score: s.score }] };
   }
@@ -210,6 +244,11 @@ export function liberoTarget(s: LiveState, roleOf: (id: number) => PlayerRole): 
   const order = s.serving === "us" ? [4, 5] : [4, 5, 0];
   const index = order.find((i) => s.rotation[i] !== s.liberoId && roleOf(s.rotation[i]) === "C");
   return index === undefined ? null : s.rotation[index];
+}
+
+/** Rotazione senza il libero (al suo posto chi sostituisce): base per la formazione del set dopo. */
+export function rotationWithoutLibero(s: LiveState) {
+  return s.liberoId !== null && s.liberoFor !== null ? replace(s.rotation, s.liberoId, s.liberoFor) : s.rotation;
 }
 
 /**

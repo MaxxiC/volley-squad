@@ -26,8 +26,9 @@ type Props = {
 
 export function LiveBoard({ match, players, lineups, initialEvents }: Props) {
   const { events, add, update, undo, redo, canUndo, canRedo, sync } = useLiveEvents(match.id, initialEvents);
-  const live = useMemo(() => computeLive(lineups, events.values()), [lineups, events]);
   const byId = useMemo(() => new Map(players.map((p) => [p.id, p])), [players]);
+  // Con i ruoli il libero entra ed esce da solo sui centrali in seconda linea.
+  const live = useMemo(() => computeLive(lineups, events.values(), (id) => byId.get(id)?.role), [lineups, events, byId]);
   const playerOf = (id: number) => byId.get(id);
 
   const [mode, setMode] = useState<LiveMode>("semplice");
