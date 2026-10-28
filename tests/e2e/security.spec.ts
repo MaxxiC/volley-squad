@@ -1,11 +1,12 @@
 // Controlli minimi di sicurezza del sito online: area staff chiusa senza accesso, API del Live
 // protetta, intestazioni di sicurezza, niente indicizzazione dello staff, login che non rivela chi
-// è registrato, redirect solo interni, utente eliminato fuori subito. Nessun dato reale modificato
-// (solo un utente temporaneo in più, creato ed eliminato qui).
+// è registrato, limite ai tentativi, redirect solo interni, utente eliminato fuori subito. Nessun
+// dato reale modificato (un utente temporaneo e i tentativi falliti dei test, tolti qui).
 import { execSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { expect, test } from "@playwright/test";
 import { eq } from "drizzle-orm";
+import { TOO_MANY_ATTEMPTS } from "@/lib/login-limit";
 import { E2E_EMAIL, openDb } from "./db-snapshot";
 
 const matchId = Number(process.env.E2E_MATCH_ID);
@@ -51,6 +52,24 @@ test.describe("sicurezza", () => {
     await fillLogin(page, E2E_EMAIL, password(), "https://evil.example/admin/partite");
     await page.waitForURL(/\/admin\/partite$/, { timeout: 60_000 });
     expect(new URL(page.url()).host).toBe(new URL(test.info().project.use.baseURL ?? "http://localhost:3001").host);
+    // L'accesso riuscito toglie i tentativi falliti di E2E_EMAIL; quello dell'email sconosciuta si toglie qui.
+    const { db, schema } = await openDb();
+    await db.delete(schema.loginAttempts).where(eq(schema.loginAttempts.email, "nessuno@cusbros.local"));
+  });
+
+  test("dopo 5 errori con la stessa email l'accesso si blocca", async ({ page }) => {
+    const email = "e2e-limite@cusbros.local";
+    const { db, schema } = await openDb();
+    try {
+      for (let i = 0; i < 5; i++) {
+        await fillLogin(page, email, `sbagliata-${i}`);
+        await expect(page.getByText("Email o password non corretti.")).toBeVisible();
+      }
+      await fillLogin(page, email, "sbagliata-5");
+      await expect(page.getByText(TOO_MANY_ATTEMPTS)).toBeVisible();
+    } finally {
+      await db.delete(schema.loginAttempts).where(eq(schema.loginAttempts.email, email));
+    }
   });
 
   test("un utente eliminato perde subito l'accesso (anche con la sessione ancora valida)", async ({ page }) => {

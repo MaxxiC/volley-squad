@@ -48,6 +48,21 @@ export const users = pgTable("users", {
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 });
 
+/**
+ * Accessi falliti recenti, per il limite ai tentativi (src/lib/login-limit.ts). Si cancellano quelli
+ * dell'email dopo un accesso riuscito e quelli vecchi di oltre un giorno.
+ */
+export const loginAttempts = pgTable(
+  "login_attempts",
+  {
+    id: serial().primaryKey(),
+    email: text().notNull(),
+    ip: text().notNull(),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("login_attempts_email_at").on(t.email, t.createdAt), index("login_attempts_ip_at").on(t.ip, t.createdAt)],
+);
+
 export const seasons = pgTable(
   "seasons",
   {
