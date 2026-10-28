@@ -3,8 +3,9 @@
 import { useRef, useState } from "react";
 import { PageHeader } from "@/components/admin/page-header";
 import { BTN_PRIMARY } from "@/components/admin/styles";
-import { GENDER_LABEL, ROLE_LABEL, fullName } from "@/lib/players";
-import type { AdminPlayer } from "./player-form";
+import { GENDER_LABEL, ROLE_LABEL, fullName, type PlayerRole } from "@/lib/players";
+import { efficiencyTone } from "@/lib/stats";
+import type { AdminPlayer, PlayerStats } from "./player-form";
 import { PlayerEditor } from "./player-editor";
 
 type Props = { players: AdminPlayer[]; matchesPlayed: number };
@@ -88,7 +89,7 @@ export function PlayersManager({ players, matchesPlayed }: Props) {
               onDeleted={() => setSelection(null)}
             />
           ) : selected ? (
-            <PlayerCard player={selected} onEdit={() => setSelection({ id: selected.id, editing: true })} />
+            <PlayerCard key={selected.id} player={selected} onEdit={() => setSelection({ id: selected.id, editing: true })} />
           ) : (
             <p className="text-base text-muted">
               {players.length ? "Scegli un giocatore dalla lista." : "Nessun giocatore in rosa. Aggiungi il primo con “+ Giocatore”."}
@@ -137,14 +138,60 @@ function PlayerCard({ player: p, onEdit }: { player: AdminPlayer; onEdit: () => 
         ))}
       </div>
 
-      <div className="flex flex-col gap-2.5">
-        <span className="font-display text-sm font-bold tracking-[.2em] text-gold uppercase">
-          Efficienza per fondamentale · stagione
-        </span>
-        <p className="rounded-tile border border-dashed border-line p-3.5 text-sm text-muted">
-          Efficienza e andamento compaiono qui quando ci sono partite registrate con il Live.
-        </p>
-      </div>
+      <Efficiency stats={p.stats} />
     </>
+  );
+}
+
+const TONE = { gold: "text-gold", red: "text-red", ink: "text-ink" } as const;
+
+/** Efficienza per fondamentale della stagione; con più ruoli giocati si può vedere ruolo per ruolo. */
+function Efficiency({ stats }: { stats: PlayerStats }) {
+  const [view, setView] = useState<"all" | PlayerRole>("all");
+  const lines = stats.lines[view] ?? stats.lines.all ?? [];
+
+  return (
+    <div className="flex flex-col gap-2.5">
+      <span className="font-display text-sm font-bold tracking-[.2em] text-gold uppercase">Efficienza per fondamentale · stagione</span>
+      {stats.matches === 0 ? (
+        <p className="rounded-tile border border-dashed border-line p-3.5 text-sm text-muted">
+          Efficienza e andamento compaiono qui quando ci sono partite concluse registrate con il Live.
+        </p>
+      ) : (
+        <>
+          {stats.roles.length > 1 && (
+            <div role="group" aria-label="Ruolo" className="flex flex-wrap gap-1 self-start rounded-btn border border-line p-0.5">
+              {[{ key: "all" as const, label: "Tutti i ruoli" }, ...stats.roles.map((r) => ({ key: r.role, label: `${ROLE_LABEL[r.role]} · ${r.matches}` }))].map((o) => (
+                <button
+                  key={o.key}
+                  type="button"
+                  aria-pressed={view === o.key}
+                  onClick={() => setView(o.key)}
+                  className={`min-h-11 cursor-pointer rounded-chip px-3 font-display text-sm font-bold tracking-[.04em] uppercase ${view === o.key ? "bg-gold text-bg" : "text-muted"}`}
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-2.5">
+            {lines.map((l) => (
+              <div key={l.skill} className="flex flex-col gap-1.5 rounded-tile border border-line p-3.5">
+                <span className="text-[13px] font-semibold tracking-[.08em] text-muted uppercase">{l.label}</span>
+                <span className={`font-display text-[34px] leading-none font-extrabold tabular-nums ${TONE[efficiencyTone(l.eff)]}`}>
+                  {l.eff === null ? "—" : `${l.eff}%`}
+                </span>
+                <span className="text-[13px] text-ink-2">{l.total ? l.detail : "Nessuna azione"}</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-[13px] text-faint">
+            {stats.matches === 1 ? "1 partita registrata" : `${stats.matches} partite registrate`} con il Live
+            {stats.roles.length === 1 ? ` (${ROLE_LABEL[stats.roles[0].role].toLowerCase()})` : ""}. In modalità Semplice si
+            segnano solo i punti e gli errori: l&apos;efficienza completa viene dalla modalità Avanzata.
+          </p>
+        </>
+      )}
+    </div>
   );
 }
