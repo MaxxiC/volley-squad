@@ -57,7 +57,7 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - Limiti noti del Live (da valutare): MVP obbligatorio per chiudere la partita, la pila Annulla/Ripeti si azzera ricaricando la pagina (gli eventi restano tutti).
 - [x] Chiusura (28/10/2026): prove di Max su iPhone (Vercel), E2E verdi su dev e su build di produzione con service worker, DB ripristinato e verificato; partita e squadra TEST-volley eliminate (per le prove si usa una partita futura e poi "Azzera il Live"). Merge `feat/live` → `dev` → `main` a cura di Max.
 
-## 5 · Storico, statistiche, riepilogo pubblico
+## 5 · Storico, statistiche, riepilogo pubblico 🌿 `feat/storico` ✅
 - Decisioni (28/10/2026): nello Storico si correggono **solo le partite concluse** (quelle in corso in sola lettura, così Storico e telefono del Live non si sovrascrivono). Le partite con il risultato inserito a mano (es. n. 15 con Stordyteam) non hanno azioni: niente Storico né statistiche per loro.
 - [x] Storico live (`/admin/storico`, 🌿 `feat/storico`): partite registrate col Live (dalla più recente), set con il numero di azioni da completare, filtri Tutte / Da completare · N / Solo ★, azioni dalla più recente con il punteggio ricalcolato; modifica di fondamentale, esito, giocatore e ★ (il punto si ricava dall'esito), Elimina (come nel Live: resta nel registro annullato), "+ Aggiungi azione" in fondo al set o dopo un'azione, "Salva e prossima →". Ogni modifica ricalcola sul server tutta la partita e riscrive i parziali; è rifiutata se la partita non risulta più finita o un set chiuso non ha un punteggio di fine set (per spostare un punto si aggiunge prima l'azione che manca). Le partite in corso sono in sola lettura e l'API del Live rifiuta (422) azioni per partite concluse. Logica in `src/lib/live/storico.ts`, test in `tests/unit/live-storico.test.ts`
 - [x] Giocatori: efficienza per fondamentale (formule del README, % intera, oro ≥50 / rosso <30) dalle partite **concluse** registrate col Live; card dei fondamentali dei ruoli giocati più quelli fuori ruolo con azioni; ogni partita conta nel **ruolo di quel giorno** (presenti di Prepara Live, o ruolo del cambio con cui è entrato) e con più ruoli si sceglie "Tutti / Centrale · N / Banda · N". Nota in scheda: in Semplice si segnano solo punti ed errori. Logica in `src/lib/stats.ts`, test in `tests/unit/stats.test.ts`
@@ -66,8 +66,8 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 
 ## 6 · PWA + deploy
 - [x] Manifest + icone 192/512 (+ maskable, apple-touch 180) dal logo su fondo `bg`: due app installabili, "CUSBros" (da sito pubblico, apre `/`) e "CUSBros Staff" (da `/admin/**`, apre `/admin`), schermo intero (`display: standalone`)
-- [ ] Progetto Vercel collegato al repo, env `DATABASE_URL` + `AUTH_SECRET`
-- [ ] Verifica su telefono reale: installazione PWA, live offline in palestra
+- [x] Progetto Vercel collegato al repo (deploy da `main`, https://volley-squad.vercel.app), env `DATABASE_URL` + `AUTH_SECRET`, funzioni in `fra1` (`vercel.json`) vicino a Neon `eu-central-1`
+- [~] Verifica su telefono reale: Live provato da Max su iPhone (28/10/2026), app installata a schermo intero; manca la prova **offline in palestra** in una partita vera
 - [ ] **iPhone:** Safari cancella cache e dati di un sito non aperto da 7 giorni se non è installato sulla Home → installazione PWA consigliata per chi registra il Live; in ogni caso aprire il Live con la rete prima della partita
 - [ ] Merge finale `dev` → `main`
 
@@ -104,4 +104,4 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - **Auth.js v5** è ancora in beta: versione bloccata a `5.0.0-beta.32`, aggiornare solo di proposito.
 - **Login:** nessun limite di tentativi per ora (uso interno, 3 utenti). Da rivalutare prima del deploy.
 - **Password dimenticata:** per ora solo messaggio "contatta l'admin".
-- **Stato al 28/10/2026:** step 0–4 completati (step 4 su `feat/live`, merge a cura di Max); step 5.1 Storico live fatto su `feat/storico`; step 5 completato su `feat/storico` (Storico, statistiche, andamento, riepilogo pubblico); da chiudere con E2E e merge. Il dev server si avvia con `npm run dev` (porta 3001).
+- **Stato al 28/10/2026:** step 0–4 completati (step 4 su `feat/live`, merge a cura di Max); step 5.1 Storico live fatto su `feat/storico`; step 5 completato su `feat/storico` (Storico, statistiche, andamento, riepilogo pubblico), E2E verdi il 28/10/2026; merge su `dev`/`main` a cura di Max. Il dev server si avvia con `npm run dev` (porta 3001).
