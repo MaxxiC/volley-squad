@@ -17,6 +17,8 @@ import { uuid } from "@/lib/uuid";
  * sul telefono e non bloccano le altre.
  */
 export type SyncStatus = {
+  /** Copia locale del telefono non ancora letta: lo stato di invio non è ancora affidabile. */
+  restoring: boolean;
   pending: number;
   problem: "offline" | "auth" | "error" | null;
   message: string | null;
@@ -62,7 +64,7 @@ export function useLiveEvents(matchId: number, initial: LiveEvent[]) {
   const rejected = useRef(new Map<string, string>());
   const inFlight = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [sync, setSync] = useState<SyncStatus>({ pending: 0, problem: null, message: null, rejected: { count: 0, message: null } });
+  const [sync, setSync] = useState<SyncStatus>({ restoring: true, pending: 0, problem: null, message: null, rejected: { count: 0, message: null } });
 
   /** Il server ha queste versioni: fuori dalla coda (se nel frattempo un evento è cambiato, resta). */
   const ack = useCallback((batch: LiveEvent[]) => {
@@ -102,12 +104,13 @@ export function useLiveEvents(matchId: number, initial: LiveEvent[]) {
     } finally {
       inFlight.current = false;
     }
-    setSync({
+    setSync((s) => ({
+      ...s,
       pending: queue.current.size,
       problem: problem?.kind ?? null,
       message: problem && "message" in problem ? problem.message : null,
       rejected: rejectedStatus(rejected.current),
-    });
+    }));
     if (problem) {
       timer.current = setTimeout(() => {
         timer.current = null;
@@ -128,7 +131,9 @@ export function useLiveEvents(matchId: number, initial: LiveEvent[]) {
   useEffect(() => {
     let cancelled = false;
     void loadLocalLog(matchId).then((local) => {
-      if (cancelled || local.length === 0) return;
+      if (cancelled) return;
+      setSync((s) => ({ ...s, restoring: false }));
+      if (local.length === 0) return;
       const { events: merged, toSend } = mergeLogs([...eventsRef.current.values()], local);
       // Azioni fatte nel frattempo (già in coda) hanno la precedenza.
       for (const e of queue.current.values()) merged.set(e.id, e);
