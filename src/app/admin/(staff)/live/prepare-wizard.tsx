@@ -412,7 +412,7 @@ function RoleHints({
   if (mismatches.size === 0) return null;
   return (
     <div role="status" className="flex flex-col gap-2 rounded-tile border border-gold-line p-3">
-      <span className="text-[13px] text-muted">Ruoli dalla posizione (schema normale dall'alzatore):</span>
+      <span className="text-[13px] text-muted">Ruoli dalla posizione (schema normale dall&apos;alzatore):</span>
       {[...mismatches].map(([id, role]) => {
         const p = playerOf(id);
         return (
