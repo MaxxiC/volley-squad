@@ -9,6 +9,7 @@ import { TEAM_NAME } from "@/lib/club";
 import { LineupField, LineupPool, WomenWarning, lineupHint, useLineup } from "@/components/admin/lineup-picker";
 import { EMPTY_SLOTS, MIN_WOMEN, fillInOrder, womenOnCourt } from "@/lib/lineup";
 import { PLAYER_ROLES, ROLE_LABEL, fullName, type PlayerRole } from "@/lib/players";
+import { clearLocalLog } from "@/lib/live/local-log";
 import { startMatch } from "./actions";
 import { LIVE_MODE_KEY, type LiveMode, type PreparePlayer, type PrepareSetup } from "./prepare-form";
 
@@ -103,8 +104,11 @@ export function PrepareWizard({ match, choices, roster, current, last }: Props) 
         liberoId: libero,
         serveFirst,
       });
-      if (res.ok) router.push(`/admin/live/${res.id}`);
-      else setError(res.error);
+      if (!res.ok) return setError(res.error);
+      // Registro nuovo: via la copia del telefono di un Live precedente (es. partita di prova azzerata),
+      // altrimenti all'apertura i vecchi eventi tornerebbero.
+      await clearLocalLog(res.id);
+      router.push(`/admin/live/${res.id}`);
     });
   };
 
