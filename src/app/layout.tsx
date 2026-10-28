@@ -20,6 +20,9 @@ export const metadata: Metadata = {
     template: "CUSBros — %s",
   },
   description: "Sito della squadra di pallavolo CUSBros · CUSB",
+  // Aggiunta alla schermata Home si apre a schermo intero come un'app (l'area staff ha il suo manifest).
+  manifest: "/manifest.webmanifest",
+  appleWebApp: { capable: true, title: "CUSBros", statusBarStyle: "black" },
 };
 
 export const viewport: Viewport = {

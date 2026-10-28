@@ -5,7 +5,13 @@ import { TEAM_NAME } from "@/lib/club";
 import { SIMPLE_OUR_TYPES, SIMPLE_THEIR_TYPES, type BallType, type Side, type SimpleType } from "@/lib/live/skills";
 import type { LiveEvent, LivePlayer } from "@/lib/live/types";
 import { shortName } from "@/lib/players";
-import { PANEL, SMALL_BTN, starClass, toneClass } from "./live-ui";
+import { SMALL_BTN, starClass, toneClass } from "./live-ui";
+
+/**
+ * Altezza fissa dell'area dei punti: "+1" e pannello "come è arrivato" occupano lo stesso spazio,
+ * così ciò che sta sotto non si sposta mentre si segnano i punti.
+ */
+const STAGE = "flex min-h-[340px] flex-col";
 
 type Props = {
   opponent: string;
@@ -61,8 +67,8 @@ export function SimpleInput({ opponent, eventOf, onPoint, onComplete, court, lib
 
   if (!open) {
     return (
-      <div className="flex flex-col gap-2">
-        <div className="grid grid-cols-2 gap-2.5">
+      <div className={`${STAGE} gap-2`}>
+        <div className="grid flex-1 grid-cols-2 gap-2.5">
           <button
             type="button"
             onClick={() => point("us")}
@@ -91,19 +97,34 @@ export function SimpleInput({ opponent, eventOf, onPoint, onComplete, court, lib
   const last = open.stage === "player" ? lastFor(open.type) : null;
   const suggested = open.stage === "player" && open.type.kind === "skill" && open.type.skill === "serve" ? serverId : null;
   const choices = open.stage === "player" && open.type.includeLibero && libero ? [...court, libero] : court;
+  const us = open.side === "us";
 
   return (
-    <section className={PANEL}>
-      <div className="flex items-center gap-2.5">
-        <span className="mr-auto font-display text-[22px] font-bold uppercase">{title}</span>
-        {open.stage !== "type" && (
-          <button type="button" onClick={() => setPanel({ stage: "type", eventId: open.eventId, side: open.side })} className={SMALL_BTN}>
-            ← Indietro
+    <section
+      className={`${STAGE} gap-3.5 rounded-panel border p-3.5 ${us ? "border-gold bg-surface-sel" : "border-red-line bg-surface"}`}
+    >
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-2">
+          {/* Di chi è il punto: si capisce a colpo d'occhio anche dal colore del pannello. */}
+          <span
+            className={`mr-auto min-w-0 truncate font-display text-[13px] font-bold tracking-[.16em] uppercase ${us ? "text-gold" : "text-red"}`}
+          >
+            +1 {us ? TEAM_NAME : opponent}
+          </span>
+          {open.stage !== "type" && (
+            <button
+              type="button"
+              onClick={() => setPanel({ stage: "type", eventId: open.eventId, side: open.side })}
+              className={`${SMALL_BTN} whitespace-nowrap`}
+            >
+              ← Indietro
+            </button>
+          )}
+          <button type="button" onClick={close} className={`${SMALL_BTN} text-muted`}>
+            Salta
           </button>
-        )}
-        <button type="button" onClick={close} className={`${SMALL_BTN} text-muted`}>
-          Salta
-        </button>
+        </div>
+        <span className="font-display text-[22px] leading-[1.1] font-bold uppercase">{title}</span>
       </div>
 
       {open.stage === "type" && (
@@ -133,7 +154,7 @@ export function SimpleInput({ opponent, eventOf, onPoint, onComplete, court, lib
               onClick={() => complete({ skill: "opp_error", detail: { ballType: ball } })}
               className={`min-h-16 cursor-pointer rounded-tile border px-3 font-display text-lg font-bold tracking-[.04em] uppercase active:bg-chip ${toneClass(null)}`}
             >
-              {ball === "free" ? "Palla semplice" : "Azione"}
+              {ball === "free" ? "Palla semplice nostra" : "Azione loro"}
             </button>
           ))}
         </div>
