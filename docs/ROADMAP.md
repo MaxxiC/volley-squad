@@ -40,7 +40,7 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] `revalidatePath` di Home e Calendario dopo ogni modifica
 - [x] Giocatori: lista + form (numero, nome, cognome, ruolo, sesso facoltativo, attivo), scheda base con presenze/stelline/MVP; numero unico tra gli attivi; eliminazione solo senza dati di partita (altrimenti si disattiva)
 
-## 4 · Live 🌿 `feat/live`
+## 4 · Live 🌿 `feat/live` ✅
 - [x] Prepara Live: wizard Presenti (con ruolo di partita) → Formazione (avviso donne) → Inizio (+ scorciatoie); salva presenze, formazione set 1 e chi batte, partita "in corso"
 - [x] Live online: tabellone, Semplice / Avanzato, campo, rotazione automatica + manuale, Annulla/Ripeti (stato sempre ricalcolato dal registro eventi)
 - [x] Cambi (n/6, ruolo di chi entra, avviso rientro), libero (non conta come cambio, esce da solo in P4), timeout, correzione punteggio, formazione set successivo, fine set (25/15 con +2), fine partita + MVP (parziali ricalcolati sul server)
@@ -55,8 +55,10 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] **Azzera il Live** (Prepara Live, solo partite in corso, doppia conferma con il nome dell'avversario, controllata anche dal server): via azioni, formazione e presenti, la partita torna da giocare; la copia del telefono è legata al Live (formazione del 1° set) e quella di un Live precedente si scarta da sola
 - [x] **Libero automatico sui centrali** (pallino blu sui centrali): entra da solo per il centrale in seconda linea e si alterna sui due (esce in P4, entra per l'altro; se il centrale è in P1 e batte, entra quando perdiamo la battuta). Uscito a mano non rientra da solo finché quel centrale è in seconda linea; tutti i bottoni manuali restano. È calcolato dallo stato (nessun evento): sul server, senza ruoli, i parziali non cambiano
 - Limiti noti del Live (da valutare): MVP obbligatorio per chiudere la partita, la pila Annulla/Ripeti si azzera ricaricando la pagina (gli eventi restano tutti).
+- [x] Chiusura (28/10/2026): prove di Max su iPhone (Vercel), E2E verdi su dev e su build di produzione con service worker, DB ripristinato e verificato; partita e squadra TEST-volley eliminate (per le prove si usa una partita futura e poi "Azzera il Live"). Merge `feat/live` → `dev` → `main` a cura di Max.
 
 ## 5 · Storico, statistiche, riepilogo pubblico
+- Decisioni (28/10/2026): nello Storico si correggono **solo le partite concluse** (quelle in corso in sola lettura, così Storico e telefono del Live non si sovrascrivono). Le partite con il risultato inserito a mano (es. n. 15 con Stordyteam) non hanno azioni: niente Storico né statistiche per loro.
 - [ ] Storico live: tab partita, set, lista eventi editabile, filtri, "Salva e prossima →", ricalcolo punteggi
 - [ ] Giocatori: efficienza per fondamentale, presenze / stelline / MVP
 - [ ] Grafico Andamento (ultime 12, bande migliore/peggiore finestra di 3)
@@ -103,4 +105,4 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - **Login:** nessun limite di tentativi per ora (uso interno, 3 utenti). Da rivalutare prima del deploy.
 - **Password dimenticata:** per ora solo messaggio "contatta l'admin".
 - **`/partite/[id]`:** le card giocate ci linkano già; finché la pagina non esiste (step 5) danno 404.
-- **Stato al 28/10/2026:** step 0–3 completati su `dev`; step 4 su `feat/live` (Prepara Live, Live online, cambi/libero/timeout/fine partita, test nel repo e offline fatti; manca la chiusura: verifica su telefono e merge su `dev`). Il dev server si avvia con `npm run dev`.
+- **Stato al 28/10/2026:** step 0–4 completati (step 4 su `feat/live`, merge a cura di Max); prossimo lo step 5.1 Storico live. Il dev server si avvia con `npm run dev` (porta 3001).
