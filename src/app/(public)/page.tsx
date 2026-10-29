@@ -61,7 +61,7 @@ export default async function HomePage() {
 
   return (
     <PublicShell width="wide" navLink={{ href: "/calendario", label: "Calendario" }} watermark>
-      <main className="relative z-1 mx-auto flex max-w-[1200px] flex-col gap-[clamp(48px,8vw,88px)] px-gutter pt-[clamp(24px,6vw,64px)] pb-18">
+      <main className="page-enter relative z-1 mx-auto flex max-w-[1200px] flex-col gap-[clamp(48px,8vw,88px)] px-gutter pt-[clamp(24px,6vw,64px)] pb-18">
         <section className="flex flex-wrap items-center gap-[clamp(24px,5vw,56px)]">
           <Logo
             alt="Logo CUSBros Volleyball Team"
