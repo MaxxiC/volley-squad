@@ -6,7 +6,7 @@ import { TEAM_NAME } from "@/lib/club";
 import { describeEvent } from "@/lib/live/describe";
 import { keepLivePageOffline } from "@/lib/live/offline-page";
 import type { SimpleType } from "@/lib/live/skills";
-import { computeLive, type LiveState } from "@/lib/live/state";
+import { computeLive, lastTimeout, type LiveState } from "@/lib/live/state";
 import type { LiveEvent, LiveLineup, LivePlayer } from "@/lib/live/types";
 import { LIVE_MODE_KEY, type LiveMode } from "../prepare-form";
 import { AdvancedInput } from "./advanced-input";
@@ -178,7 +178,12 @@ export function LiveBoard({ match, players, lineups, startId, initialEvents }: P
             <MatchTools
               live={live}
               opponent={match.opponent}
-              onTimeout={(side) => add({ setN, kind: "timeout", detail: { side } })}
+              onTimeout={(side, delta) => {
+                if (delta === 1) return void add({ setN, kind: "timeout", detail: { side } });
+                // −1: si annulla l'ultimo timeout di quella squadra (resta nel registro, come Annulla).
+                const last = lastTimeout(events.values(), setN, side);
+                if (last) update(last.id, { deleted: true });
+              }}
               onCorrect={(side, delta) => add({ setN, kind: "correction", point: side, detail: { delta } })}
             />
           </>
@@ -196,6 +201,7 @@ export function LiveBoard({ match, players, lineups, startId, initialEvents }: P
           onSelect={mode === "avanzato" && playing ? setSelected : undefined}
           onRotate={() => add({ setN, kind: "rotation", detail: { dir: 1 } })}
           onSub={(out, inn, role) => add({ setN, kind: "sub", detail: { out, in: inn, role } })}
+          onSwap={(a, b) => add({ setN, kind: "swap", detail: { in: a, out: b } })}
           onLibero={(inn, out) => add({ setN, kind: "libero", detail: out === undefined ? { in: inn } : { in: inn, out } })}
           readOnly={!playing}
         />

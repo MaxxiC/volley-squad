@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import { computeLive } from "@/lib/live/state";
-import { applyEdit, defaultOutcome, editIssue, editOf, finishedIssue, insertSeq, pointOf, setRows, setsOf } from "@/lib/live/storico";
+import { applyEdit, isDeletable, isEditable, defaultOutcome, editIssue, editOf, finishedIssue, insertSeq, pointOf, setRows, setsOf } from "@/lib/live/storico";
 import { eventFactory, lineup, points, wonSet } from "./helpers";
 
 describe("modifica di un'azione", () => {
@@ -106,5 +106,14 @@ describe("partita ancora valida dopo una correzione", () => {
     const lastEnd = events.findLast((e) => e.kind === "set_end")!;
     const next = events.map((e) => (e.id === lastEnd.id ? { ...e, deleted: true } : e));
     assert.match(finishedIssue(computeLive(lineup("us"), next)) ?? "", /non risulterebbe più finita/);
+  });
+});
+
+describe("scambio di posto nello Storico", () => {
+  test("si può eliminare, non modificare", () => {
+    const ev = eventFactory();
+    const swap = ev({ kind: "swap", detail: { in: 2, out: 3 } });
+    assert.equal(isDeletable(swap), true);
+    assert.equal(isEditable(swap), false);
   });
 });

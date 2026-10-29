@@ -24,44 +24,58 @@ type Props = {
   onSelect?: (id: number) => void;
   onRotate: () => void;
   onSub: (out: number, inn: number, role: PlayerRole) => void;
+  /** Scambio di posto tra due giocatori in campo (correzione della formazione, non è un cambio). */
+  onSwap: (a: number, b: number) => void;
   /** Libero: entra / esce / scambio A ↔ B; senza `out` = libero scelto (posto vuoto). */
   onLibero: (inn: number, out?: number) => void;
   /** Solo visualizzazione: a partita finita o mentre si sceglie la formazione del set. */
   readOnly?: boolean;
 };
 
-/** Operazione in corso sul campo: cambio (chi esce → chi entra → ruolo) o entrata del libero. */
-type Action = { kind: "sub"; out: number | null; inn: number | null; role: PlayerRole | null } | { kind: "libero" } | null;
+/** Operazione in corso sul campo: cambio (chi esce → chi entra → ruolo), entrata del libero o scambio di posto. */
+type Action =
+  | { kind: "sub"; out: number | null; inn: number | null; role: PlayerRole | null }
+  | { kind: "libero" }
+  | { kind: "swap"; first: number | null }
+  | null;
 
 /**
  * Campo con la rete in alto: P4 P3 P2 / P5 P6 P1, pallino oro su P1 quando battiamo noi e pallino blu
  * sui centrali (per loro entra il libero in seconda linea); sotto il posto del libero.
  */
-export function Court({ live, playerOf, bench, liberos, roleOf, selected, onSelect, onRotate, onSub, onLibero, readOnly = false }: Props) {
+export function Court({ live, playerOf, bench, liberos, roleOf, selected, onSelect, onRotate, onSub, onSwap, onLibero, readOnly = false }: Props) {
   const [action, setAction] = useState<Action>(null);
   const back = new Set<number>(BACK_ROW.map((i) => live.rotation[i]));
 
   const tapPlayer = (id: number) => {
     if (action?.kind === "sub") setAction({ kind: "sub", out: id, inn: null, role: null });
-    else if (action?.kind === "libero" && live.liberoId && back.has(id) && id !== live.liberoId) {
+    else if (action?.kind === "swap") {
+      if (action.first === null) setAction({ kind: "swap", first: id });
+      else if (action.first === id) setAction({ kind: "swap", first: null });
+      else {
+        onSwap(action.first, id);
+        setAction(null);
+      }
+    } else if (action?.kind === "libero" && live.liberoId && back.has(id) && id !== live.liberoId) {
       onLibero(live.liberoId, id);
       setAction(null);
     } else onSelect?.(id);
   };
   const tappable = (id: number) =>
-    action?.kind === "sub" ? id !== live.liberoId : action?.kind === "libero" ? back.has(id) && id !== live.liberoId : Boolean(onSelect);
+    action?.kind === "sub" || action?.kind === "swap" ? id !== live.liberoId : action?.kind === "libero" ? back.has(id) && id !== live.liberoId : Boolean(onSelect);
 
   const sub = action?.kind === "sub" ? action : null;
   const warning = sub?.out && sub.inn ? subWarning(live, sub.out, sub.inn) : null;
   const liberoMode = action?.kind === "libero";
-  const title = sub ? "Cambio in corso" : liberoMode ? "Entra il libero" : "In campo";
-  // Come il pannello dei punti: il colore dice cosa si sta facendo (oro = cambio, blu = libero).
-  const frame = sub ? "border-gold bg-surface-sel" : liberoMode ? "border-blue bg-surface" : "border-line bg-surface";
+  const swap = action?.kind === "swap" ? action : null;
+  const title = sub ? "Cambio in corso" : liberoMode ? "Entra il libero" : swap ? "Scambio di posto" : "In campo";
+  // Come il pannello dei punti: il colore dice cosa si sta facendo (oro = cambio o scambio, blu = libero).
+  const frame = sub || swap ? "border-gold bg-surface-sel" : liberoMode ? "border-blue bg-surface" : "border-line bg-surface";
 
   const tile = (i: number) => {
     const id = live.rotation[i];
     const p = playerOf(id);
-    const isSelected = sub ? sub.out === id : selected === id;
+    const isSelected = sub ? sub.out === id : swap ? swap.first === id : selected === id;
     const isOut = Boolean(sub && sub.out === id);
     const isLibero = id === live.liberoId;
     const isCentre = !isLibero && roleOf(id) === "C";
@@ -110,6 +124,15 @@ export function Court({ live, playerOf, bench, liberos, roleOf, selected, onSele
             >
               Cambio {live.subs}/{MAX_SUBS}
             </button>
+            <button
+              type="button"
+              aria-pressed={swap !== null}
+              disabled={sub !== null || liberoMode}
+              onClick={() => setAction(swap ? null : { kind: "swap", first: null })}
+              className={`${SMALL_BTN} ${swap ? "border-gold bg-gold text-bg hover:text-bg" : ""}`}
+            >
+              ⇄ Scambia
+            </button>
           </>
         )}
       </div>
@@ -128,7 +151,20 @@ export function Court({ live, playerOf, bench, liberos, roleOf, selected, onSele
         <div className="grid grid-cols-3 gap-1.5">{COURT_ORDER.slice(3).map(tile)}</div>
       </div>
 
-      {!sub && (
+      {swap && (
+        <div className="flex flex-wrap items-center gap-2 border-t border-gold-line pt-2.5">
+          <span className="mr-auto text-sm text-ink-2">
+            {swap.first === null
+              ? "Tocca il primo giocatore da spostare."
+              : `Tocca con chi scambiare ${playerLabel(playerOf(swap.first))}. Non conta come cambio.`}
+          </span>
+          <button type="button" onClick={() => setAction(null)} className={SMALL_BTN}>
+            Annulla
+          </button>
+        </div>
+      )}
+
+      {!sub && !swap && (
         <LiberoSlot
           live={live}
           playerOf={playerOf}

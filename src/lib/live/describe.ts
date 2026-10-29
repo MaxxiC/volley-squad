@@ -23,6 +23,8 @@ export function describeEvent(e: LiveEvent, playerOf: (id: number) => LivePlayer
       return `Timeout ${team(d.side)}`;
     case "correction":
       return `Correzione punteggio: ${d.delta === -1 ? "−1" : "+1"} ${team(e.point)}`;
+    case "swap":
+      return `Scambio di posto · ${playerLabel(playerOf(d.in ?? 0))} ↔ ${playerLabel(playerOf(d.out ?? 0))}`;
     case "sub": {
       const role = d.role ? ` (${ROLE_LABEL[d.role]})` : "";
       return `Cambio · entra ${playerLabel(playerOf(d.in ?? 0))}${role}, esce ${playerLabel(playerOf(d.out ?? 0))}`;

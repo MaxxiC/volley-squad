@@ -72,6 +72,11 @@ export function activeEvents(events: Iterable<LiveEvent>) {
   return [...events].filter((e) => !e.deleted).sort((a, b) => a.seq - b.seq);
 }
 
+/** Ultimo timeout valido di una squadra nel set (per il −1: si annulla quello). */
+export function lastTimeout(events: Iterable<LiveEvent>, setN: number, side: Side) {
+  return activeEvents(events).findLast((e) => e.kind === "timeout" && e.setN === setN && e.detail?.side === side) ?? null;
+}
+
 /** Posizioni di seconda linea: P1, P6, P5 (dove può stare il libero). */
 export const BACK_ROW = [0, 5, 4] as const;
 const FRONT_P4 = 3;
@@ -209,6 +214,17 @@ export function computeLive(
         }
         break;
       }
+      case "swap":
+        // Correzione della formazione a set in corso: due giocatori in campo si scambiano di posto.
+        // Non conta come cambio e non tocca punteggio né battuta.
+        if (d.in && d.out && d.in !== d.out && s.rotation.includes(d.in) && s.rotation.includes(d.out)) {
+          const a = s.rotation.indexOf(d.in);
+          const b = s.rotation.indexOf(d.out);
+          const rotation = [...s.rotation];
+          [rotation[a], rotation[b]] = [rotation[b], rotation[a]];
+          s = liberoLeavesFrontRow({ ...s, rotation });
+        }
+        break;
       case "timeout":
         if (d.side) s = { ...s, timeouts: { ...s.timeouts, [d.side]: s.timeouts[d.side] + 1 } };
         break;

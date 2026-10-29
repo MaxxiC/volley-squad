@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { TEAM_NAME } from "@/lib/club";
+import { COURT_ORDER } from "@/lib/lineup";
 import { SIMPLE_OUR_TYPES, SIMPLE_THEIR_TYPES, type BallType, type Side, type SimpleType } from "@/lib/live/skills";
 import type { LiveEvent, LivePlayer } from "@/lib/live/types";
 import { shortName } from "@/lib/players";
@@ -21,7 +22,7 @@ type Props = {
   onPoint: (side: Side) => LiveEvent;
   /** Completa "come" e "chi" del punto. */
   onComplete: (id: string, patch: Partial<LiveEvent>) => void;
-  /** Giocatori tra cui scegliere: in campo (P1 per primo) e libero. */
+  /** Giocatori in campo, indice = posizione (P1 per primo), e libero. */
   court: LivePlayer[];
   libero: LivePlayer | undefined;
   /** P1 al momento del punto: è chi batteva (suggerito per ace ed errori in battuta). */
@@ -96,7 +97,11 @@ export function SimpleInput({ opponent, eventOf, onPoint, onComplete, court, lib
   const types = open.side === "us" ? SIMPLE_OUR_TYPES : SIMPLE_THEIR_TYPES;
   const last = open.stage === "player" ? lastFor(open.type) : null;
   const suggested = open.stage === "player" && open.type.kind === "skill" && open.type.skill === "serve" ? serverId : null;
-  const choices = open.stage === "player" && open.type.includeLibero && libero ? [...court, libero] : court;
+  // Disposti come il campo del Live (P4 P3 P2 / P5 P6 P1); il libero in panchina in fondo, quando serve.
+  const position = (p: LivePlayer) => court.indexOf(p);
+  const field = court.length === 6 ? COURT_ORDER.map((i) => court[i]) : court;
+  const withLibero = open.stage === "player" && open.type.includeLibero && libero && !court.includes(libero);
+  const choices = withLibero ? [...field, libero] : field;
   const us = open.side === "us";
 
   return (
@@ -167,6 +172,11 @@ export function SimpleInput({ opponent, eventOf, onPoint, onComplete, court, lib
               ★ Meritevole
             </button>
           )}
+          <div aria-hidden className="-mb-1 flex items-center gap-2">
+            <span className="h-0.5 flex-1 rounded-pill bg-line-strong" />
+            <span className="text-[10px] font-bold tracking-[.2em] text-faint uppercase">Rete</span>
+            <span className="h-0.5 flex-1 rounded-pill bg-line-strong" />
+          </div>
           <div className="grid grid-cols-3 gap-2">
             {choices.map((p) => {
               const tag = p.id === suggested ? "battuta" : p.id === last ? "ultimo" : p.id === libero?.id ? "libero" : "";
@@ -181,6 +191,11 @@ export function SimpleInput({ opponent, eventOf, onPoint, onComplete, court, lib
                   }
                   className={`relative flex min-h-17 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-tile border text-ink active:border-gold ${highlight ? "border-gold-line bg-surface-sel" : "border-line bg-surface-2"}`}
                 >
+                  {position(p) >= 0 && (
+                    <span aria-hidden className="absolute top-1 left-1.5 text-[10px] font-semibold text-faint">
+                      P{position(p) + 1}
+                    </span>
+                  )}
                   <span className="font-display text-[28px] leading-none font-extrabold text-gold tabular-nums">{p.number}</span>
                   <span className="max-w-full truncate px-1 text-[13px] text-ink-2">{shortName(p)}</span>
                   {tag && (

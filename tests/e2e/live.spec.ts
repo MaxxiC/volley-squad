@@ -174,10 +174,14 @@ test("Live completo sul DB reale (con ripristino)", async ({ page }) => {
   });
 
   await test.step("timeout e correzione del punteggio", async () => {
-    const timeout = page.getByRole("button", { name: new RegExp(`^Timeout\\s*${TEAM_NAME}`, "i") });
-    for (let i = 0; i < 3; i++) await timeout.click();
+    const timeout = page.getByRole("group", { name: `Timeout di ${TEAM_NAME}` });
+    const addTimeout = page.getByRole("button", { name: `Aggiungi un timeout a ${TEAM_NAME}` });
+    for (let i = 0; i < 3; i++) await addTimeout.click();
     await expect(timeout).toContainText("3/2");
     await expect(timeout).toHaveClass(/text-red/);
+    // −1 toglie l'ultimo timeout (resta nel registro come annullato).
+    await page.getByRole("button", { name: `Togli un timeout a ${TEAM_NAME}` }).click();
+    await expect(timeout).toContainText("2/2");
 
     await page.getByRole("button", { name: "Correggi" }).click();
     await page.getByRole("button", { name: `Aggiungi un punto a ${opponent}` }).click();
@@ -186,6 +190,20 @@ test("Live completo sul DB reale (con ripristino)", async ({ page }) => {
     expect(await score(page)).toMatchObject({ us: 1, them: 1 });
     await expect(feedTop(page)).toContainText(`Correzione punteggio: −1 ${opponent}`);
     await page.getByRole("button", { name: "Fatto" }).click();
+  });
+
+  await test.step("scambio di posto a set in corso, poi Annulla", async () => {
+    const before = [await pos(page, 2).getAttribute("aria-label"), await pos(page, 3).getAttribute("aria-label")];
+    const who = (label: string | null) => label?.replace(/^P\d: /, "").replace(/,.*$/, "") ?? "";
+    await page.getByRole("button", { name: "⇄ Scambia" }).click();
+    await pos(page, 2).click();
+    await pos(page, 3).click();
+    await expect(pos(page, 2)).toHaveAttribute("aria-label", new RegExp(`^P2: ${esc(who(before[1]))}`));
+    await expect(pos(page, 3)).toHaveAttribute("aria-label", new RegExp(`^P3: ${esc(who(before[0]))}`));
+    await expect(feedTop(page)).toContainText("Scambio di posto");
+    await expect(page.getByRole("button", { name: /^Cambio 1\/6/ })).toBeVisible();
+    await page.getByRole("button", { name: "↶ Annulla" }).click();
+    await expect(pos(page, 2)).toHaveAttribute("aria-label", before[0] ?? "");
   });
 
   await test.step("modalità avanzata: azione senza punto", async () => {
@@ -228,7 +246,8 @@ test("Live completo sul DB reale (con ripristino)", async ({ page }) => {
 
     const events = await db.select().from(s.events).where(eq(s.events.matchId, matchId));
     expect(events.filter((e) => e.kind === "set_end" && !e.deleted)).toHaveLength(3);
-    expect(events.filter((e) => e.deleted)).toHaveLength(1); // il punto loro annullato
+    // Annullati: il punto loro, il timeout tolto con −1 e lo scambio di posto.
+    expect(events.filter((e) => e.deleted).map((e) => e.kind).sort()).toEqual(["action", "swap", "timeout"]);
   });
 
   await test.step("Storico: correzione con ricalcolo, modifica che romperebbe il set rifiutata", async () => {

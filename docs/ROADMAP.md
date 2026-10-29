@@ -81,9 +81,9 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
   - [x] "⇄ Scambia due posizioni" nella formazione
   - [x] Cambi: in panchina prima lo stesso ruolo di chi esce
 - **Fase 2 · Live più chiaro**
-  - [ ] Scelta del giocatore dopo un +1 disposta come il campo (P4 P3 P2 / P5 P6 P1, libero a parte)
-  - [ ] Timeout +1 / −1 (il −1 toglie l'ultimo timeout di quella squadra)
-  - [ ] Scambio di due giocatori durante il set (nuova azione nel registro, non conta come cambio, si annulla; gestito anche nello Storico)
+  - [x] Scelta del giocatore dopo un +1 disposta come il campo (P4 P3 P2 / P5 P6 P1 con la posizione, libero in fondo quando serve)
+  - [x] Timeout +1 / −1 (il −1 annulla l'ultimo timeout di quella squadra nel set, `lastTimeout` in `state.ts`)
+  - [x] "⇄ Scambia" sul campo del Live: due giocatori in campo si scambiano di posto (evento `swap`, migrazione `0007`), non conta come cambio, si annulla con Annulla e si elimina dallo Storico
 - **Fase 3 · Semplice più ricca** — decisioni del 29/10/2026:
   - [ ] Punto avversario e "Errore avversario": elenco completo dei casi, una scelta con un tocco (al posto di "palla semplice nostra / azione loro")
   - [ ] Azioni senza punto con una riga di tasti sotto i +1: **Ricezione** (solo Buona / Scarsa) e **Attacco giocato**, poi il giocatore → statistiche vere anche in Semplice (es. 5 punti su 10 attacchi)

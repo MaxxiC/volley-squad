@@ -56,3 +56,7 @@ test("cambi e libero", () => {
   assert.equal(text({ kind: "libero", detail: { in: 9 } }), "Libero scelto · #2 Federici");
   assert.equal(text({ kind: "libero", detail: { in: 19, out: 9 } }), "Cambio libero · entra #9 Casadei, esce #2 Federici");
 });
+
+test("scambio di posto", () => {
+  assert.equal(text({ kind: "swap", detail: { in: 2, out: 3 } }), "Scambio di posto · #7 Botticelli ↔ #3 Claudio");
+});

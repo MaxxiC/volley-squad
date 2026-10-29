@@ -9,11 +9,12 @@ import { PANEL, SMALL_BTN } from "./live-ui";
 type Props = {
   live: LiveState;
   opponent: string;
-  onTimeout: (side: Side) => void;
+  /** +1 = nuovo timeout, −1 = toglie l'ultimo di quella squadra nel set. */
+  onTimeout: (side: Side, delta: 1 | -1) => void;
   onCorrect: (side: Side, delta: 1 | -1) => void;
 };
 
-/** Timeout (2 per squadra per set, oltre si avvisa) e correzione manuale del punteggio. */
+/** Timeout +1 / −1 (2 per squadra per set, oltre si avvisa) e correzione manuale del punteggio. */
 export function MatchTools({ live, opponent, onTimeout, onCorrect }: Props) {
   const [correcting, setCorrecting] = useState(false);
   const teams: [Side, string][] = [
@@ -27,17 +28,36 @@ export function MatchTools({ live, opponent, onTimeout, onCorrect }: Props) {
         {teams.map(([side, name]) => {
           const used = live.timeouts[side];
           return (
-            <button
+            <div
               key={side}
-              type="button"
-              onClick={() => onTimeout(side)}
-              className={`flex min-h-12 cursor-pointer flex-col items-center justify-center rounded-btn border px-1 ${used >= MAX_TIMEOUTS ? "border-red-line text-red" : "border-line-strong text-ink"}`}
+              role="group"
+              aria-label={`Timeout di ${name}`}
+              className={`flex min-w-0 flex-col items-center gap-1 rounded-btn border p-1 ${used >= MAX_TIMEOUTS ? "border-red-line text-red" : "border-line-strong text-ink"}`}
             >
               <span className="font-display text-xs font-semibold tracking-[.1em] text-muted uppercase">Timeout</span>
               <span className="max-w-full truncate font-display text-[15px] font-bold uppercase">
                 {name} {used}/{MAX_TIMEOUTS}
               </span>
-            </button>
+              <div className="grid w-full grid-cols-2 gap-1">
+                <button
+                  type="button"
+                  aria-label={`Togli un timeout a ${name}`}
+                  disabled={used === 0}
+                  onClick={() => onTimeout(side, -1)}
+                  className="min-h-11 cursor-pointer rounded-chip border border-line font-display text-base font-bold text-ink disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  −1
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Aggiungi un timeout a ${name}`}
+                  onClick={() => onTimeout(side, 1)}
+                  className="min-h-11 cursor-pointer rounded-chip border border-line font-display text-base font-bold text-ink"
+                >
+                  +1
+                </button>
+              </div>
+            </div>
           );
         })}
         <button

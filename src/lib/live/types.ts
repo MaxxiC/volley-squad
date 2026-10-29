@@ -7,7 +7,7 @@ import type { BallType, Side, Skill } from "./skills";
  * rotation = rotazione manuale · timeout · correction = correzione del punteggio
  * lineup = formazione di un set successivo · set_end = chiusura del set.
  */
-export const EVENT_KINDS = ["action", "sub", "libero", "rotation", "timeout", "correction", "lineup", "set_end"] as const;
+export const EVENT_KINDS = ["action", "sub", "libero", "rotation", "timeout", "correction", "lineup", "set_end", "swap"] as const;
 export type EventKind = (typeof EVENT_KINDS)[number];
 
 /** Fondamentale avversario senza un nostro giocatore: errore o punto dell'avversario. */
@@ -18,7 +18,10 @@ export type EventDetail = {
   ballType?: BallType;
   /** Rotazione manuale: avanti (1) o indietro (-1). */
   dir?: 1 | -1;
-  /** Cambio / libero: chi entra, chi esce e (cambio) in che ruolo entra. Libero senza `out` = libero scelto. */
+  /**
+   * Cambio / libero: chi entra, chi esce e (cambio) in che ruolo entra. Libero senza `out` = libero scelto.
+   * Scambio (`swap`): i due giocatori in campo che si scambiano di posizione.
+   */
   in?: number;
   out?: number;
   role?: PlayerRole;

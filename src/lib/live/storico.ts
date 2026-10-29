@@ -73,7 +73,7 @@ export function applyEdit(e: LiveEvent, edit: ActionEdit): LiveEvent {
 
 /** Azioni che si possono modificare (fondamentali, punti) ed eventi che si possono eliminare. */
 export const isEditable = (e: LiveEvent) => e.kind === "action";
-export const isDeletable = (e: LiveEvent) => e.kind === "action" || e.kind === "timeout" || e.kind === "correction";
+export const isDeletable = (e: LiveEvent) => e.kind === "action" || e.kind === "timeout" || e.kind === "correction" || e.kind === "swap";
 
 /** Set con almeno un evento (in ordine). */
 export function setsOf(events: Iterable<LiveEvent>) {
