@@ -57,7 +57,7 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] Annulla/Ripeti anche dopo un ricaricamento: la pila si salva sul telefono a ogni tocco (`undo-store.ts`, legata al Live in corso, ultime 300 operazioni) e si riprende identica; se manca o non torna col registro (azioni fatte altrove, dati cancellati) si ricostruisce dal registro (`restoreHistory` in `history.ts`: Annulla toglie l'ultima azione valida, poi la precedente). Si cancella con la copia del registro (fine partita, azzeramento, nuovo Live, Esci).
 - [x] MVP facoltativo alla chiusura ("Concludi senza MVP"); si sceglie o si cambia anche dopo dallo Storico.
 - [x] Partita conclusa: dallo Storico "Riapri nel Live" (torna in corso con tutte le azioni, parziali tolti fino alla nuova chiusura, l'MVP salvato resta proposto) e "Azzera il Live" (doppia conferma, via anche risultato e MVP). Per le prove: partita futura → Live → conclusa → Azzera.
-- [x] Chiusura (28/10/2026): prove di Max su iPhone (Vercel), E2E verdi su dev e su build di produzione con service worker, DB ripristinato e verificato; partita e squadra TEST-volley eliminate (per le prove si usa una partita futura e poi "Azzera il Live"). Merge `feat/live` → `dev` → `main` a cura di Max.
+- [x] Chiusura (28/10/2026): prove di Max su iPhone (Vercel), E2E verdi su dev e su build di produzione con service worker, DB ripristinato e verificato; partita e squadra TEST-volley eliminate (per le prove si usa una partita futura e poi "Azzera il Live"). Merge `feat/live` → `dev` → `main` fatto.
 
 ## 5 · Storico, statistiche, riepilogo pubblico 🌿 `feat/storico` ✅
 - Decisioni (28/10/2026): nello Storico si correggono **solo le partite concluse** (quelle in corso in sola lettura, così Storico e telefono del Live non si sovrascrivono). Le partite con il risultato inserito a mano (es. n. 15 con Stordyteam) non hanno azioni: niente Storico né statistiche per loro.
@@ -70,8 +70,8 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] Manifest + icone 192/512 (+ maskable, apple-touch 180) dal logo su fondo `bg`: due app installabili, "CUSBros" (da sito pubblico, apre `/`) e "CUSBros Staff" (da `/admin/**`, apre `/admin`), schermo intero (`display: standalone`)
 - [x] Progetto Vercel collegato al repo (deploy da `main`, https://volley-squad.vercel.app), env `DATABASE_URL` + `AUTH_SECRET`, funzioni in `fra1` (`vercel.json`) vicino a Neon `eu-central-1`
 - [~] Verifica su telefono reale: Live provato da Max su iPhone (28/10/2026), app installata a schermo intero; manca la prova **offline in palestra** in una partita vera
-- [ ] **iPhone:** Safari cancella cache e dati di un sito non aperto da 7 giorni se non è installato sulla Home → installazione PWA consigliata per chi registra il Live; in ogni caso aprire il Live con la rete prima della partita
-- [ ] Merge finale `dev` → `main`
+- Nota **iPhone:** Safari cancella cache e dati di un sito non aperto da 7 giorni se non è installato sulla Home → installazione PWA consigliata per chi registra il Live; in ogni caso aprire il Live con la rete prima della partita (scritto anche nel README)
+- [x] Merge `dev` → `main` (28/10/2026, compreso l'import dal sito ufficiale): `main` e `dev` sono allineati
 
 ## 🔒 Sicurezza (sito online)
 - [x] Controllo del 28/10/2026: middleware su `/admin/**` + controllo in pagine, server action e API; login con bcrypt, messaggio e tempi uguali per email sconosciuta o password sbagliata, redirect solo interni; segreti solo in `.env`; area staff `noindex`.
@@ -93,11 +93,12 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] **Neon:** progetto creato, `.env` compilato.
 - [x] **Utente admin** creato.
 - [ ] **Allenatori:** crea i 2 utenti `coach` con `npm run user:create -- <email> "<nome>" coach`.
-- [ ] **Sesso dei giocatori** in Admin Giocatori (serve all'avviso "almeno 2 donne in campo").
+- [x] **Sesso dei giocatori** impostato per tutti i 14 (serve all'avviso "almeno 2 donne in campo").
 - [x] **Classifica:** si copia dal sito ufficiale con "Applica" (resta modificabile a mano da Partite → Classifica).
 - [x] **"Andata" nel Calendario:** aggiunta la fase (andata/ritorno) e il numero gara ufficiale.
 - [x] **Rosa vera:** 14 giocatori caricati (27/10/2026).
-- [ ] **Numeri di maglia veri** (ora provvisori 1–14) e **cognomi mancanti** (Claudio, Kevi, Francesco, Maria Chiara, Rebecca): si sistemano da Admin Giocatori.
+- [x] **Numeri di maglia veri** inseriti.
+- [ ] **Cognomi mancanti** (al 29/10/2026: Claudio, Francesco, Kevi, Maria Chiara, Erika): si sistemano da Admin Giocatori.
 
 ## ✅ Decisioni sul gioco (27/10/2026)
 - **Ruoli variabili:** ruolo principale in anagrafica; **ruolo per partita** scelto in Prepara Live (proposto quello dell'anagrafica); nei **cambi** si indica in che ruolo entra (proposto quello di chi esce). Variabili: Capelli, Claudio (anche adattatore), Clementi, Placucci, Kevi, Botticelli, Fish.
@@ -112,6 +113,5 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - **Classifica:** dal sito ufficiale (Partite → Ufficiale → Applica), con i set calcolati dai parziali di tutte le gare del girone; la modifica a mano resta possibile.
 - **npm audit:** 2 avvisi su `postcss` interno a Next 15 (solo build-time). La "fix" proposta è passare a Next 16: non applicata, si rivaluta quando esce una patch 15.x. Altri avvisi `esbuild` arrivano da `drizzle-kit` (solo CLI in locale, non va in produzione).
 - **Auth.js v5** è ancora in beta: versione bloccata a `5.0.0-beta.32`, aggiornare solo di proposito.
-- **Login:** nessun limite di tentativi per ora (uso interno, 3 utenti): il sito è online, vedi la sezione Sicurezza.
 - **Password dimenticata:** per ora solo messaggio "contatta l'admin".
-- **Stato al 28/10/2026:** step 0–4 completati (step 4 su `feat/live`, merge a cura di Max); step 5.1 Storico live fatto su `feat/storico`; step 5 completato su `feat/storico` (Storico, statistiche, andamento, riepilogo pubblico), E2E verdi il 28/10/2026; merge su `dev`/`main` a cura di Max. Il dev server si avvia con `npm run dev` (porta 3001).
+- **Stato al 29/10/2026:** step 0–5 completati, più sicurezza e import dal sito ufficiale; tutto unito su `dev` e su `main` (online su Vercel), nessun branch `feat` aperto. Restano: prova del Live **offline in palestra** in una partita vera (step 6), utenti `coach` e cognomi mancanti (Max), idee future ancora aperte (giornate di riposo, loghi, animazioni). Il dev server si avvia con `npm run dev` (porta 3001).
