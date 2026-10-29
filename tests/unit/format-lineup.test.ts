@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import { fromRomeInput, toDateInput, toTimeInput } from "@/lib/format";
-import { fillInOrder, roleMismatches, womenOnCourt } from "@/lib/lineup";
+import { fillInOrder, groupByRole, roleMismatches, suggestedRoles, womenOnCourt } from "@/lib/lineup";
 
 describe("fromRomeInput", () => {
   const cases: [string, string, string][] = [
@@ -90,5 +90,67 @@ describe("womenOnCourt", () => {
     const r = womenOnCourt([1, 2, 3], (id) => g[id as 1 | 2 | 3]);
     assert.deepEqual(r, { women: 1, unknown: 1, warn: true });
     assert.equal(womenOnCourt([1, 1], () => "F").warn, false);
+  });
+});
+
+describe("suggestedRoles", () => {
+  const roles: Record<number, "P" | "S" | "C" | "O" | "L"> = { 1: "P", 2: "S", 3: "C", 4: "O", 5: "S", 6: "C", 7: "L" };
+  const roleOf = (id: number) => roles[id];
+  const empty = [null, null, null, null, null, null];
+
+  test("campo vuoto: schema con l'alzatore in P1", () => {
+    assert.deepEqual(suggestedRoles(empty, roleOf), [["P"], ["S"], ["C"], ["O"], ["S"], ["C"]]);
+  });
+
+  test("alzatore in P1: in P4 l'opposto, bande in P2 e P5, centrali in P3 e P6", () => {
+    assert.deepEqual(suggestedRoles([1, null, null, null, null, null], roleOf), [["P"], ["S"], ["C"], ["O"], ["S"], ["C"]]);
+  });
+
+  test("alzatore in P3: lo schema gira con lui", () => {
+    assert.deepEqual(suggestedRoles([null, null, 1, null, null, null], roleOf), [["S"], ["C"], ["P"], ["S"], ["C"], ["O"]]);
+  });
+
+  test("solo una banda in P2: alzatore o opposto in P1 e P4", () => {
+    const r = suggestedRoles([null, 2, null, null, null, null], roleOf);
+    assert.deepEqual(r.map((x) => [...x].sort()), [["O", "P"], ["S"], ["C"], ["O", "P"], ["S"], ["C"]]);
+  });
+
+  test("il libero non conta", () => {
+    assert.deepEqual(suggestedRoles([7, null, null, null, null, null], roleOf), suggestedRoles(empty, roleOf));
+  });
+});
+
+describe("groupByRole", () => {
+  const players = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }];
+  const roles: Record<number, "P" | "S" | "C" | "O" | "L"> = { 1: "C", 2: "S", 3: "P", 4: "S", 5: "L" };
+
+  test("gruppi nell'ordine dei ruoli, chi non ha giocatori non c'è", () => {
+    const g = groupByRole(players, (id) => roles[id]);
+    assert.deepEqual(g.map((x) => [x.role, x.players.map((p) => p.id)]), [["P", [3]], ["S", [2, 4]], ["C", [1]], ["L", [5]]]);
+  });
+
+  test("ruolo consigliato per primo", () => {
+    const g = groupByRole(players, (id) => roles[id], ["C"]);
+    assert.deepEqual(g.map((x) => x.role), ["C", "P", "S", "L"]);
+    assert.deepEqual(g.map((x) => x.preferred), [true, false, false, false]);
+  });
+});
+
+describe("fillInOrder con lo schema che gira", () => {
+  test("alzatore già in P3: il secondo alzatore non va in P1, le posizioni seguono lo schema", () => {
+    const present = [
+      { id: 1, role: "P" as const },
+      { id: 2, role: "P" as const },
+      { id: 3, role: "S" as const },
+      { id: 4, role: "S" as const },
+      { id: 5, role: "C" as const },
+      { id: 6, role: "C" as const },
+      { id: 7, role: "O" as const },
+      { id: 8, role: "L" as const },
+    ];
+    const r = fillInOrder([null, null, 1, null, null, null], null, present);
+    // P1 S, P2 C, P3 P, P4 S, P5 C, P6 O.
+    assert.deepEqual(r.slots, [3, 5, 1, 4, 6, 7]);
+    assert.equal(r.libero, 8);
   });
 });

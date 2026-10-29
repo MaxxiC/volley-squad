@@ -73,6 +73,22 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - Nota **iPhone:** Safari cancella cache e dati di un sito non aperto da 7 giorni se non è installato sulla Home → installazione PWA consigliata per chi registra il Live; in ogni caso aprire il Live con la rete prima della partita (scritto anche nel README)
 - [x] Merge `dev` → `main` (28/10/2026, compreso l'import dal sito ufficiale): `main` e `dev` sono allineati
 
+## 7 · Miglioramenti dopo la prima partita col Live (feedback di Max, 29/10/2026)
+- [x] Animazioni leggere tra le pagine (CSS, `page-enter` nel pubblico, `page-fade` nello staff via `template.tsx`; niente con "Riduci movimento")
+- **Fase 1 · Formazione e cambi**
+  - [x] Presenti divisi per ruolo nella scelta della formazione (Prepara Live e set successivi)
+  - [x] Ruolo consigliato per ogni posizione dallo schema 5-1 (P S C O S C, opposti P1–P4, P2–P5, P3–P6) a partire da chi è già in campo: scritto nelle caselle vuote e gruppo in cima ai presenti (`suggestedRoles`, `groupByRole` in `src/lib/lineup.ts`)
+  - [x] "⇄ Scambia due posizioni" nella formazione
+  - [x] Cambi: in panchina prima lo stesso ruolo di chi esce
+- **Fase 2 · Live più chiaro**
+  - [ ] Scelta del giocatore dopo un +1 disposta come il campo (P4 P3 P2 / P5 P6 P1, libero a parte)
+  - [ ] Timeout +1 / −1 (il −1 toglie l'ultimo timeout di quella squadra)
+  - [ ] Scambio di due giocatori durante il set (nuova azione nel registro, non conta come cambio, si annulla; gestito anche nello Storico)
+- **Fase 3 · Semplice più ricca** — decisioni del 29/10/2026:
+  - [ ] Punto avversario e "Errore avversario": elenco completo dei casi, una scelta con un tocco (al posto di "palla semplice nostra / azione loro")
+  - [ ] Azioni senza punto con una riga di tasti sotto i +1: **Ricezione** (solo Buona / Scarsa) e **Attacco giocato**, poi il giocatore → statistiche vere anche in Semplice (es. 5 punti su 10 attacchi)
+- **Fase 4 · Pagina Statistiche pubblica** (squadra e giocatori, stagione e singola partita): dopo la fase 3 e l'elenco di Max di cosa vedere
+
 ## 🔒 Sicurezza (sito online)
 - [x] Controllo del 28/10/2026: middleware su `/admin/**` + controllo in pagine, server action e API; login con bcrypt, messaggio e tempi uguali per email sconosciuta o password sbagliata, redirect solo interni; segreti solo in `.env`; area staff `noindex`.
 - [x] Utente eliminato → accesso finito subito (prima restava valido il JWT fino a 30 giorni): `currentStaff()` ricontrolla l'utente nel DB, `/admin/sessione-scaduta` chiude la sessione senza giri di redirect.

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { WomenWarning } from "@/components/admin/lineup-picker";
-import { COURT_ORDER } from "@/lib/lineup";
+import { COURT_ORDER, groupByRole } from "@/lib/lineup";
 import { BACK_ROW, MAX_SUBS, liberoTarget, subWarning, type LiveState } from "@/lib/live/state";
 import type { LivePlayer } from "@/lib/live/types";
 import { playerLabel } from "@/lib/live/describe";
@@ -157,7 +157,8 @@ export function Court({ live, playerOf, bench, liberos, roleOf, selected, onSele
           </div>
           {sub.out && (
             <div className="grid grid-cols-3 gap-2">
-              {bench.map((p) => (
+              {/* Prima chi ha lo stesso ruolo di chi esce, poi gli altri divisi per ruolo. */}
+              {groupByRole(bench, roleOf, [roleOf(sub.out)]).flatMap((g) => g.players).map((p) => (
                 <button
                   key={p.id}
                   type="button"
