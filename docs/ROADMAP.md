@@ -71,7 +71,7 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] Progetto Vercel collegato al repo (deploy da `main`, https://volley-squad.vercel.app), env `DATABASE_URL` + `AUTH_SECRET`, funzioni in `fra1` (`vercel.json`) vicino a Neon `eu-central-1`
 - [~] Verifica su telefono reale: Live provato da Max su iPhone (28/10/2026), app installata a schermo intero; manca la prova **offline in palestra** in una partita vera
 - Nota **iPhone:** Safari cancella cache e dati di un sito non aperto da 7 giorni se non è installato sulla Home → installazione PWA consigliata per chi registra il Live; in ogni caso aprire il Live con la rete prima della partita (scritto anche nel README)
-- [x] Merge `dev` → `main` (28/10/2026, compreso l'import dal sito ufficiale; di nuovo il 30/10/2026 con le fasi 1–4 della sezione 7)
+- [x] Merge `dev` → `main` (28/10/2026, compreso l'import dal sito ufficiale; di nuovo il 30/10/2026 con la sezione 7 e le amichevoli)
 
 ## 7 · Miglioramenti dopo la prima partita col Live (feedback di Max, 29/10/2026) ✅
 - [x] Animazioni leggere tra le pagine (CSS, `page-enter` nel pubblico, `page-fade` nello staff via `template.tsx`; niente con "Riduci movimento")
@@ -142,4 +142,4 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - **npm audit:** 2 avvisi su `postcss` interno a Next 15 (solo build-time). La "fix" proposta è passare a Next 16: non applicata, si rivaluta quando esce una patch 15.x. Altri avvisi `esbuild` arrivano da `drizzle-kit` (solo CLI in locale, non va in produzione).
 - **Auth.js v5** è ancora in beta: versione bloccata a `5.0.0-beta.32`, aggiornare solo di proposito.
 - **Password dimenticata:** per ora solo messaggio "contatta l'admin".
-- **Stato al 30/10/2026:** progetto base completo: step 0–6, sicurezza, import dal sito ufficiale, miglioramenti del Live (sezione 7), statistiche pubbliche e amichevoli. Su `main` (online) fino alle statistiche; `feat/amichevoli` da unire su `dev` e `main`. Restano solo: prova del Live **offline in palestra** in una partita vera, utenti `coach` e cognomi mancanti (Max); poi migliorie. Il dev server si avvia con `npm run dev` (porta 3001).
+- **Stato al 30/10/2026:** progetto base completo: step 0–6, sicurezza, import dal sito ufficiale, miglioramenti del Live (sezione 7), statistiche pubbliche e amichevoli. Tutto su `main` (online) fino alle amichevoli; su `dev` in più l'import ufficiale spostato in `apply.ts` e il libero che batte. Restano solo: prova del Live **offline in palestra** in una partita vera, utenti `coach` e cognomi mancanti (Max); poi migliorie. Il dev server si avvia con `npm run dev` (porta 3001).
