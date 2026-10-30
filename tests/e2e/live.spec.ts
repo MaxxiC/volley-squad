@@ -243,6 +243,8 @@ test("Live completo sul DB reale (con ripristino)", async ({ page }) => {
       const close = page.getByRole("button", { name: "Chiudi set" });
       for (let i = 0; i < 30 && !(await close.isVisible()); i++) {
         await page.getByRole("button", { name: new RegExp(`^Errore ${esc(opponent)}`, "i") }).click();
+        // In Avanzato si sceglie anche che cosa hanno sbagliato.
+        await page.getByRole("button", { name: "Attacco fuori", exact: true }).click();
       }
       await close.click();
     };

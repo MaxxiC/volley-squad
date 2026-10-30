@@ -172,7 +172,8 @@ export function LiveBoard({ match, players, lineups, startId, initialEvents }: P
                   setSelected(null);
                 }}
                 onOppPoint={() => add({ ...base, skill: "opp_point", point: "them" })}
-                onOppError={() => add({ ...base, skill: "opp_error", point: "us" })}
+                onOppError={(type) => add({ ...base, skill: "opp_error", point: "us", detail: { oppError: type } })}
+                isLibero={selected !== null && selected === live.liberoId}
               />
             )}
 

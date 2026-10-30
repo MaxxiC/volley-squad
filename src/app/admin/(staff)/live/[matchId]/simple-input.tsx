@@ -9,6 +9,7 @@ import {
   SIMPLE_RALLY_TYPES,
   SIMPLE_THEIR_TYPES,
   isTeamFault,
+  liberoCan,
   type Side,
   type SimpleType,
 } from "@/lib/live/skills";
@@ -225,14 +226,18 @@ export function SimpleInput({ opponent, eventOf, onPoint, onComplete, onAction, 
           </div>
           <div className="grid grid-cols-3 gap-2">
             {choices.map((p) => {
-              const tag = p.id === suggested ? "battuta" : p.id === last ? "ultimo" : p.id === libero?.id ? "libero" : "";
-              const highlight = p.id === suggested || p.id === last;
+              const isLibero = p.id === libero?.id;
+              // Il libero resta al suo posto nel campo ma non si sceglie per battuta e muro.
+              const disabled = isLibero && !liberoCan(choosing.skill);
+              const tag = p.id === suggested ? "battuta" : p.id === last ? "ultimo" : isLibero ? "libero" : "";
+              const highlight = !disabled && (p.id === suggested || p.id === last);
               return (
                 <button
                   key={p.id}
                   type="button"
+                  disabled={disabled}
                   onClick={() => choosePlayer(p.id)}
-                  className={`relative flex min-h-17 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-tile border text-ink active:border-gold ${highlight ? "border-gold-line bg-surface-sel" : "border-line bg-surface-2"}`}
+                  className={`relative flex min-h-17 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-tile border text-ink active:border-gold disabled:cursor-not-allowed disabled:opacity-35 ${highlight ? "border-gold-line bg-surface-sel" : "border-line bg-surface-2"}`}
                 >
                   {position(p) >= 0 && (
                     <span aria-hidden className="absolute top-1 left-1.5 text-[10px] font-semibold text-faint">
