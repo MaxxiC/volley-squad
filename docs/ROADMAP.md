@@ -108,9 +108,9 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 
 ## 💡 Idee future
 - [x] **Import dal sito ufficiale** (SportAdmin) 🌿 `feat/import`: Admin → Partite → **Ufficiale**, bottone "Controlla il sito ufficiale" (la pagina si legge solo su richiesta) → differenze → "Applica". Nostre partite riconosciute dal numero gara (data, ora, palestra, casa/trasferta, avversario, risultato se non registrate col Live; con il Live solo un avviso), partite nuove create, squadre collegate con l'id ufficiale (`teams.official_id`, migrazione `0006`) o create, classifica copiata dal sito (punti, G, V, P) con i set calcolati dai parziali. Lettura in `src/lib/official/parse.ts` (`node-html-parser`), confronto in `diff.ts`, test con una pagina finta in `tests/unit/fixtures/`.
-- [ ] **Giornate di riposo** nel Calendario pubblico ("Riposa CUSBros", 7ª andata e ritorno), come sul sito ufficiale.
-- [ ] **Loghi delle squadre** accanto ai nomi (come sul sito ufficiale).
-- [ ] **Animazioni leggere tra le pagine:** transizioni morbide (fade/slide brevi) senza librerie pesanti, es. View Transitions API del browser o CSS puro; rispettare `prefers-reduced-motion`.
+- Giornate di riposo nel Calendario pubblico: **non servono per ora** (Max, 30/10/2026).
+- Loghi delle squadre: **non per ora** (Max, 30/10/2026).
+- [x] **Animazioni leggere tra le pagine** (fatte, vedi sezione 7): transizioni morbide (fade/slide brevi) senza librerie pesanti, es. View Transitions API del browser o CSS puro; rispettare `prefers-reduced-motion`.
 
 ---
 
