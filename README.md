@@ -1,6 +1,6 @@
 # CUSBros
 
-Web app della squadra di pallavolo mista **CUSBros** (CUSB · Libertas Cup Mix 2027, girone Challenge, Rimini): sito pubblico (home, calendario, classifica, riepilogo di ogni partita giocata, statistiche della squadra e dei giocatori) e area staff (partite e classifica aggiornabili dal sito ufficiale del comitato con un bottone, giocatori con statistiche e andamento, Live per registrare le partite anche offline, Storico per correggerle). Online su https://volley-squad.vercel.app (staff: `/admin`); si installa come app sul telefono.
+Web app della squadra di pallavolo mista **CUSBros** (CUSB · Libertas Cup Mix 2027, girone Challenge, Rimini): sito pubblico (home, calendario, classifica, riepilogo di ogni partita giocata, statistiche della squadra e dei giocatori) e area staff (partite, anche amichevoli, e classifica aggiornabili dal sito ufficiale del comitato con un bottone, giocatori con statistiche e andamento, Live per registrare le partite anche offline, Storico per correggerle). Online su https://volley-squad.vercel.app (staff: `/admin`); si installa come app sul telefono.
 
 Specifica completa e prototipi: [`design_handoff_cusbros/`](design_handoff_cusbros/README.md) (i dati dei prototipi sono inventati). Avanzamento lavori e decisioni: [`docs/ROADMAP.md`](docs/ROADMAP.md). Architettura, convenzioni e regole di lavoro: [`CLAUDE.md`](CLAUDE.md).
 
@@ -38,6 +38,7 @@ Area staff: http://localhost:3001/admin (non linkata dal sito pubblico).
 | `npm run db:seed` | carica stagione, calendario, classifica e rosa iniziali (non tocca un DB già popolato) |
 | `npm run user:create -- <email> "<nome>" <admin\|coach>` | crea un utente staff o ne aggiorna nome/ruolo/password |
 | `npm test` | test della logica (Live, Storico, statistiche, riepilogo partita, import dal sito ufficiale, validazioni, date, formazione, accesso e limite ai tentativi): pochi secondi, non usa il DB |
+| `npm run test:fuzz` | test "a caso" del Live su 2000 partite simulate (`-- 5000` per di più; `FUZZ_SEED=n` ripete un caso): qualche minuto |
 | `npm run test:e2e` | E2E Playwright sul **DB reale** (Live completo → Storico → riepilogo pubblico e statistiche, offline, invio, sicurezza, amichevoli), con copia e ripristino verificato (vedi sotto) |
 | `npm run test:restore` | dopo un E2E interrotto: mostra le differenze dalla copia; con `-- --apply` ripristina |
 | `npm run test:manual` | prova a mano sul DB reale (es. dal telefono): copia del DB + partita "Prova telefono"; si chiude con `test:restore` |

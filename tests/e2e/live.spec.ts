@@ -306,6 +306,9 @@ test("Live completo sul DB reale (con ripristino)", async ({ page }) => {
 
   await test.step("statistiche pubbliche: la partita c'è e si può scegliere da sola", async () => {
     await page.goto("/statistiche");
+    // Lo staff (il test è entrato) vede "Aggiorna" e rigenera subito le pagine pubbliche.
+    await page.getByRole("button", { name: "↻ Aggiorna" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "Aggiornato" })).toBeVisible();
     const filter = page.getByLabel("Partite");
     const value = await filter.locator("option", { hasText: opponent }).getAttribute("value");
     expect(value).toBe(String(matchId));

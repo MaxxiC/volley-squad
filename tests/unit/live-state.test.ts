@@ -438,3 +438,49 @@ describe("scambio di posto e timeout −1", () => {
     assert.equal(lastTimeout(events, 3, "us"), null);
   });
 });
+
+describe("registro corretto dallo Storico (trovati dai test a caso)", () => {
+  // Lineup: P1..P6 = 1..6, libero 9. Il libero entra per il 6 (P6, seconda linea).
+  test("uscita del libero che indica un giocatore già in campo: rientra chi il libero sostituisce", () => {
+    const ev = eventFactory();
+    const s = live(lineup("them"), [ev({ kind: "libero", detail: { in: 9, out: 6 } }), ev({ kind: "libero", detail: { in: 2, out: 9 } })]);
+    assert.deepEqual(s.rotation, [1, 2, 3, 4, 5, 6]);
+    assert.equal(s.liberoFor, null);
+  });
+
+  test("cambio che non torna più (entra chi è già in campo, o esce chi non c'è): si salta", () => {
+    const ev = eventFactory();
+    const s = live(lineup("us"), [ev({ kind: "sub", detail: { out: 1, in: 2, role: "S" } }), ev({ kind: "sub", detail: { out: 8, in: 7, role: "S" } })]);
+    assert.deepEqual(s.rotation, [1, 2, 3, 4, 5, 6]);
+    assert.equal(s.subs, 0);
+  });
+
+  test("il libero entra solo per un giocatore di seconda linea e mai due volte", () => {
+    const ev = eventFactory();
+    assert.deepEqual(live(lineup("them"), [ev({ kind: "libero", detail: { in: 9, out: 3 } })]).rotation, [1, 2, 3, 4, 5, 6]);
+    const twice = live(lineup("them"), [ev({ kind: "libero", detail: { in: 9, out: 6 } }), ev({ kind: "libero", detail: { in: 9, out: 5 } })]);
+    assert.deepEqual(twice.rotation, [1, 2, 3, 4, 5, 9]);
+  });
+});
+
+test("uscita del libero quando è già in panchina: nessun giocatore in campo diventa libero", () => {
+  const ev = eventFactory();
+  const s = live(lineup("them"), [ev({ kind: "libero", detail: { in: 5, out: 9 } })]);
+  assert.equal(s.liberoId, 9);
+  assert.deepEqual(s.rotation, [1, 2, 3, 4, 5, 6]);
+});
+
+test("cambio del giocatore sostituito dal libero: chi entra prende il suo posto dietro al libero", () => {
+  const ev = eventFactory();
+  const s = live(lineup("them"), [ev({ kind: "libero", detail: { in: 9, out: 6 } }), ev({ kind: "sub", detail: { out: 6, in: 7, role: "C" } })]);
+  assert.deepEqual(s.rotation, [1, 2, 3, 4, 5, 9]);
+  assert.equal(s.liberoFor, 7);
+  assert.equal(s.subs, 1);
+  // All'uscita del libero rientra chi è entrato col cambio.
+  const out = live(lineup("them"), [
+    ev({ kind: "libero", detail: { in: 9, out: 6 } }),
+    ev({ kind: "sub", detail: { out: 6, in: 7, role: "C" } }),
+    ev({ kind: "libero", detail: { in: 7, out: 9 } }),
+  ]);
+  assert.deepEqual(out.rotation, [1, 2, 3, 4, 5, 7]);
+});

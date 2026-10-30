@@ -227,7 +227,7 @@ export function SimpleInput({ opponent, eventOf, onPoint, onComplete, onAction, 
           <div className="grid grid-cols-3 gap-2">
             {choices.map((p) => {
               const isLibero = p.id === libero?.id;
-              // Il libero resta al suo posto nel campo ma non si sceglie per battuta e muro.
+              // Il libero resta al suo posto nel campo ma non si sceglie per il muro.
               const disabled = isLibero && !liberoCan(choosing.skill);
               const tag = p.id === suggested ? "battuta" : p.id === last ? "ultimo" : isLibero ? "libero" : "";
               const highlight = !disabled && (p.id === suggested || p.id === last);

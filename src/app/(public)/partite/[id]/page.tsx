@@ -18,6 +18,11 @@ import { formatPct } from "@/lib/stats";
 
 export const revalidate = 300;
 
+/** Nessun riepilogo preparato alla build: ognuno si genera alla prima visita e resta in cache (ISR). */
+export function generateStaticParams() {
+  return [];
+}
+
 const H2 = "font-display text-[clamp(30px,6vw,44px)] leading-[.95] font-extrabold uppercase";
 
 /** Colore di ogni tipo di punto (README → Come abbiamo fatto punto). */

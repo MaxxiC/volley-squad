@@ -10,11 +10,12 @@ export function invalid(error: z.ZodError): { ok: false; error: string } {
   return { ok: false, error: error.issues[0]?.message ?? "Dati non validi" };
 }
 
-/** Le pagine pubbliche che mostrano calendario, risultati, classifica, riepiloghi delle partite e statistiche. */
+/**
+ * Le pagine pubbliche (home, calendario, riepiloghi delle partite, statistiche e schede): si aggiorna
+ * tutto il sito dal layout radice. Le pagine con [id] in cache (generate alla prima visita) non si
+ * aggiornano con revalidatePath("/statistiche/[id]", "page"), verificato sulla build di produzione;
+ * le pagine dello staff sono comunque sempre ricalcolate, quindi non costa nulla in più.
+ */
 export function revalidatePublicPages() {
-  revalidatePath("/");
-  revalidatePath("/calendario");
-  revalidatePath("/partite/[id]", "page");
-  revalidatePath("/statistiche");
-  revalidatePath("/statistiche/[id]", "page");
+  revalidatePath("/", "layout");
 }
