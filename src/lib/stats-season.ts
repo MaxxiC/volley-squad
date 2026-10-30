@@ -42,6 +42,8 @@ export type MatchStat = {
   /** Set vinti–persi, es. "3–1". */
   result: string;
   won: boolean;
+  /** Amichevole: di base fuori dalle statistiche (filtro Ufficiali / Tutte / Amichevoli). */
+  friendly: boolean;
   /** Punti veri della partita (somma dei parziali), anche quelli aggiunti con "Correggi". */
   total: { us: number; them: number };
   mvpId: number | null;
@@ -70,7 +72,7 @@ function withManual(list: Split[], real: number): Split[] {
  * giorno: servono anche al libero automatico, così "chi era in campo" è quello vero.
  */
 export function matchStat(
-  meta: Pick<MatchStat, "id" | "label" | "title" | "result" | "won" | "total" | "mvpId">,
+  meta: Pick<MatchStat, "id" | "label" | "title" | "result" | "won" | "friendly" | "total" | "mvpId">,
   lineups: LiveLineup[],
   events: LiveEvent[],
   present: { playerId: number; role: PlayerRole }[],
@@ -124,6 +126,18 @@ function sumSplits(lists: Split[][], order: { key: string; label: string }[]): S
 
 const labels = (rec: Record<string, string>) => Object.entries(rec).map(([key, label]) => ({ key, label }));
 
+/** Quali partite contano: di base solo le ufficiali, le amichevoli si aggiungono col filtro. */
+export const MATCH_KINDS = [
+  { key: "ufficiali", label: "Ufficiali" },
+  { key: "tutte", label: "Tutte" },
+  { key: "amichevoli", label: "Amichevoli" },
+] as const;
+export type MatchKind = (typeof MATCH_KINDS)[number]["key"];
+
+export function byKind<T extends { friendly: boolean }>(list: T[], kind: MatchKind): T[] {
+  return kind === "tutte" ? list : list.filter((m) => m.friendly === (kind === "amichevoli"));
+}
+
 /** Totali di un giocatore dalle sue partite. */
 export function sumPlayer(playerId: number, rows: PlayerMatchStat[]): PlayerTotals {
   const roleCount = new Map<PlayerRole, number>();
@@ -141,13 +155,15 @@ export function sumPlayer(playerId: number, rows: PlayerMatchStat[]): PlayerTota
 }
 
 /** Una partita di un giocatore (scheda giocatore): la partita e i suoi numeri. */
-export type PlayerMatchRow = Pick<MatchStat, "id" | "label" | "title" | "result" | "won"> & { mvp: boolean; stat: PlayerMatchStat };
+export type PlayerMatchRow = Pick<MatchStat, "id" | "label" | "title" | "result" | "won" | "friendly"> & { mvp: boolean; stat: PlayerMatchStat };
 
 /** Le partite in cui il giocatore era tra i presenti (o è entrato con un cambio), in ordine di data. */
 export function playerRows(list: MatchStat[], playerId: number): PlayerMatchRow[] {
   return list.flatMap((m) => {
     const stat = m.players[playerId];
-    return stat ? [{ id: m.id, label: m.label, title: m.title, result: m.result, won: m.won, mvp: m.mvpId === playerId, stat }] : [];
+    return stat
+      ? [{ id: m.id, label: m.label, title: m.title, result: m.result, won: m.won, friendly: m.friendly, mvp: m.mvpId === playerId, stat }]
+      : [];
   });
 }
 

@@ -6,7 +6,7 @@ import { formatShortDate } from "./format";
 import type { PlayerRole } from "./players";
 import { loadLiveLog } from "./live/db";
 import { activeEvents } from "./live/state";
-import { matchScore, roundLabel, shortTeamName } from "./matches";
+import { matchScore, roundLabel, shortRoundLabel, shortTeamName } from "./matches";
 import { matchStat, type MatchStat } from "./stats-season";
 
 export type StatsPlayer = { id: number; number: number; firstName: string; lastName: string; role: PlayerRole };
@@ -42,10 +42,11 @@ export async function getSeasonStats(seasonId: number): Promise<{ matches: Match
     return matchStat(
       {
         id: m.id,
-        label: `${m.phase === "andata" ? "A" : "R"}${m.round}`,
+        label: shortRoundLabel(m),
         title,
         result: `${score.us}–${score.them}`,
         won: score.won,
+        friendly: m.friendly,
         total: { us: m.sets.reduce((t, s) => t + s.us, 0), them: m.sets.reduce((t, s) => t + s.them, 0) },
         mvpId: m.mvpPlayerId,
       },

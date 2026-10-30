@@ -44,6 +44,7 @@ export async function loadDbState(seasonId: number) {
     status: m.status,
     sets: setRows.filter((s) => s.matchId === m.id).sort((a, b) => a.n - b.n).map((s) => ({ us: s.us, them: s.them })),
     recorded: withEvents.has(m.id),
+    friendly: m.friendly,
   }));
   return { teams: teamRows, matches: dbMatches, standings: standingRows };
 }

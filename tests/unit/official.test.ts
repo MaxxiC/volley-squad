@@ -29,6 +29,7 @@ const match = (o: Partial<DbMatch>): DbMatch => ({
     { us: 25, them: 18 },
   ],
   recorded: false,
+  friendly: false,
   ...o,
 });
 
@@ -96,6 +97,15 @@ describe("confronto con il DB", () => {
     const live = planOfficialImport(official, { teams: TEAMS, matches: [match({ recorded: true, sets: recordedSets })], standings: [] }, "CUSBros");
     assert.equal(live.updates.length, 0);
     assert.match(live.warnings[0], /risultato del Live 3–0 \(25-10 25-18 25-18\), sul sito ufficiale 3–0 \(25-16/);
+  });
+
+  test("le amichevoli si ignorano: mai scambiate per una partita ufficiale, nessun avviso", () => {
+    // Amichevole senza numero gara e con la stessa giornata della partita ufficiale (il caso peggiore).
+    const friendly = match({ id: 20, number: null, friendly: true, status: "scheduled", sets: [] });
+    const p = planOfficialImport(official, { teams: TEAMS, matches: [friendly], standings: [] }, "CUSBros");
+    assert.ok(p.updates.every((u) => u.matchId !== 20));
+    assert.ok(p.creates.length > 0, "la partita ufficiale va creata, non presa dall'amichevole");
+    assert.ok(p.warnings.every((w) => !w.includes("non c'è sul sito")));
   });
 
   test("classifica: punti dal sito, set calcolati dai parziali", () => {

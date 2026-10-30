@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { TEAM_NAME } from "@/lib/club";
-import { OUTCOMES, SKILLS, SKILL_LABEL, type Skill } from "@/lib/live/skills";
+import { OPP_ERRORS, OUTCOMES, SKILLS, SKILL_LABEL, liberoCan, type OppError, type Skill } from "@/lib/live/skills";
 import type { LiveEvent, LivePlayer } from "@/lib/live/types";
 import { playerLabel } from "@/lib/live/describe";
-import { PANEL, starClass, toneClass } from "./live-ui";
+import { PANEL, SMALL_BTN, starClass, toneClass } from "./live-ui";
 
 type Props = {
   opponent: string;
@@ -14,13 +14,18 @@ type Props = {
   onClearPlayer: () => void;
   onAction: (fields: Pick<LiveEvent, "skill" | "outcome" | "point" | "playerId" | "star">) => void;
   onOppPoint: () => void;
-  onOppError: () => void;
+  onOppError: (type: OppError) => void;
+  /** Il giocatore scelto è il libero in campo: niente battuta né muro. */
+  isLibero: boolean;
 };
 
 /** Modalità avanzata: giocatore → fondamentale → esito. Dopo l'esito il giocatore si deseleziona. */
-export function AdvancedInput({ opponent, player, onClearPlayer, onAction, onOppPoint, onOppError }: Props) {
+export function AdvancedInput({ opponent, player, onClearPlayer, onAction, onOppPoint, onOppError, isLibero }: Props) {
   const [skill, setSkill] = useState<Skill>("serve");
   const [star, setStar] = useState(false);
+  /** "Errore avversario" toccato: si sceglie che cosa hanno sbagliato. */
+  const [oppError, setOppError] = useState(false);
+  const blocked = Boolean(player && isLibero && !liberoCan(skill));
 
   return (
     <section className={PANEL}>
@@ -56,7 +61,7 @@ export function AdvancedInput({ opponent, player, onClearPlayer, onAction, onOpp
           <button
             key={o.key}
             type="button"
-            disabled={!player}
+            disabled={!player || blocked}
             onClick={() => {
               if (!player) return;
               onAction({ skill, outcome: o.key, point: o.point, playerId: player.id, star });
@@ -72,26 +77,54 @@ export function AdvancedInput({ opponent, player, onClearPlayer, onAction, onOpp
         ))}
       </div>
 
+      {blocked && <span className="text-[13px] text-muted">Il libero non batte e non mura.</span>}
+
       <button type="button" aria-pressed={star} onClick={() => setStar(!star)} className={starClass(star)}>
         ★ Meritevole
       </button>
 
-      <div className="grid grid-cols-2 gap-2 border-t border-line pt-3">
-        <button
-          type="button"
-          onClick={onOppPoint}
-          className="min-h-13 cursor-pointer truncate rounded-tile border border-line-strong px-2 font-display text-base font-bold tracking-[.06em] text-ink uppercase"
-        >
-          Punto {opponent}
-        </button>
-        <button
-          type="button"
-          onClick={onOppError}
-          className="min-h-13 cursor-pointer truncate rounded-tile border border-gold-line px-2 font-display text-base font-bold tracking-[.06em] text-gold uppercase"
-        >
-          Errore {opponent}
-        </button>
-      </div>
+      {oppError ? (
+        <div className="flex flex-col gap-2 border-t border-line pt-3">
+          <div className="flex items-center gap-2">
+            <span className="mr-auto font-display text-base font-bold tracking-[.06em] text-gold uppercase">Errore {opponent}: cosa?</span>
+            <button type="button" onClick={() => setOppError(false)} className={SMALL_BTN}>
+              Annulla
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {OPP_ERRORS.map((o) => (
+              <button
+                key={o.key}
+                type="button"
+                onClick={() => {
+                  onOppError(o.key);
+                  setOppError(false);
+                }}
+                className="min-h-13 cursor-pointer rounded-tile border border-gold-line px-2 py-1.5 font-display text-base leading-[1.1] font-bold tracking-[.04em] text-gold uppercase"
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-2 border-t border-line pt-3">
+          <button
+            type="button"
+            onClick={onOppPoint}
+            className="min-h-13 cursor-pointer truncate rounded-tile border border-line-strong px-2 font-display text-base font-bold tracking-[.06em] text-ink uppercase"
+          >
+            Punto {opponent}
+          </button>
+          <button
+            type="button"
+            onClick={() => setOppError(true)}
+            className="min-h-13 cursor-pointer truncate rounded-tile border border-gold-line px-2 font-display text-base font-bold tracking-[.06em] text-gold uppercase"
+          >
+            Errore {opponent}
+          </button>
+        </div>
+      )}
     </section>
   );
 }

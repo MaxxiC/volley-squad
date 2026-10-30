@@ -1,7 +1,7 @@
 // Fondamentali, esiti e scelte della modalità semplice (src/lib/live/skills.ts).
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { OPP_ERRORS, SIMPLE_OUR_TYPES, SIMPLE_RALLY_TYPES, SIMPLE_THEIR_TYPES, isTeamFault, outcomeOf } from "@/lib/live/skills";
+import { OPP_ERRORS, SIMPLE_OUR_TYPES, SIMPLE_RALLY_TYPES, SIMPLE_THEIR_TYPES, isTeamFault, liberoCan, outcomeOf } from "@/lib/live/skills";
 
 describe("modalità semplice", () => {
   test("ogni scelta è un fondamentale con un esito che esiste e dà il punto giusto", () => {
@@ -45,5 +45,13 @@ describe("modalità semplice", () => {
     assert.equal(isTeamFault("fault", "position"), true);
     assert.equal(isTeamFault("fault", "double"), false);
     assert.equal(isTeamFault("attack", "error"), false);
+  });
+});
+
+describe("libero", () => {
+  test("non batte e non mura; attacca solo come palla semplice, riceve, alza, fa falli", () => {
+    assert.equal(liberoCan("serve"), false);
+    assert.equal(liberoCan("block"), false);
+    for (const s of ["attack", "reception", "set", "fault"] as const) assert.equal(liberoCan(s), true, s);
   });
 });

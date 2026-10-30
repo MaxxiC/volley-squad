@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useState } from "react";
 import { MatchTitle } from "@/components/ui/match-title";
-import { SEGMENTED, segmentClass } from "@/components/ui/segmented";
+import { SEGMENTED_FILL, segmentClass } from "@/components/ui/segmented";
 
 /** Dati di una card partita già pronti per la UI (calcolati lato server). */
 export type MatchCardData = {
   id: number;
-  /** "Andata 2ª" */
+  /** "Andata 2ª", "Amichevole" */
   roundLabel: string;
+  friendly: boolean;
   dateLabel: string;
   home: boolean;
   homeName: string;
@@ -38,20 +39,44 @@ const FILTERS = [
 
 type FilterKey = (typeof FILTERS)[number]["key"];
 
+const KINDS = [
+  { key: "tutte", label: "Tutte" },
+  { key: "campionato", label: "Campionato" },
+  { key: "amichevoli", label: "Amichevoli" },
+] as const;
+
+type KindKey = (typeof KINDS)[number]["key"];
+
 export function CalendarMatches({ matches }: { matches: MatchCardData[] }) {
   const [filter, setFilter] = useState<FilterKey>("tutte");
-  const visible = matches.filter((m) => filter === "tutte" || (filter === "giocate" ? m.played : !m.played));
+  const [kind, setKind] = useState<KindKey>("tutte");
+  const hasFriendlies = matches.some((m) => m.friendly);
+  const visible = matches.filter(
+    (m) =>
+      (filter === "tutte" || (filter === "giocate" ? m.played : !m.played)) &&
+      (kind === "tutte" || (kind === "amichevoli" ? m.friendly : !m.friendly)),
+  );
 
   return (
     <section className="flex flex-col gap-4.5">
-      <div role="group" aria-label="Filtra partite" className={SEGMENTED}>
+      {/* Campionato / amichevoli: solo quando c'è almeno un'amichevole. */}
+      {hasFriendlies && (
+        <div role="group" aria-label="Campionato o amichevoli" className={SEGMENTED_FILL}>
+          {KINDS.map((k) => (
+            <button key={k.key} type="button" aria-pressed={kind === k.key} onClick={() => setKind(k.key)} className={segmentClass(kind === k.key, true)}>
+              {k.label}
+            </button>
+          ))}
+        </div>
+      )}
+      <div role="group" aria-label="Filtra partite" className={SEGMENTED_FILL}>
         {FILTERS.map((f) => (
           <button
             key={f.key}
             type="button"
             aria-pressed={filter === f.key}
             onClick={() => setFilter(f.key)}
-            className={segmentClass(filter === f.key)}
+            className={segmentClass(filter === f.key, true)}
           >
             {f.label}
           </button>
@@ -59,6 +84,7 @@ export function CalendarMatches({ matches }: { matches: MatchCardData[] }) {
       </div>
 
       <div className="flex flex-col gap-2.5">
+        {visible.length === 0 && <p className="text-[15px] text-muted">Nessuna partita con questi filtri.</p>}
         {visible.map((m) =>
           m.played ? (
             <Link key={m.id} href={`/partite/${m.id}`} className="block text-ink hover:text-ink">
@@ -80,7 +106,7 @@ function MatchCard({ match: m }: { match: MatchCardData }) {
     >
       <div className="flex min-w-0 flex-col gap-2.5">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-display text-sm font-semibold tracking-[.1em] uppercase">
-          <span className="text-muted">
+          <span className={m.friendly ? "text-gold" : "text-muted"}>
             {m.roundLabel} · {m.dateLabel}
           </span>
           <span className={m.home ? "text-blue" : "text-muted"}>{m.home ? "Casa" : "Trasferta"}</span>

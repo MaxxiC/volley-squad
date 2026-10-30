@@ -17,8 +17,9 @@ export default async function CalendarioPage() {
   const [season, us] = await Promise.all([getCurrentSeason(), getUsTeam()]);
   const [matches, standings] = await Promise.all([getSeasonMatches(season.id), getStandings(season.id)]);
   const next = findNextMatch(matches);
-  // Fase in corso: quella della prossima partita, a fine stagione quella dell'ultima.
-  const current = next ?? findLastResult(matches);
+  // Fase in corso del campionato: quella della prossima partita ufficiale, a fine stagione dell'ultima.
+  const official = matches.filter((m) => !m.friendly);
+  const current = findNextMatch(official) ?? findLastResult(official);
 
   const cards: MatchCardData[] = matches.map((m) => {
     const [homeTeam, awayTeam] = matchSides(m, us);
@@ -26,6 +27,7 @@ export default async function CalendarioPage() {
     return {
       id: m.id,
       roundLabel: roundLabel(m),
+      friendly: m.friendly,
       dateLabel: formatShortDate(m.startsAt),
       home: m.home,
       homeName: homeTeam.name,

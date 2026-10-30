@@ -9,6 +9,7 @@ const slot = (us: string, them: string): SetSlot => ({ us, them });
 const sets = (...filled: SetSlot[]) => [...filled, ...Array(5 - filled.length).fill(empty)];
 
 const base: MatchFormInput = {
+  friendly: false,
   phase: "andata",
   round: "2",
   number: "8",
@@ -30,6 +31,22 @@ function errorOf(o: Partial<MatchFormInput>) {
   assert.equal(r.success, false, "doveva essere rifiutato");
   return r.error?.issues[0]?.message ?? "";
 }
+
+describe("amichevoli", () => {
+  test("senza giornata né numero gara: giornata 0, niente numero, fase andata", () => {
+    const r = parse({ friendly: true, phase: "ritorno", round: "", number: "12" });
+    assert.ok(r.success);
+    assert.equal(r.data.friendly, true);
+    assert.equal(r.data.round, 0);
+    assert.equal(r.data.number, null);
+    assert.equal(r.data.phase, "andata");
+  });
+
+  test("in campionato la giornata resta obbligatoria", () => {
+    assert.equal(errorOf({ round: "" }), "Inserisci la giornata (1–99)");
+    assert.equal(errorOf({ round: "0" }), "Inserisci la giornata (1–99)");
+  });
+});
 
 describe("campi della partita", () => {
   test("partita da giocare senza parziali", () => {

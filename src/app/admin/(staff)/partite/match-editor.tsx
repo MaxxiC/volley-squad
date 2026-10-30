@@ -24,8 +24,9 @@ function initialSlots(match?: AdminMatch): SetSlot[] {
 }
 
 export function MatchEditor({ match, timeChips, onClose, onDuplicated }: Props) {
+  const [friendly, setFriendly] = useState(match?.friendly ?? false);
   const [phase, setPhase] = useState<"andata" | "ritorno">(match?.phase ?? "andata");
-  const [round, setRound] = useState(match ? String(match.round) : "");
+  const [round, setRound] = useState(match && !match.friendly ? String(match.round) : "");
   const [number, setNumber] = useState(match?.number ? String(match.number) : "");
   const [date, setDate] = useState(match?.date ?? "");
   const [time, setTime] = useState(match?.time ?? "");
@@ -48,7 +49,7 @@ export function MatchEditor({ match, timeChips, onClose, onDuplicated }: Props) 
   };
 
   const save = () =>
-    run(() => saveMatch({ id: match?.id, phase, round, number, date, time, home, opponent, venue, special, slots }), onClose);
+    run(() => saveMatch({ id: match?.id, friendly, phase, round, number, date, time, home, opponent, venue, special, slots }), onClose);
 
   const setSlot = (i: number, side: keyof SetSlot, value: string) =>
     setSlots((prev) => prev.map((s, j) => (j === i ? { ...s, [side]: value.replace(/\D/g, "").slice(0, 2) } : s)));
@@ -85,38 +86,52 @@ export function MatchEditor({ match, timeChips, onClose, onDuplicated }: Props) 
           ]}
         />
         <SegmentedField
-          label="Fase"
-          value={phase}
-          onChange={setPhase}
+          label="Tipo"
+          value={friendly}
+          onChange={setFriendly}
           options={[
-            { value: "andata", label: "Andata" },
-            { value: "ritorno", label: "Ritorno" },
+            { value: false, label: "Campionato" },
+            { value: true, label: "Amichevole" },
           ]}
         />
-        <div className="grid grid-cols-2 gap-3.5">
-          <label className="flex flex-col gap-1.5">
-            <span className={LABEL}>Giornata</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={round}
-              onChange={(e) => setRound(e.target.value.replace(/\D/g, "").slice(0, 2))}
-              placeholder="es. 2"
-              className={`${INPUT} tabular-nums`}
-            />
-          </label>
-          <label className="flex flex-col gap-1.5">
-            <span className={LABEL}>N. gara</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={number}
-              onChange={(e) => setNumber(e.target.value.replace(/\D/g, "").slice(0, 4))}
-              placeholder="es. 8"
-              className={`${INPUT} tabular-nums`}
-            />
-          </label>
-        </div>
+        {/* Le amichevoli non hanno fase, giornata né numero gara. */}
+        {!friendly && (
+          <SegmentedField
+            label="Fase"
+            value={phase}
+            onChange={setPhase}
+            options={[
+              { value: "andata", label: "Andata" },
+              { value: "ritorno", label: "Ritorno" },
+            ]}
+          />
+        )}
+        {!friendly && (
+          <div className="grid grid-cols-2 gap-3.5">
+            <label className="flex flex-col gap-1.5">
+              <span className={LABEL}>Giornata</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={round}
+                onChange={(e) => setRound(e.target.value.replace(/\D/g, "").slice(0, 2))}
+                placeholder="es. 2"
+                className={`${INPUT} tabular-nums`}
+              />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className={LABEL}>N. gara</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={number}
+                onChange={(e) => setNumber(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                placeholder="es. 8"
+                className={`${INPUT} tabular-nums`}
+              />
+            </label>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-wrap items-center gap-1.5">
@@ -231,14 +246,16 @@ export function MatchEditor({ match, timeChips, onClose, onDuplicated }: Props) 
           </button>
           {match && (
             <>
-              <button
-                type="button"
-                disabled={pending}
-                onClick={() => run(() => duplicateAsReturn(match.id), onDuplicated)}
-                className={BTN_GOLD_OUTLINE}
-              >
-                Duplica come ritorno
-              </button>
+              {!match.friendly && (
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => run(() => duplicateAsReturn(match.id), onDuplicated)}
+                  className={BTN_GOLD_OUTLINE}
+                >
+                  Duplica come ritorno
+                </button>
+              )}
               <button type="button" onClick={() => setConfirmDelete(true)} className={`${BTN_DANGER} ml-auto`}>
                 Elimina
               </button>

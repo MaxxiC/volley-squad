@@ -1,11 +1,11 @@
 // Statistiche di più partite (src/lib/stats-season.ts): numeri di una partita e somma.
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { matchStat, playerRows, sumMatches } from "@/lib/stats-season";
+import { byKind, matchStat, playerRows, sumMatches } from "@/lib/stats-season";
 import { eventFactory, lineup } from "./helpers";
 
 // Punti veri a zero: nessun "Corretti a mano" (salvo i test che lo chiedono).
-const meta = (id: number, won: boolean, total = { us: 0, them: 0 }) => ({ id, label: `A${id}`, title: `Andata ${id}ª`, result: won ? "3–0" : "0–3", won, total, mvpId: null });
+const meta = (id: number, won: boolean, total = { us: 0, them: 0 }) => ({ id, label: `A${id}`, title: `Andata ${id}ª`, result: won ? "3–0" : "0–3", won, friendly: false, total, mvpId: null });
 // P1..P6 = 1..6 (alzatore in P1, centrali 3 e 6), libero 9; il 7 in panchina.
 const present = [
   { playerId: 1, role: "P" as const },
@@ -122,5 +122,14 @@ describe("partite di un giocatore", () => {
     ]);
     assert.deepEqual(playerRows([a, b], 7).map((r) => r.id), [1]);
     assert.deepEqual(playerRows([a, b], 99), []);
+  });
+});
+
+describe("ufficiali e amichevoli", () => {
+  test("di base le ufficiali; tutte; solo amichevoli", () => {
+    const list = [{ id: 1, friendly: false }, { id: 2, friendly: true }, { id: 3, friendly: false }];
+    assert.deepEqual(byKind(list, "ufficiali").map((m) => m.id), [1, 3]);
+    assert.deepEqual(byKind(list, "tutte").map((m) => m.id), [1, 2, 3]);
+    assert.deepEqual(byKind(list, "amichevoli").map((m) => m.id), [2]);
   });
 });

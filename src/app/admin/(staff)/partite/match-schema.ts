@@ -8,8 +8,9 @@ const score = (s: string) => (/^\d{1,2}$/.test(s) ? Number(s) : null);
 export const MatchFormSchema = z
   .object({
     id: z.number().int().positive().optional(),
+    friendly: z.boolean(),
     phase: z.enum(["andata", "ritorno"]),
-    round: z.string().trim().regex(/^[1-9]\d?$/, "Inserisci la giornata (1–99)").transform(Number),
+    round: z.string().trim(),
     number: z
       .string()
       .trim()
@@ -23,11 +24,19 @@ export const MatchFormSchema = z
     special: z.enum(MATCH_SPECIALS),
     slots: z.array(z.object({ us: z.string().trim(), them: z.string().trim() })).length(SET_SLOTS),
   })
-  .transform(({ slots, ...f }, ctx) => {
-    if (f.date && !f.time) {
+  .transform(({ slots, round: roundText, ...rest }, ctx) => {
+    if (rest.date && !rest.time) {
       ctx.addIssue({ code: "custom", message: "Inserisci l'ora della partita" });
       return z.NEVER;
     }
+    // Amichevole: niente giornata né numero gara (giornata 0). Campionato: giornata 1–99.
+    if (!rest.friendly && !/^[1-9]\d?$/.test(roundText)) {
+      ctx.addIssue({ code: "custom", message: "Inserisci la giornata (1–99)" });
+      return z.NEVER;
+    }
+    const f = rest.friendly
+      ? { ...rest, phase: "andata" as const, round: 0, number: null }
+      : { ...rest, round: Number(roundText) };
     // Rinviata: nessun parziale. A tavolino: 3–0 d'ufficio. Altrimenti i parziali inseriti.
     if (f.special === "postponed") return { ...f, sets: [] };
     if (f.special === "forfeit_won" || f.special === "forfeit_lost") return { ...f, sets: forfeitSets(f.special === "forfeit_won") };

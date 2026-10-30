@@ -7,7 +7,8 @@ import { useState } from "react";
 import { TEAM_NAME } from "@/lib/club";
 import { ROLE_LABEL, shortName, type PlayerRole } from "@/lib/players";
 import { STAT_LABEL, efficiency, efficiencyTone, formatPct, type Counts, type StatSkill } from "@/lib/stats";
-import { sumMatches, type MatchStat, type PlayerTotals, type Split } from "@/lib/stats-season";
+import { byKind, sumMatches, type MatchKind, type MatchStat, type PlayerTotals, type Split } from "@/lib/stats-season";
+import { MatchKindFilter } from "./match-kind-filter";
 
 type Player = { id: number; number: number; firstName: string; lastName: string; role: PlayerRole };
 
@@ -57,25 +58,38 @@ function sortValue(p: PlayerTotals, key: SortKey): number {
   }
 }
 
-export function StatsBoard({ matches, players }: { matches: MatchStat[]; players: Player[] }) {
-  const [filter, setFilter] = useState<number | "all">("all");
+export function StatsBoard({ matches: all, players }: { matches: MatchStat[]; players: Player[] }) {
+  const [kind, setKind] = useState<MatchKind>("ufficiali");
+  const [picked, setFilter] = useState<number | "all">("all");
   const [sort, setSort] = useState<SortKey>("points");
 
+  // Di base solo le partite ufficiali; il filtro compare se c'è almeno un'amichevole.
+  const hasFriendlies = all.some((m) => m.friendly);
+  const matches = byKind(all, kind);
+  const filter = picked !== "all" && matches.some((m) => m.id === picked) ? picked : "all";
   const chosen = filter === "all" ? matches : matches.filter((m) => m.id === filter);
   const sum = sumMatches(chosen);
   const playerOf = (id: number) => players.find((p) => p.id === id);
   const rows = [...sum.players].sort((a, b) => sortValue(b, sort) - sortValue(a, sort));
 
+  const filterBar = hasFriendlies && <MatchKindFilter value={kind} onChange={setKind} />;
+
   if (!matches.length) {
     return (
-      <p className="rounded-card border border-line bg-surface px-4 py-3.5 text-[15px] text-ink-2">
-        Le statistiche arrivano dalle partite registrate azione per azione: appena ce n&apos;è una conclusa, le trovi qui.
-      </p>
+      <>
+        {filterBar}
+        <p className="rounded-card border border-line bg-surface px-4 py-3.5 text-[15px] text-ink-2">
+          {all.length
+            ? "Nessuna partita registrata di questo tipo."
+            : "Le statistiche arrivano dalle partite registrate azione per azione: appena ce n'è una conclusa, le trovi qui."}
+        </p>
+      </>
     );
   }
 
   return (
     <>
+      {filterBar}
       <label className="flex flex-col gap-1.5">
         <span className="text-xs font-semibold tracking-[.14em] text-muted uppercase">Partite</span>
         <select
@@ -84,7 +98,7 @@ export function StatsBoard({ matches, players }: { matches: MatchStat[]; players
           className="min-h-12 w-full rounded-btn border border-line-strong bg-surface px-3 text-base text-ink"
         >
           <option value="all">
-            Tutta la stagione · {matches.length} {matches.length === 1 ? "partita" : "partite"}
+            {kind === "amichevoli" ? "Tutte le amichevoli" : "Tutta la stagione"} · {matches.length} {matches.length === 1 ? "partita" : "partite"}
           </option>
           {[...matches].reverse().map((m) => (
             <option key={m.id} value={m.id}>

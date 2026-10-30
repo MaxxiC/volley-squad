@@ -38,7 +38,7 @@ Area staff: http://localhost:3001/admin (non linkata dal sito pubblico).
 | `npm run db:seed` | carica stagione, calendario, classifica e rosa iniziali (non tocca un DB già popolato) |
 | `npm run user:create -- <email> "<nome>" <admin\|coach>` | crea un utente staff o ne aggiorna nome/ruolo/password |
 | `npm test` | test della logica (Live, Storico, statistiche, riepilogo partita, import dal sito ufficiale, validazioni, date, formazione, accesso e limite ai tentativi): pochi secondi, non usa il DB |
-| `npm run test:e2e` | E2E Playwright sul **DB reale** (Live completo → Storico → riepilogo pubblico, offline, invio, sicurezza), con copia e ripristino verificato (vedi sotto) |
+| `npm run test:e2e` | E2E Playwright sul **DB reale** (Live completo → Storico → riepilogo pubblico e statistiche, offline, invio, sicurezza, amichevoli), con copia e ripristino verificato (vedi sotto) |
 | `npm run test:restore` | dopo un E2E interrotto: mostra le differenze dalla copia; con `-- --apply` ripristina |
 | `npm run test:manual` | prova a mano sul DB reale (es. dal telefono): copia del DB + partita "Prova telefono"; si chiude con `test:restore` |
 
