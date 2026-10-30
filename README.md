@@ -47,7 +47,7 @@ Modificare lo schema: cambia `src/db/schema.ts` → `npm run db:generate` → co
 
 ## Test
 
-- **Logica** (`tests/unit/`, runner integrato di Node via `tsx`): `npm test`.
+- **Logica** (`tests/unit/`, runner integrato di Node via `tsx`): `npm test`. Comprende i test "a caso" del Live (`live-fuzz.test.ts`): partite simulate con un seme ripetibile e regole che devono valere sempre; `npm test` ne gioca 30, `npm run test:fuzz` 2000. Se uno fallisce, il messaggio indica `FUZZ_SEED=n` per ripeterlo.
 - **E2E** (`tests/e2e/`, Playwright, Chromium a 390×844): serve il dev server già avviato (`npm run dev`, porta 3001); per un'altra porta `E2E_BASE_URL=http://localhost:<porta> npm run test:e2e`. La prima volta: `npx playwright install chromium`.
   - Prima del test si copiano le tabelle (anche su file in `tests/.snapshots/`, ignorato da git), si crea un utente temporaneo e una **partita temporanea** (le partite vere non si toccano).
   - Alla fine, anche se il test fallisce, il DB torna identico alla copia, si verifica rileggendo tutto e il file si elimina. Se il ripristino non è identico il comando fallisce e il file resta.
