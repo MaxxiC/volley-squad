@@ -190,33 +190,48 @@ export function computeLive(
       case "rotation":
         s = liberoLeavesFrontRow({ ...s, rotation: d.dir === -1 ? rotateBack(s.rotation) : rotateClockwise(s.rotation) });
         break;
-      case "sub":
-        if (d.in && d.out) {
-          s = {
-            ...s,
-            rotation: replace(s.rotation, d.out, d.in),
-            subs: s.subs + 1,
-            subPairs: { ...s.subPairs, [d.out]: d.in },
-            roles: d.role ? { ...s.roles, [d.in]: d.role } : s.roles,
-          };
-        }
+      case "sub": {
+        // Solo se ha ancora senso: chi entra non è già in campo; chi esce è in campo oppure è il
+        // giocatore sostituito dal libero (allora chi entra prende il suo posto "dietro" al libero).
+        // Col registro corretto dallo Storico (es. un punto eliminato prima) un cambio registrato può
+        // non tornare più: si salta, così in campo non finisce mai un giocatore due volte.
+        const { in: inn, out } = d;
+        if (!inn || !out || s.rotation.includes(inn) || inn === s.liberoFor) break;
+        const onCourt = s.rotation.includes(out);
+        if (!onCourt && out !== s.liberoFor) break;
+        s = {
+          ...s,
+          rotation: onCourt ? replace(s.rotation, out, inn) : s.rotation,
+          liberoFor: onCourt ? s.liberoFor : inn,
+          subs: s.subs + 1,
+          subPairs: { ...s.subPairs, [out]: inn },
+          roles: d.role ? { ...s.roles, [inn]: d.role } : s.roles,
+        };
         break;
+      }
       case "libero": {
         // Nessuna voce conta come cambio. { in } = libero scelto (posto vuoto); { in, out: libero } =
         // cambio di libero (A ↔ B) o uscita (se rientra chi aveva sostituito); { in: libero, out } = entrata.
         const { in: inn, out } = d;
         if (!inn) break;
+        // Come per i cambi, col registro corretto dallo Storico si applica solo ciò che ha ancora senso.
         const liberoOnCourt = s.liberoId !== null && s.rotation.includes(s.liberoId);
         if (out === undefined || (out === s.liberoId && !liberoOnCourt)) {
-          s = { ...s, liberoId: inn };
-        } else if (out === s.liberoId && inn !== s.liberoFor) {
-          // Cambio di libero in campo: il nuovo prende il posto del vecchio, per lo stesso giocatore.
-          s = { ...s, rotation: replace(s.rotation, out, inn), liberoId: inn };
-        } else if (inn === s.liberoId && s.rotation.includes(out)) {
+          // Libero scelto o cambiato in panchina: mai un giocatore che è in campo.
+          if (!s.rotation.includes(inn)) s = { ...s, liberoId: inn };
+        } else if (out === s.liberoId && s.liberoFor !== null) {
+          if (inn === s.liberoFor || s.rotation.includes(inn)) {
+            // Uscita a mano: rientra chi il libero sostituisce (anche se il registro ne indica uno già
+            // in campo); per lui il libero non torna da solo finché resta in seconda linea.
+            const back = s.liberoFor;
+            s = { ...s, rotation: replace(s.rotation, out, back), liberoFor: null, liberoSkip: back };
+          } else {
+            // Cambio di libero in campo: il nuovo prende il posto del vecchio, per lo stesso giocatore.
+            s = { ...s, rotation: replace(s.rotation, out, inn), liberoId: inn };
+          }
+        } else if (inn === s.liberoId && !liberoOnCourt && (BACK_ROW as readonly number[]).includes(s.rotation.indexOf(out))) {
+          // Entrata: solo per un giocatore di seconda linea.
           s = { ...s, rotation: replace(s.rotation, out, inn), liberoFor: out, liberoSkip: null };
-        } else if (out === s.liberoId) {
-          // Uscita a mano: per chi rientra il libero non torna da solo finché resta in seconda linea.
-          s = { ...s, rotation: replace(s.rotation, out, inn), liberoFor: null, liberoSkip: inn };
         }
         break;
       }
