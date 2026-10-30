@@ -101,9 +101,11 @@ export const matches = pgTable(
     seasonId: integer()
       .notNull()
       .references(() => seasons.id),
-    /** Giornata dentro la fase: "Ritorno — 1ª giornata" = phase ritorno, round 1. */
+    /** Giornata dentro la fase: "Ritorno — 1ª giornata" = phase ritorno, round 1 (amichevoli: round 0). */
     phase: matchPhase().notNull().default("andata"),
     round: smallint().notNull(),
+    /** Amichevole: fuori dal campionato (niente giornata né numero gara, ignorata dall'import ufficiale). */
+    friendly: boolean().notNull().default(false),
     /** Numero gara del calendario ufficiale (es. "n. 8"). */
     number: smallint(),
     /** null = data da definire (es. "Duplica come ritorno") */

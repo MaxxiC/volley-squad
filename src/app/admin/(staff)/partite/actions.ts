@@ -82,6 +82,7 @@ export async function duplicateAsReturn(id: number): Promise<MatchResult> {
   await requireStaff();
   const source = await db.query.matches.findFirst({ where: eq(matches.id, id) });
   if (!source) return NOT_FOUND;
+  if (source.friendly) return { ok: false, error: "Un'amichevole non ha il ritorno" };
 
   const home = !source.home;
   const [created] = await db

@@ -24,6 +24,8 @@ export type DbMatch = {
   sets: { us: number; them: number }[];
   /** Registrata con il Live: risultato e stato non si toccano. */
   recorded: boolean;
+  /** Amichevole: non è sul sito ufficiale, l'import la ignora. */
+  friendly: boolean;
 };
 
 export type DbStanding = { teamId: number; points: number; played: number; won: number; lost: number; setsWon: number; setsLost: number };
@@ -109,6 +111,8 @@ export function planOfficialImport(official: OfficialGroup, db: { teams: DbTeam[
   const sameRef = (a: TeamRef, b: TeamRef) => ("teamId" in a && "teamId" in b ? a.teamId === b.teamId : "create" in a && "create" in b && a.create === b.create);
 
   // --- Nostre partite -----------------------------------------------------------------------
+  // Solo il campionato: un'amichevole non va mai scambiata per una partita ufficiale.
+  const local = db.matches.filter((x) => !x.friendly);
   const updates: MatchUpdate[] = [];
   const creates: OfficialPlan["creates"] = [];
   const warnings: string[] = [];
@@ -123,8 +127,8 @@ export function planOfficialImport(official: OfficialGroup, db: { teams: DbTeam[
     const values: MatchValues = { number: m.number, phase: m.phase, round: m.round, startsAt, home, opponent, venue: m.venue };
 
     const mine =
-      db.matches.find((x) => x.number === m.number && !used.has(x.id)) ??
-      db.matches.find((x) => x.phase === m.phase && x.round === m.round && !used.has(x.id) && (x.number === null || x.number === m.number));
+      local.find((x) => x.number === m.number && !used.has(x.id)) ??
+      local.find((x) => x.phase === m.phase && x.round === m.round && !used.has(x.id) && (x.number === null || x.number === m.number));
     if (!mine) {
       creates.push({ label, values, result: result.length ? result : null });
       continue;
@@ -172,7 +176,7 @@ export function planOfficialImport(official: OfficialGroup, db: { teams: DbTeam[
     if (reschedule) changes.push("Stato: rinviata → da giocare");
     if (changes.length) updates.push({ matchId: mine.id, label, changes, values: set, result: newResult, reschedule });
   }
-  for (const x of db.matches) {
+  for (const x of local) {
     if (!used.has(x.id)) warnings.push(`Partita n. ${x.number ?? "—"} (${x.phase} ${x.round}ª) non c'è sul sito ufficiale: lasciata com'è`);
   }
 

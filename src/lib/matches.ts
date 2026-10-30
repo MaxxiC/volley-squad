@@ -46,7 +46,12 @@ export function shortTeamName(name: string) {
 
 export const PHASE_LABEL = { andata: "Andata", ritorno: "Ritorno" } as const;
 
-/** "Andata 2ª", "Ritorno 11ª" */
-export function roundLabel(match: { phase: keyof typeof PHASE_LABEL; round: number }) {
-  return `${PHASE_LABEL[match.phase]} ${match.round}ª`;
+/** "Andata 2ª", "Ritorno 11ª"; "Amichevole" per le partite fuori campionato. */
+export function roundLabel(match: { phase: keyof typeof PHASE_LABEL; round: number; friendly?: boolean }) {
+  return match.friendly ? "Amichevole" : `${PHASE_LABEL[match.phase]} ${match.round}ª`;
+}
+
+/** Etichetta corta per assi e tabelle: "A2", "R11", "AM" (amichevole). */
+export function shortRoundLabel(match: { phase: keyof typeof PHASE_LABEL; round: number; friendly?: boolean }) {
+  return match.friendly ? "AM" : `${match.phase === "andata" ? "A" : "R"}${match.round}`;
 }

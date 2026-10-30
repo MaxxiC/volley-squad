@@ -1,0 +1,1 @@
+ALTER TABLE "matches" ADD COLUMN "friendly" boolean DEFAULT false NOT NULL;

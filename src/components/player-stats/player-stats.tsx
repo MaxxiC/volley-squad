@@ -18,7 +18,8 @@ import {
   type Counts,
   type StatSkill,
 } from "@/lib/stats";
-import { sumPlayer, type PlayerMatchRow } from "@/lib/stats-season";
+import { MatchKindFilter } from "@/components/public/match-kind-filter";
+import { byKind, sumPlayer, type MatchKind, type PlayerMatchRow } from "@/lib/stats-season";
 import { TrendChart } from "./trend-chart";
 
 const TONE = { gold: "text-gold", red: "text-red", ink: "text-ink" } as const;
@@ -33,15 +34,27 @@ type Props = {
   role: PlayerRole;
 };
 
-export function PlayerStats({ rows, role }: Props) {
-  const [match, setMatch] = useState<number | "all">("all");
+export function PlayerStats({ rows: all, role }: Props) {
+  const [kind, setKind] = useState<MatchKind>("ufficiali");
+  const [picked, setMatch] = useState<number | "all">("all");
   const [view, setView] = useState<"all" | PlayerRole>("all");
+
+  // Di base solo le partite ufficiali; il filtro compare se ha giocato almeno un'amichevole.
+  const hasFriendlies = all.some((r) => r.friendly);
+  const rows = byKind(all, kind);
+  const match = picked !== "all" && rows.some((r) => r.id === picked) ? picked : "all";
+  const filterBar = hasFriendlies && <MatchKindFilter value={kind} onChange={setKind} />;
 
   if (!rows.length) {
     return (
-      <p className="rounded-tile border border-dashed border-line p-3.5 text-sm text-muted">
-        Le statistiche compaiono qui quando ci sono partite concluse registrate con il Live.
-      </p>
+      <div className="flex flex-col gap-3">
+        {filterBar}
+        <p className="rounded-tile border border-dashed border-line p-3.5 text-sm text-muted">
+          {all.length
+            ? "Nessuna partita di questo tipo."
+            : "Le statistiche compaiono qui quando ci sono partite concluse registrate con il Live."}
+        </p>
+      </div>
     );
   }
 
@@ -67,6 +80,7 @@ export function PlayerStats({ rows, role }: Props) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2.5">
+        {filterBar}
         <label className="flex flex-col gap-1.5">
           <span className="text-xs font-semibold tracking-[.14em] text-muted uppercase">Partite</span>
           <select
@@ -75,7 +89,7 @@ export function PlayerStats({ rows, role }: Props) {
             className="min-h-12 w-full rounded-btn border border-line-strong bg-surface px-3 text-base text-ink"
           >
             <option value="all">
-              Tutta la stagione · {rows.length} {rows.length === 1 ? "partita" : "partite"}
+              {kind === "amichevoli" ? "Tutte le amichevoli" : "Tutta la stagione"} · {rows.length} {rows.length === 1 ? "partita" : "partite"}
             </option>
             {[...rows].reverse().map((r) => (
               <option key={r.id} value={r.id}>
