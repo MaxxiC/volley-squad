@@ -1,11 +1,11 @@
 // Statistiche di più partite (src/lib/stats-season.ts): numeri di una partita e somma.
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { matchStat, sumMatches } from "@/lib/stats-season";
+import { matchStat, playerRows, sumMatches } from "@/lib/stats-season";
 import { eventFactory, lineup } from "./helpers";
 
 // Punti veri a zero: nessun "Corretti a mano" (salvo i test che lo chiedono).
-const meta = (id: number, won: boolean, total = { us: 0, them: 0 }) => ({ id, label: `A${id}`, title: `Andata ${id}ª`, result: won ? "3–0" : "0–3", won, total });
+const meta = (id: number, won: boolean, total = { us: 0, them: 0 }) => ({ id, label: `A${id}`, title: `Andata ${id}ª`, result: won ? "3–0" : "0–3", won, total, mvpId: null });
 // P1..P6 = 1..6 (alzatore in P1, centrali 3 e 6), libero 9; il 7 in panchina.
 const present = [
   { playerId: 1, role: "P" as const },
@@ -108,5 +108,19 @@ describe("somma di più partite", () => {
       ["opp_point", 2],
       ["manual", 1],
     ]);
+  });
+});
+
+describe("partite di un giocatore", () => {
+  test("solo quelle in cui c'era, in ordine, con l'MVP", () => {
+    const ev = eventFactory();
+    const a = matchStat({ ...meta(1, true), mvpId: 2 }, lineup("us"), [ev({ point: "us" })], present);
+    const b = matchStat(meta(2, false), lineup("us"), [ev({ point: "them" })], present.filter((p) => p.playerId !== 7));
+    assert.deepEqual(playerRows([a, b], 2).map((r) => [r.id, r.mvp]), [
+      [1, true],
+      [2, false],
+    ]);
+    assert.deepEqual(playerRows([a, b], 7).map((r) => r.id), [1]);
+    assert.deepEqual(playerRows([a, b], 99), []);
   });
 });

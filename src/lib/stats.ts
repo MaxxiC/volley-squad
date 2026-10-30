@@ -29,7 +29,7 @@ export const ROLE_SKILLS: Record<PlayerRole, StatSkill[]> = {
 };
 
 /** Esiti contati per fondamentale, con l'etichetta del dettaglio. */
-const DETAIL: Record<StatSkill, [key: string, label: string][]> = {
+export const SKILL_OUTCOMES: Record<StatSkill, [key: string, label: string][]> = {
   attack: [["kill", "Punti"], ["in", "In campo"], ["blocked", "Murati"], ["error", "Errori"]],
   reception: [["perfect", "Perfette"], ["good", "Buone"], ["poor", "Scarse"], ["error", "Errori"]],
   serve: [["ace", "Ace"], ["in", "In campo"], ["error", "Errori"]],
@@ -106,20 +106,19 @@ export function efficiencyTone(eff: number | null): "gold" | "red" | "ink" {
   return eff >= 50 ? "gold" : eff < 30 ? "red" : "ink";
 }
 
-export type SkillLine = { skill: StatSkill; label: string; eff: number | null; total: number; detail: string };
+/** Azioni di un fondamentale. */
+export function skillTotal(c: Counts, skill: StatSkill) {
+  return Object.values(c[skill]).reduce((a, b) => a + b, 0);
+}
 
 /**
- * Card da mostrare: i fondamentali dei ruoli giocati, più quelli fuori ruolo con almeno un'azione,
- * nell'ordine fisso.
+ * Card della scheda giocatore: i fondamentali dei ruoli giocati in evidenza (anche senza azioni),
+ * poi quelli fuori ruolo con almeno un'azione; sempre nell'ordine fisso.
  */
-export function skillLines(c: Counts, roles: PlayerRole[]): SkillLine[] {
-  const ofRoles = new Set(roles.flatMap((r) => ROLE_SKILLS[r]));
-  return STAT_SKILLS.flatMap((skill) => {
-    const total = Object.values(c[skill]).reduce((a, b) => a + b, 0);
-    if (!ofRoles.has(skill) && total === 0) return [];
-    const detail = DETAIL[skill].map(([k, label]) => `${label} ${c[skill][k] ?? 0}`).join(" · ");
-    return [{ skill, label: STAT_LABEL[skill], eff: efficiency(skill, c), total, detail }];
-  });
+export function skillGroups(c: Counts, roles: PlayerRole[]) {
+  const focus = STAT_SKILLS.filter((s) => roles.some((r) => ROLE_SKILLS[r].includes(s)));
+  const others = STAT_SKILLS.filter((s) => !focus.includes(s) && skillTotal(c, s) > 0);
+  return { focus, others };
 }
 
 /**

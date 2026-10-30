@@ -16,4 +16,5 @@ export function revalidatePublicPages() {
   revalidatePath("/calendario");
   revalidatePath("/partite/[id]", "page");
   revalidatePath("/statistiche");
+  revalidatePath("/statistiche/[id]", "page");
 }

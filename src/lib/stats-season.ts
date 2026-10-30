@@ -44,6 +44,7 @@ export type MatchStat = {
   won: boolean;
   /** Punti veri della partita (somma dei parziali), anche quelli aggiunti con "Correggi". */
   total: { us: number; them: number };
+  mvpId: number | null;
   players: Record<number, PlayerMatchStat>;
   /** Come abbiamo fatto punto (con "Corretti a mano" per i punti senza azione). */
   scored: Split[];
@@ -69,7 +70,7 @@ function withManual(list: Split[], real: number): Split[] {
  * giorno: servono anche al libero automatico, così "chi era in campo" è quello vero.
  */
 export function matchStat(
-  meta: Pick<MatchStat, "id" | "label" | "title" | "result" | "won" | "total">,
+  meta: Pick<MatchStat, "id" | "label" | "title" | "result" | "won" | "total" | "mvpId">,
   lineups: LiveLineup[],
   events: LiveEvent[],
   present: { playerId: number; role: PlayerRole }[],
@@ -123,26 +124,40 @@ function sumSplits(lists: Split[][], order: { key: string; label: string }[]): S
 
 const labels = (rec: Record<string, string>) => Object.entries(rec).map(([key, label]) => ({ key, label }));
 
+/** Totali di un giocatore dalle sue partite. */
+export function sumPlayer(playerId: number, rows: PlayerMatchStat[]): PlayerTotals {
+  const roleCount = new Map<PlayerRole, number>();
+  for (const r of rows) roleCount.set(r.role, (roleCount.get(r.role) ?? 0) + 1);
+  return {
+    playerId,
+    matches: rows.length,
+    roles: [...roleCount].map(([role, matches]) => ({ role, matches })).sort((a, b) => b.matches - a.matches),
+    counts: mergeCounts(rows.map((r) => r.counts)),
+    time: mergePlayingTime(rows.map((r) => r.time)),
+    points: rows.reduce((t, r) => t + r.points, 0),
+    errors: rows.reduce((t, r) => t + r.errors, 0),
+    stars: rows.reduce((t, r) => t + r.stars, 0),
+  };
+}
+
+/** Una partita di un giocatore (scheda giocatore): la partita e i suoi numeri. */
+export type PlayerMatchRow = Pick<MatchStat, "id" | "label" | "title" | "result" | "won"> & { mvp: boolean; stat: PlayerMatchStat };
+
+/** Le partite in cui il giocatore era tra i presenti (o è entrato con un cambio), in ordine di data. */
+export function playerRows(list: MatchStat[], playerId: number): PlayerMatchRow[] {
+  return list.flatMap((m) => {
+    const stat = m.players[playerId];
+    return stat ? [{ id: m.id, label: m.label, title: m.title, result: m.result, won: m.won, mvp: m.mvpId === playerId, stat }] : [];
+  });
+}
+
 /** Somma di più partite: giocatori (in ordine di punti fatti) e squadra. */
 export function sumMatches(list: MatchStat[]) {
   const byPlayer = new Map<number, PlayerMatchStat[]>();
   for (const m of list) {
     for (const [id, p] of Object.entries(m.players)) byPlayer.set(Number(id), [...(byPlayer.get(Number(id)) ?? []), p]);
   }
-  const players: PlayerTotals[] = [...byPlayer].map(([playerId, rows]) => {
-    const roleCount = new Map<PlayerRole, number>();
-    for (const r of rows) roleCount.set(r.role, (roleCount.get(r.role) ?? 0) + 1);
-    return {
-      playerId,
-      matches: rows.length,
-      roles: [...roleCount].map(([role, matches]) => ({ role, matches })).sort((a, b) => b.matches - a.matches),
-      counts: mergeCounts(rows.map((r) => r.counts)),
-      time: mergePlayingTime(rows.map((r) => r.time)),
-      points: rows.reduce((t, r) => t + r.points, 0),
-      errors: rows.reduce((t, r) => t + r.errors, 0),
-      stars: rows.reduce((t, r) => t + r.stars, 0),
-    };
-  });
+  const players = [...byPlayer].map(([playerId, rows]) => sumPlayer(playerId, rows));
   players.sort((a, b) => b.points - a.points || b.time.rallies - a.time.rallies);
 
   return {

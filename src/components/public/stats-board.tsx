@@ -2,6 +2,7 @@
 
 // Pagina Statistiche: filtro (stagione o una partita), numeri della squadra e tabella dei giocatori
 // ordinabile. I numeri di ogni partita arrivano già calcolati dal server; qui si sommano e si ordinano.
+import Link from "next/link";
 import { useState } from "react";
 import { TEAM_NAME } from "@/lib/club";
 import { ROLE_LABEL, shortName, type PlayerRole } from "@/lib/players";
@@ -98,7 +99,7 @@ export function StatsBoard({ matches, players }: { matches: MatchStat[]; players
       <section className="flex flex-col gap-4">
         <h2 className={H2}>Giocatori</h2>
         <p className="text-sm text-muted">
-          Tocca una colonna per ordinare. Nei fondamentali: efficienza e azioni riuscite su quelle fatte (ordinando, prima chi ne ha almeno {MIN_ACTIONS}). Punti giocati = scambi in campo.
+          Tocca un nome per la sua scheda, una colonna per ordinare. Nei fondamentali: efficienza e azioni riuscite su quelle fatte (ordinando, prima chi ne ha almeno {MIN_ACTIONS}). Punti giocati = scambi in campo.
         </p>
         <div className="overflow-x-auto rounded-panel border border-line bg-surface">
           <table className="w-full border-collapse text-left tabular-nums">
@@ -123,14 +124,16 @@ export function StatsBoard({ matches, players }: { matches: MatchStat[]; players
                 const role = p.roles[0]?.role ?? info?.role;
                 return (
                   <tr key={p.playerId} className="border-b border-line-soft last:border-0">
-                    <th scope="row" className="sticky left-0 z-1 bg-surface px-3 py-2.5 text-left font-normal">
-                      <span className="flex items-center gap-2">
+                    <th scope="row" className="sticky left-0 z-1 bg-surface p-0 text-left font-normal">
+                      <Link href={`/statistiche/${p.playerId}`} className="flex min-h-11 items-center gap-2 px-3 py-2.5 text-ink hover:text-gold">
                         <span className="w-7 font-display text-xl font-extrabold text-gold">{info?.number ?? "?"}</span>
                         <span className="flex flex-col">
-                          <span className="max-w-[112px] truncate text-[15px] font-semibold text-ink">{info ? shortName(info) : "—"}</span>
+                          <span className="max-w-[112px] truncate text-[15px] font-semibold underline decoration-line-strong underline-offset-4">
+                            {info ? shortName(info) : "—"}
+                          </span>
                           {role && <span className="text-xs text-faint">{ROLE_LABEL[role]}</span>}
                         </span>
-                      </span>
+                      </Link>
                     </th>
                     <NumCell value={p.points} strong />
                     <NumCell value={p.errors} />

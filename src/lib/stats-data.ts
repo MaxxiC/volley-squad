@@ -47,6 +47,7 @@ export async function getSeasonStats(seasonId: number): Promise<{ matches: Match
         result: `${score.us}–${score.them}`,
         won: score.won,
         total: { us: m.sets.reduce((t, s) => t + s.us, 0), them: m.sets.reduce((t, s) => t + s.them, 0) },
+        mvpId: m.mvpPlayerId,
       },
       logs[i].lineups,
       activeEvents(logs[i].events),

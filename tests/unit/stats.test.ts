@@ -14,7 +14,7 @@ import {
   playingTime,
   pointsAndErrors,
   pointsGiven,
-  skillLines,
+  skillGroups,
 } from "@/lib/stats";
 import { computeLive } from "@/lib/live/state";
 import { eventFactory, lineup } from "./helpers";
@@ -75,10 +75,11 @@ describe("efficienza (formule del README)", () => {
 describe("card da mostrare", () => {
   test("fondamentali del ruolo, più quelli fuori ruolo con azioni", () => {
     const c = countsByPlayer([act(1, "reception", "good")]).get(1)!;
-    assert.deepEqual(skillLines(c, ["C"]).map((l) => l.skill), ["attack", "reception", "serve", "block"]);
-    assert.deepEqual(skillLines(c, ["L"]).map((l) => l.skill), ["reception"]);
-    assert.equal(skillLines(c, ["C"])[1].detail, "Perfette 0 · Buone 1 · Scarse 0 · Errori 0");
-    assert.equal(skillLines(c, ["C"])[0].eff, null);
+    // Centrale con una ricezione: attacco, muro e battuta in evidenza (anche senza azioni), ricezione fuori ruolo.
+    assert.deepEqual(skillGroups(c, ["C"]), { focus: ["attack", "serve", "block"], others: ["reception"] });
+    assert.deepEqual(skillGroups(c, ["L"]), { focus: ["reception"], others: [] });
+    // Più ruoli giocati: i fondamentali di tutti.
+    assert.deepEqual(skillGroups(c, ["P", "L"]).focus, ["reception", "serve", "block", "set"]);
   });
 });
 
