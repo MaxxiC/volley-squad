@@ -302,6 +302,19 @@ test("Live completo sul DB reale (con ripristino)", async ({ page }) => {
     await expect(page.getByText("25–1")).toBeVisible();
   });
 
+  await test.step("statistiche pubbliche: la partita c'è e si può scegliere da sola", async () => {
+    await page.goto("/statistiche");
+    const filter = page.getByLabel("Partite");
+    const value = await filter.locator("option", { hasText: opponent }).getAttribute("value");
+    expect(value).toBe(String(matchId));
+    await filter.selectOption(String(matchId));
+    await expect(page.getByText("1 vinte · 0 perse")).toBeVisible();
+    // Chi ha fatto il punto d'attacco del set 1 (poi spostato nello Storico) è in tabella.
+    await expect(page.getByRole("rowheader", { name: new RegExp(esc(shortName(player(slots[1])))) })).toBeVisible();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(overflow, "scroll orizzontale nelle statistiche").toBeLessThanOrEqual(0);
+  });
+
   await test.step("pagine pubbliche e controlli finali", async () => {
     await page.goto("/calendario");
     await expect(page.getByText(opponentFull).first()).toBeVisible();

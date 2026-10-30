@@ -74,7 +74,7 @@ export default async function PartitaPage({ params }: { params: Promise<{ id: st
   const setsClass = (side: (typeof sides)[number]) => (side.isUs ? "text-gold" : score.won ? "text-faint" : "text-ink");
 
   return (
-    <PublicShell width="narrow" navLink={{ href: "/calendario", label: "← Calendario" }}>
+    <PublicShell width="narrow" navLinks={[{ href: "/calendario", label: "← Calendario" }, { href: "/statistiche", label: "Statistiche" }]}>
       <main className="page-enter relative z-1 mx-auto flex max-w-[1000px] flex-col gap-[clamp(36px,6vw,56px)] px-gutter pt-[clamp(16px,4vw,40px)] pb-18">
         <section className="flex flex-col gap-5.5">
           <div className="flex flex-wrap gap-x-3.5 gap-y-2 font-display text-[15px] font-semibold tracking-[.14em] uppercase">

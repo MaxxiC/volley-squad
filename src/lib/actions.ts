@@ -10,9 +10,10 @@ export function invalid(error: z.ZodError): { ok: false; error: string } {
   return { ok: false, error: error.issues[0]?.message ?? "Dati non validi" };
 }
 
-/** Le pagine pubbliche che mostrano calendario, risultati, classifica e riepiloghi delle partite. */
+/** Le pagine pubbliche che mostrano calendario, risultati, classifica, riepiloghi delle partite e statistiche. */
 export function revalidatePublicPages() {
   revalidatePath("/");
   revalidatePath("/calendario");
   revalidatePath("/partite/[id]", "page");
+  revalidatePath("/statistiche");
 }
