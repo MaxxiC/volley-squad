@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import { PlayerStats } from "@/components/player-stats/player-stats";
 import { PublicShell } from "@/components/public/public-shell";
+import { RefreshPages } from "@/components/public/refresh-pages";
 import { db } from "@/db";
 import { players } from "@/db/schema";
 import { getCurrentSeason } from "@/lib/data";
@@ -12,6 +13,11 @@ import { getSeasonStats } from "@/lib/stats-data";
 import { playerRows, sumPlayer } from "@/lib/stats-season";
 
 export const revalidate = 300;
+
+/** Nessuna scheda preparata alla build: ognuna si genera alla prima visita e resta in cache (ISR). */
+export function generateStaticParams() {
+  return [];
+}
 
 /** Giocatore e le sue partite registrate nella stagione; null se il giocatore non esiste. */
 const loadPlayer = cache(async (id: number) => {
@@ -50,6 +56,7 @@ export default async function GiocatorePage({ params }: { params: Promise<{ id: 
           <h1 className="font-display text-[clamp(32px,8vw,60px)] leading-[.95] font-extrabold break-words uppercase">{fullName(player)}</h1>
           <span className="text-[15px] text-ink-2">{roleText}</span>
         </header>
+        <RefreshPages />
         <PlayerStats rows={rows} role={player.role} />
       </main>
     </PublicShell>

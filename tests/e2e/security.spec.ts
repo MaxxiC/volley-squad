@@ -43,6 +43,15 @@ test.describe("sicurezza", () => {
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
   });
 
+  test("statistiche: \"Aggiorna\" non compare a chi non è dello staff", async ({ page }) => {
+    // Il bottone compare dopo aver letto la sessione: si aspetta che la lettura sia finita.
+    const session = page.waitForResponse((r) => r.url().includes("/api/auth/session"));
+    await page.goto("/statistiche");
+    await session;
+    await expect(page.getByRole("heading", { name: "Statistiche" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "↻ Aggiorna" })).toHaveCount(0);
+  });
+
   test("login: stesso messaggio per email sconosciuta e password sbagliata, redirect solo interni", async ({ page }) => {
     await fillLogin(page, "nessuno@cusbros.local", "password-a-caso");
     await expect(page.getByText("Email o password non corretti.")).toBeVisible();

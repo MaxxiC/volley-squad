@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PublicShell } from "@/components/public/public-shell";
+import { RefreshPages } from "@/components/public/refresh-pages";
 import { StatsBoard } from "@/components/public/stats-board";
 import { getCurrentSeason } from "@/lib/data";
 import { getSeasonStats } from "@/lib/stats-data";
@@ -19,6 +20,7 @@ export default async function StatistichePage() {
           <span className="font-display text-[15px] font-semibold tracking-[.14em] text-gold uppercase">{season.name}</span>
           <h1 className="font-display text-[clamp(44px,11vw,88px)] leading-[.9] font-extrabold uppercase">Statistiche</h1>
           <p className="text-[15px] text-ink-2">Dalle partite registrate azione per azione col Live.</p>
+          <RefreshPages />
         </header>
         <StatsBoard matches={matches} players={players} />
       </main>
