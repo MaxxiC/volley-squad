@@ -88,7 +88,15 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
   - [x] +1 avversario con tutti i motivi: Punto avversario, Errore battuta, Attacco fuori / rete, Murato, Ricezione errata, Errore alzata, Invasione a muro / rete, Doppia / accompagnata (poi chi), Fallo di posizione (di squadra, senza giocatore: `isTeamFault`)
   - [x] "Errore avversario" col tipo, un tocco (`OPP_ERRORS` in `skills.ts`, `detail.oppError`): Battuta sbagliata, Attacco fuori, Attacco in rete, Invasione / rete, Doppia / accompagnata, Fallo di posizione, Altro. Al posto di "palla semplice nostra / azione loro" (`ballType` resta solo per leggere le partite vecchie; nello Storico diventano "Altro")
   - [x] Azioni senza punto, riga di tasti sotto i +1: **Ricezione buona**, **Ricezione scarsa** (anche il libero), **Attacco giocato**, poi il giocatore (`SIMPLE_RALLY_TYPES`) → statistiche vere anche in Semplice (es. 5 punti su 10 attacchi)
-- **Fase 4 · Pagina Statistiche pubblica** (squadra e giocatori, stagione e singola partita): dopo la fase 3 e l'elenco di Max di cosa vedere
+- **Fase 4 · Statistiche pubbliche** 🌿 `feat/statistiche` — decisioni del 30/10/2026: pubbliche (anche le % negative, per ora), si arriva dal bottone "Statistiche" in alto e toccando un nome nel riepilogo di una partita
+  - [x] Calcoli: punti giocati (chi era in campo a ogni punto, libero compreso: `LiveState.rallies`), set giocati e set interi (`playingTime`), punti fatti ed errori per giocatore (`pointsAndErrors`), punti regalati per tipo (`pointsGiven`), errori avversari per tipo (`oppErrorSplit`) in `src/lib/stats.ts`
+  - [x] `/statistiche` (bottone "Statistiche" nel menu pubblico, che ora ha due link): filtro stagione / singola partita, squadra (partite V/P, punti fatti e subiti, come abbiamo fatto punto con gli errori avversari per tipo, come hanno fatto punto loro), tabella dei giocatori ordinabile (punti, errori, partite, set e set interi, punti giocati, fondamentali con % e riusciti/totali; prima colonna fissa). Punti fatti/subiti dai parziali veri, con la voce "Corretti a mano" per i punti aggiunti con Correggi (nella partita del 28/10 sono 9 e 26); ordinando un fondamentale prima chi ha almeno 3 azioni. Numeri di ogni partita calcolati sul server (`src/lib/stats-data.ts`), somma e ordinamento sul telefono (`src/lib/stats-season.ts`, `stats-board.tsx`); si aggiorna con `revalidatePublicPages()`
+  - [x] `/statistiche/[id]` scheda giocatore (si apre dalla tabella, dall'MVP e da "I migliori" nel riepilogo della partita): filtro stagione / partita e per ruolo giocato, partite, set (interi), punti giocati, punti fatti, errori, ★ e MVP, fondamentali del ruolo in evidenza (anche senza azioni) e fuori ruolo con ogni esito contato, Andamento, partita per partita. Componente unico `src/components/player-stats/` usato anche da Admin Giocatori (con link "Scheda pubblica"): tolto il calcolo duplicato della pagina staff
+- **Amichevoli** (idea di Max del 30/10/2026, da progettare dopo la fase 4):
+  - [ ] Partita segnata come **amichevole** (nuovo campo della partita, da Admin Partite); il Live funziona uguale
+  - [ ] Filtro nel Calendario/Home pubblici (ufficiali / amichevoli)
+  - [ ] Statistiche e scheda giocatore con filtro **Ufficiali / Tutte / Solo amichevoli** (di base solo le ufficiali, così le amichevoli non pesano sui numeri)
+  - Da decidere: non entrano in classifica né nell'import dal sito ufficiale (non hanno numero gara); se mostrarle in Home come "prossima partita"
 
 ## 🔒 Sicurezza (sito online)
 - [x] Controllo del 28/10/2026: middleware su `/admin/**` + controllo in pagine, server action e API; login con bcrypt, messaggio e tempi uguali per email sconosciuta o password sbagliata, redirect solo interni; segreti solo in `.env`; area staff `noindex`.
@@ -100,9 +108,9 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 
 ## 💡 Idee future
 - [x] **Import dal sito ufficiale** (SportAdmin) 🌿 `feat/import`: Admin → Partite → **Ufficiale**, bottone "Controlla il sito ufficiale" (la pagina si legge solo su richiesta) → differenze → "Applica". Nostre partite riconosciute dal numero gara (data, ora, palestra, casa/trasferta, avversario, risultato se non registrate col Live; con il Live solo un avviso), partite nuove create, squadre collegate con l'id ufficiale (`teams.official_id`, migrazione `0006`) o create, classifica copiata dal sito (punti, G, V, P) con i set calcolati dai parziali. Lettura in `src/lib/official/parse.ts` (`node-html-parser`), confronto in `diff.ts`, test con una pagina finta in `tests/unit/fixtures/`.
-- [ ] **Giornate di riposo** nel Calendario pubblico ("Riposa CUSBros", 7ª andata e ritorno), come sul sito ufficiale.
-- [ ] **Loghi delle squadre** accanto ai nomi (come sul sito ufficiale).
-- [ ] **Animazioni leggere tra le pagine:** transizioni morbide (fade/slide brevi) senza librerie pesanti, es. View Transitions API del browser o CSS puro; rispettare `prefers-reduced-motion`.
+- Giornate di riposo nel Calendario pubblico: **non servono per ora** (Max, 30/10/2026).
+- Loghi delle squadre: **non per ora** (Max, 30/10/2026).
+- [x] **Animazioni leggere tra le pagine** (fatte, vedi sezione 7): transizioni morbide (fade/slide brevi) senza librerie pesanti, es. View Transitions API del browser o CSS puro; rispettare `prefers-reduced-motion`.
 
 ---
 

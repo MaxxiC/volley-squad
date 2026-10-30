@@ -40,6 +40,8 @@ export type LiveState = {
   timeouts: Score;
   /** Eventi validi del set in corso, in ordine, con il punteggio subito dopo ciascuno. */
   timeline: { event: LiveEvent; score: Score }[];
+  /** Tutti i punti giocati nella partita (non solo nel set in corso): set e chi era in campo (libero compreso). */
+  rallies: Rally[];
   /** Chi ha raggiunto il punteggio per chiudere il set (25, 15 al 5°, con 2 di scarto). */
   setWinner: Side | null;
   /** Qualcuno ha vinto 3 set. */
@@ -47,6 +49,9 @@ export type LiveState = {
   /** Il set in corso non ha ancora azioni: si può ancora impostare la formazione. */
   setNotStarted: boolean;
 };
+
+/** Un punto giocato: in che set e chi era in campo durante lo scambio. */
+export type Rally = { setN: number; onCourt: number[] };
 
 /** Rotazione in senso orario: chi era in P2 va in P1 (README → Rotazione automatica). */
 export function rotateClockwise(pos: number[]) {
@@ -146,6 +151,7 @@ export function computeLive(
       roles: previous?.roles ?? {},
       timeouts: { us: 0, them: 0 },
       timeline: [],
+      rallies: previous?.rallies ?? [],
       setWinner: null,
       matchOver: false,
       setNotStarted: true,
@@ -233,6 +239,7 @@ export function computeLive(
         break;
       case "action":
         if (e.point) {
+          s = { ...s, rallies: [...s.rallies, { setN: s.setN, onCourt: [...s.rotation] }] };
           const score = { ...s.score, [e.point]: s.score[e.point] + 1 };
           // Cambio palla a nostro favore: si ruota prima di andare in battuta.
           const rotation = e.point === "us" && s.serving === "them" ? rotateClockwise(s.rotation) : s.rotation;

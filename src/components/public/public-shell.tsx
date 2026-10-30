@@ -9,12 +9,13 @@ const MAX_WIDTH = {
 
 type PublicShellProps = {
   width: keyof typeof MAX_WIDTH;
-  navLink: { href: string; label: string };
+  /** Link in alto a destra (le altre pagine del sito). */
+  navLinks: { href: string; label: string }[];
   watermark?: boolean;
   children: React.ReactNode;
 };
 
-export function PublicShell({ width, navLink, watermark = false, children }: PublicShellProps) {
+export function PublicShell({ width, navLinks, watermark = false, children }: PublicShellProps) {
   const maxWidth = MAX_WIDTH[width];
 
   return (
@@ -28,17 +29,21 @@ export function PublicShell({ width, navLink, watermark = false, children }: Pub
         />
       )}
 
-      <nav className={`relative z-1 mx-auto flex items-center gap-4 px-gutter py-4.5 ${maxWidth}`}>
-        <Link href="/" className="mr-auto flex min-h-11 items-center gap-3 text-ink hover:text-ink">
-          <Logo size={40} alt={`Logo ${TEAM_NAME}`} priority className="block size-10" />
-          <span className="font-display text-xl font-bold tracking-[.08em] uppercase">{TEAM_NAME}</span>
+      <nav className={`relative z-1 mx-auto flex items-center gap-2 px-gutter py-4.5 sm:gap-3 ${maxWidth}`}>
+        <Link href="/" className="mr-auto flex min-h-11 min-w-0 items-center gap-3 text-ink hover:text-ink">
+          <Logo size={40} alt={`Logo ${TEAM_NAME}`} priority className="block size-10 shrink-0" />
+          {/* Sui telefoni stretti resta solo il logo, così i link stanno sulla stessa riga. */}
+          <span className="font-display text-xl font-bold tracking-[.08em] uppercase max-[400px]:sr-only">{TEAM_NAME}</span>
         </Link>
-        <Link
-          href={navLink.href}
-          className="inline-flex min-h-11 items-center rounded-chip whitespace-nowrap border border-line-strong px-4.5 py-2.5 font-display text-base font-semibold tracking-[.1em] text-ink uppercase hover:border-gold hover:text-gold"
-        >
-          {navLink.label}
-        </Link>
+        {navLinks.map((l) => (
+          <Link
+            key={l.href}
+            href={l.href}
+            className="inline-flex min-h-11 items-center rounded-chip whitespace-nowrap border border-line-strong px-3 py-2.5 font-display text-[15px] font-semibold tracking-[.08em] text-ink uppercase hover:border-gold hover:text-gold sm:px-4.5 sm:text-base sm:tracking-[.1em]"
+          >
+            {l.label}
+          </Link>
+        ))}
       </nav>
 
       {children}

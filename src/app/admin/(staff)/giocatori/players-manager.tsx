@@ -1,13 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, useState } from "react";
 import { PageHeader } from "@/components/admin/page-header";
 import { BTN_PRIMARY } from "@/components/admin/styles";
-import { GENDER_LABEL, ROLE_LABEL, fullName, type PlayerRole } from "@/lib/players";
-import { STAT_LABEL, TREND_MATCHES, efficiencyTone, formatPct, type StatSkill } from "@/lib/stats";
-import type { AdminPlayer, PlayerStats } from "./player-form";
+import { PlayerStats } from "@/components/player-stats/player-stats";
+import { GENDER_LABEL, ROLE_LABEL, fullName } from "@/lib/players";
+import type { AdminPlayer } from "./player-form";
 import { PlayerEditor } from "./player-editor";
-import { TrendChart } from "./trend-chart";
 
 type Props = { players: AdminPlayer[]; matchesPlayed: number };
 
@@ -139,105 +139,16 @@ function PlayerCard({ player: p, onEdit }: { player: AdminPlayer; onEdit: () => 
         ))}
       </div>
 
-      <Efficiency stats={p.stats} />
-    </>
-  );
-}
-
-const TONE = { gold: "text-gold", red: "text-red", ink: "text-ink" } as const;
-
-/** Efficienza per fondamentale della stagione; con più ruoli giocati si può vedere ruolo per ruolo. */
-function Efficiency({ stats }: { stats: PlayerStats }) {
-  const [view, setView] = useState<"all" | PlayerRole>("all");
-  const lines = stats.lines[view] ?? stats.lines.all ?? [];
-
-  return (
-    <div className="flex flex-col gap-2.5">
-      <span className="font-display text-sm font-bold tracking-[.2em] text-gold uppercase">Efficienza per fondamentale · stagione</span>
-      {stats.matches === 0 ? (
-        <p className="rounded-tile border border-dashed border-line p-3.5 text-sm text-muted">
-          Efficienza e andamento compaiono qui quando ci sono partite concluse registrate con il Live.
-        </p>
-      ) : (
-        <>
-          {stats.roles.length > 1 && (
-            <div role="group" aria-label="Ruolo" className="flex flex-wrap gap-1 self-start rounded-btn border border-line p-0.5">
-              {[{ key: "all" as const, label: "Tutti i ruoli" }, ...stats.roles.map((r) => ({ key: r.role, label: `${ROLE_LABEL[r.role]} · ${r.matches}` }))].map((o) => (
-                <button
-                  key={o.key}
-                  type="button"
-                  aria-pressed={view === o.key}
-                  onClick={() => setView(o.key)}
-                  className={`min-h-11 cursor-pointer rounded-chip px-3 font-display text-sm font-bold tracking-[.04em] uppercase ${view === o.key ? "bg-gold text-bg" : "text-muted"}`}
-                >
-                  {o.label}
-                </button>
-              ))}
-            </div>
-          )}
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-2.5">
-            {lines.map((l) => (
-              <div key={l.skill} className="flex flex-col gap-1.5 rounded-tile border border-line p-3.5">
-                <span className="text-[13px] font-semibold tracking-[.08em] text-muted uppercase">{l.label}</span>
-                <span className={`font-display text-[34px] leading-none font-extrabold tabular-nums ${TONE[efficiencyTone(l.eff)]}`}>
-                  {formatPct(l.eff)}
-                </span>
-                <span className="text-[13px] text-ink-2">{l.total ? l.detail : "Nessuna azione"}</span>
-              </div>
-            ))}
-          </div>
-          <Trend stats={stats} view={view} />
-          <p className="text-[13px] text-faint">
-            {stats.matches === 1 ? "1 partita registrata" : `${stats.matches} partite registrate`} con il Live
-            {stats.roles.length === 1 ? ` (${ROLE_LABEL[stats.roles[0].role].toLowerCase()})` : ""}. In modalità Semplice si
-            segnano solo i punti e gli errori: l&apos;efficienza completa viene dalla modalità Avanzata.
-          </p>
-        </>
-      )}
-    </div>
-  );
-}
-
-/** Andamento delle ultime partite (del ruolo scelto) per il fondamentale scelto. */
-function Trend({ stats, view }: { stats: PlayerStats; view: "all" | PlayerRole }) {
-  const matches = stats.trend.filter((m) => view === "all" || m.role === view);
-  const skills = (stats.lines[view] ?? stats.lines.all ?? []).map((l) => l.skill).filter((k) => matches.some((m) => m.skills[k]));
-  const [chosen, setChosen] = useState<StatSkill | null>(null);
-  const skill = chosen && skills.includes(chosen) ? chosen : skills[0];
-  const points = skill
-    ? matches.flatMap((m) => {
-        const v = m.skills[skill];
-        return v ? [{ label: m.label, title: m.title, value: v.eff, total: v.total }] : [];
-      }).slice(-TREND_MATCHES)
-    : [];
-
-  return (
-    <div className="flex flex-col gap-3 pt-2">
-      <div className="flex flex-wrap items-center justify-between gap-2.5">
-        <span className="font-display text-sm font-bold tracking-[.2em] text-gold uppercase">Andamento · ultime {TREND_MATCHES} partite</span>
-        {skills.length > 1 && (
-          <div role="group" aria-label="Fondamentale" className="flex max-w-full gap-1 overflow-x-auto rounded-btn border border-line p-0.5">
-            {skills.map((k) => (
-              <button
-                key={k}
-                type="button"
-                aria-pressed={k === skill}
-                onClick={() => setChosen(k)}
-                className={`min-h-11 cursor-pointer rounded-chip px-2.5 font-display text-sm font-semibold tracking-[.06em] whitespace-nowrap uppercase ${k === skill ? "bg-gold text-bg" : "text-muted"}`}
-              >
-                {STAT_LABEL[k]}
-              </button>
-            ))}
-          </div>
-        )}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="font-display text-sm font-bold tracking-[.2em] text-gold uppercase">Statistiche · stagione</span>
+          {/* La stessa scheda è pubblica: si può condividere con il giocatore. */}
+          <Link href={`/statistiche/${p.id}`} className="inline-flex min-h-11 items-center text-sm font-semibold">
+            Scheda pubblica →
+          </Link>
+        </div>
+        <PlayerStats rows={p.rows} role={p.role} />
       </div>
-      {skill && points.length >= 2 ? (
-        <TrendChart key={`${view}-${skill}`} points={points} skillLabel={STAT_LABEL[skill]} />
-      ) : (
-        <p className="rounded-tile border border-dashed border-line p-3.5 text-sm text-muted">
-          L&apos;andamento compare da 2 partite con azioni{skill ? ` di ${STAT_LABEL[skill].toLowerCase()}` : ""}.
-        </p>
-      )}
-    </div>
+    </>
   );
 }

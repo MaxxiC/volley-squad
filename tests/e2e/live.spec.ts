@@ -302,6 +302,30 @@ test("Live completo sul DB reale (con ripristino)", async ({ page }) => {
     await expect(page.getByText("25–1")).toBeVisible();
   });
 
+  await test.step("statistiche pubbliche: la partita c'è e si può scegliere da sola", async () => {
+    await page.goto("/statistiche");
+    const filter = page.getByLabel("Partite");
+    const value = await filter.locator("option", { hasText: opponent }).getAttribute("value");
+    expect(value).toBe(String(matchId));
+    await filter.selectOption(String(matchId));
+    await expect(page.getByText("1 vinte · 0 perse")).toBeVisible();
+    // Chi ha fatto il punto d'attacco del set 1 (poi spostato nello Storico) è in tabella.
+    await expect(page.getByRole("rowheader", { name: new RegExp(esc(shortName(player(slots[1])))) })).toBeVisible();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(overflow, "scroll orizzontale nelle statistiche").toBeLessThanOrEqual(0);
+
+    // Dal riepilogo della partita, il nome dell'MVP apre la sua scheda con questa partita.
+    const mvp = player(slots[3]);
+    await page.goto(`/partite/${matchId}`);
+    await page.getByRole("link", { name: fullName(mvp) }).click();
+    await expect(page).toHaveURL(new RegExp(`/statistiche/${mvp.id}$`));
+    await expect(page.locator("h1")).toHaveText(fullName(mvp));
+    await expect(page.getByRole("link", { name: new RegExp(esc(opponent)) })).toHaveAttribute("href", `/partite/${matchId}`);
+    await expect(page.getByText("1 volta MVP")).toBeVisible();
+    const overflowPlayer = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(overflowPlayer, "scroll orizzontale nella scheda giocatore").toBeLessThanOrEqual(0);
+  });
+
   await test.step("pagine pubbliche e controlli finali", async () => {
     await page.goto("/calendario");
     await expect(page.getByText(opponentFull).first()).toBeVisible();
