@@ -4,7 +4,8 @@ import { describe, test } from "node:test";
 import { matchStat, sumMatches } from "@/lib/stats-season";
 import { eventFactory, lineup } from "./helpers";
 
-const meta = (id: number, won: boolean) => ({ id, label: `A${id}`, title: `Andata ${id}ª`, result: won ? "3–0" : "0–3", won });
+// Punti veri a zero: nessun "Corretti a mano" (salvo i test che lo chiedono).
+const meta = (id: number, won: boolean, total = { us: 0, them: 0 }) => ({ id, label: `A${id}`, title: `Andata ${id}ª`, result: won ? "3–0" : "0–3", won, total });
 // P1..P6 = 1..6 (alzatore in P1, centrali 3 e 6), libero 9; il 7 in panchina.
 const present = [
   { playerId: 1, role: "P" as const },
@@ -81,6 +82,31 @@ describe("somma di più partite", () => {
 
   test("nessuna partita: tutto vuoto", () => {
     const sum = sumMatches([]);
-    assert.deepEqual(sum, { players: [], scored: [], oppErrors: [], given: [], won: 0 });
+    assert.deepEqual(sum, { players: [], scored: [], oppErrors: [], given: [], won: 0, total: { us: 0, them: 0 } });
+  });
+
+  test("punti corretti a mano: la differenza tra parziali e azioni, sommata tra le partite", () => {
+    const ev = eventFactory();
+    const events = [ev({ point: "us", skill: "attack", outcome: "kill", playerId: 2 }), ev({ point: "them", skill: "opp_point" })];
+    const a = matchStat(meta(1, true, { us: 4, them: 1 }), lineup("us"), events, present);
+    assert.deepEqual(a.scored.map((s) => [s.key, s.value]), [
+      ["attack", 1],
+      ["block", 0],
+      ["ace", 0],
+      ["opp_error", 0],
+      ["manual", 3],
+    ]);
+    assert.deepEqual(a.given.map((s) => [s.key, s.value]), [["opp_point", 1]]);
+    const b = matchStat(meta(2, true, { us: 3, them: 2 }), lineup("us"), events, present);
+    const sum = sumMatches([a, b]);
+    assert.deepEqual(sum.total, { us: 7, them: 3 });
+    assert.deepEqual(sum.scored.map((s) => [s.key, s.value]), [
+      ["attack", 2],
+      ["manual", 5],
+    ]);
+    assert.deepEqual(sum.given.map((s) => [s.key, s.value]), [
+      ["opp_point", 2],
+      ["manual", 1],
+    ]);
   });
 });

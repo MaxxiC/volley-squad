@@ -28,7 +28,13 @@ const good = (c: Counts, skill: StatSkill) => GOOD[skill].reduce((a, k) => a + (
 
 type SortKey = "points" | "errors" | "matches" | "sets" | "rallies" | StatSkill;
 
-/** Valore per ordinare (più alto = prima); nei fondamentali la %, a parità il numero di azioni. */
+/** Azioni minime per stare in testa ordinando un fondamentale: con 2 su 2 non si supera chi ha 10 su 12. */
+const MIN_ACTIONS = 3;
+
+/**
+ * Valore per ordinare (più alto = prima); nei fondamentali la %, a parità il numero di azioni,
+ * e chi ha meno di MIN_ACTIONS azioni dopo gli altri.
+ */
 function sortValue(p: PlayerTotals, key: SortKey): number {
   switch (key) {
     case "points":
@@ -43,7 +49,9 @@ function sortValue(p: PlayerTotals, key: SortKey): number {
       return p.time.rallies;
     default: {
       const eff = efficiency(key, p.counts);
-      return eff === null ? -Infinity : eff * 1000 + total(p.counts, key);
+      const n = total(p.counts, key);
+      if (eff === null) return -Infinity;
+      return (n >= MIN_ACTIONS ? 1e6 : 0) + (eff + 100) * 1000 + n;
     }
   }
 }
@@ -90,7 +98,7 @@ export function StatsBoard({ matches, players }: { matches: MatchStat[]; players
       <section className="flex flex-col gap-4">
         <h2 className={H2}>Giocatori</h2>
         <p className="text-sm text-muted">
-          Tocca una colonna per ordinare. Nei fondamentali: efficienza e azioni riuscite su quelle fatte. Punti giocati = scambi in campo.
+          Tocca una colonna per ordinare. Nei fondamentali: efficienza e azioni riuscite su quelle fatte (ordinando, prima chi ne ha almeno {MIN_ACTIONS}). Punti giocati = scambi in campo.
         </p>
         <div className="overflow-x-auto rounded-panel border border-line bg-surface">
           <table className="w-full border-collapse text-left tabular-nums">
@@ -189,12 +197,15 @@ function SkillCell({ counts, skill }: { counts: Counts; skill: StatSkill }) {
 }
 
 function TeamSection({ sum, played }: { sum: ReturnType<typeof sumMatches>; played: number }) {
-  const scored = sum.scored.reduce((t, s) => t + s.value, 0);
-  const given = sum.given.reduce((t, s) => t + s.value, 0);
+  // Punti veri dai parziali; sotto quanti hanno l'azione (gli altri sono stati corretti a mano).
+  const scored = sum.total.us;
+  const given = sum.total.them;
+  const manual = (list: Split[]) => list.find((s) => s.key === "manual")?.value ?? 0;
+  const recorded = (n: number, list: Split[]) => (manual(list) ? `${n - manual(list)} con l'azione` : undefined);
   const tiles = [
     { label: played === 1 ? "Partita" : "Partite", value: played, sub: `${sum.won} vinte · ${played - sum.won} perse` },
-    { label: "Punti fatti", value: scored, gold: true },
-    { label: "Punti subiti", value: given },
+    { label: "Punti fatti", value: scored, gold: true, sub: recorded(scored, sum.scored) },
+    { label: "Punti subiti", value: given, sub: recorded(given, sum.given) },
   ];
   return (
     <section className="flex flex-col gap-4">

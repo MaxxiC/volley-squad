@@ -40,7 +40,14 @@ export async function getSeasonStats(seasonId: number): Promise<{ matches: Match
       .filter(Boolean)
       .join(" · ");
     return matchStat(
-      { id: m.id, label: `${m.phase === "andata" ? "A" : "R"}${m.round}`, title, result: `${score.us}–${score.them}`, won: score.won },
+      {
+        id: m.id,
+        label: `${m.phase === "andata" ? "A" : "R"}${m.round}`,
+        title,
+        result: `${score.us}–${score.them}`,
+        won: score.won,
+        total: { us: m.sets.reduce((t, s) => t + s.us, 0), them: m.sets.reduce((t, s) => t + s.them, 0) },
+      },
       logs[i].lineups,
       activeEvents(logs[i].events),
       present.filter((p) => p.matchId === m.id),

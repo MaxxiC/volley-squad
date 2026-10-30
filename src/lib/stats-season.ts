@@ -42,23 +42,34 @@ export type MatchStat = {
   /** Set vinti–persi, es. "3–1". */
   result: string;
   won: boolean;
+  /** Punti veri della partita (somma dei parziali), anche quelli aggiunti con "Correggi". */
+  total: { us: number; them: number };
   players: Record<number, PlayerMatchStat>;
-  /** Come abbiamo fatto punto. */
+  /** Come abbiamo fatto punto (con "Corretti a mano" per i punti senza azione). */
   scored: Split[];
   /** Errori dell'avversario per tipo. */
   oppErrors: Split[];
-  /** Come l'avversario ha fatto punto. */
+  /** Come l'avversario ha fatto punto (con "Corretti a mano" per i punti senza azione). */
   given: Split[];
 };
 
 const NO_TIME: PlayingTime = { rallies: 0, sets: 0, fullSets: 0 };
+
+/** Punti della partita senza un'azione: aggiunti con la correzione del punteggio. */
+const MANUAL = { key: "manual", label: "Corretti a mano" };
+
+/** Aggiunge "Corretti a mano" se i punti veri sono più di quelli registrati azione per azione. */
+function withManual(list: Split[], real: number): Split[] {
+  const missing = real - list.reduce((t, s) => t + s.value, 0);
+  return missing > 0 ? [...list, { ...MANUAL, value: missing }] : list;
+}
 
 /**
  * Numeri di una partita dal suo registro. `present` = presenti di Prepara Live col ruolo di quel
  * giorno: servono anche al libero automatico, così "chi era in campo" è quello vero.
  */
 export function matchStat(
-  meta: Pick<MatchStat, "id" | "label" | "title" | "result" | "won">,
+  meta: Pick<MatchStat, "id" | "label" | "title" | "result" | "won" | "total">,
   lineups: LiveLineup[],
   events: LiveEvent[],
   present: { playerId: number; role: PlayerRole }[],
@@ -80,7 +91,13 @@ export function matchStat(
       stars: events.filter((e) => !e.deleted && e.playerId === id && e.star).length,
     };
   }
-  return { ...meta, players, scored: pointSplit(events), oppErrors: oppErrorSplit(events), given: pointsGiven(events) };
+  return {
+    ...meta,
+    players,
+    scored: withManual(pointSplit(events), meta.total.us),
+    oppErrors: oppErrorSplit(events),
+    given: withManual(pointsGiven(events), meta.total.them),
+  };
 }
 
 /** Totali di un giocatore su più partite. */
@@ -128,21 +145,21 @@ export function sumMatches(list: MatchStat[]) {
   });
   players.sort((a, b) => b.points - a.points || b.time.rallies - a.time.rallies);
 
-  const scored = sumSplits(
-    list.map((m) => m.scored),
-    labels(SPLIT_LABEL as Record<SplitKey, string>),
-  );
   return {
     players,
-    scored,
+    scored: sumSplits(
+      list.map((m) => m.scored),
+      [...labels(SPLIT_LABEL as Record<SplitKey, string>), MANUAL],
+    ),
     oppErrors: sumSplits(
       list.map((m) => m.oppErrors),
       OPP_ERRORS.map((o) => ({ key: o.key, label: o.label })),
     ),
     given: sumSplits(
       list.map((m) => m.given),
-      labels(GIVEN_LABEL),
+      [...labels(GIVEN_LABEL), MANUAL],
     ),
     won: list.filter((m) => m.won).length,
+    total: { us: list.reduce((t, m) => t + m.total.us, 0), them: list.reduce((t, m) => t + m.total.them, 0) },
   };
 }
