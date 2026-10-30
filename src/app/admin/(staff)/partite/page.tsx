@@ -37,6 +37,7 @@ export default async function PartitePage() {
 
   const list: AdminMatch[] = rows.map((m) => ({
     id: m.id,
+    friendly: m.friendly,
     phase: m.phase,
     round: m.round,
     number: m.number,

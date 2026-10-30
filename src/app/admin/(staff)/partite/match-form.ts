@@ -6,6 +6,7 @@ import type { Match } from "@/lib/types";
 /** Partita come la vede l'editor: date e ore già nel formato degli input, ora italiana. */
 export type AdminMatch = {
   id: number;
+  friendly: boolean;
   phase: "andata" | "ritorno";
   round: number;
   number: number | null;
@@ -46,6 +47,8 @@ export const SET_SLOTS = 5;
 /** Ciò che l'editor invia a saveMatch: valori grezzi degli input. */
 export type MatchFormInput = {
   id?: number;
+  /** Amichevole: fase, giornata e numero gara non servono. */
+  friendly: boolean;
   phase: "andata" | "ritorno";
   round: string;
   number: string;

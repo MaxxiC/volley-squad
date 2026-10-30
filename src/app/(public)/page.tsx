@@ -32,7 +32,7 @@ function NextMatchCard({ match, us }: { match: MatchWithDetails; us: Team }) {
         <div className="flex flex-wrap items-center justify-between gap-2.5">
           <Kicker>Prossima partita</Kicker>
           <span className="font-display text-sm font-semibold tracking-[.12em] whitespace-nowrap text-muted uppercase">
-            {PHASE_LABEL[match.phase]} · {match.round}ª giornata · {match.home ? "Casa" : "Trasferta"}
+            {match.friendly ? "Amichevole" : `${PHASE_LABEL[match.phase]} · ${match.round}ª giornata`} · {match.home ? "Casa" : "Trasferta"}
           </span>
         </div>
         <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-[clamp(10px,3vw,32px)]">
@@ -102,6 +102,7 @@ export default async function HomePage() {
                     >
                       {lastScore.won ? "V" : "P"}
                     </span>
+                    {last.friendly ? "Amichevole · " : ""}
                     {formatDayMonth(last.startsAt)} · {last.home ? "In casa" : "In trasferta"}
                   </span>
                 </div>
