@@ -1,5 +1,7 @@
 // Statistiche dei giocatori dalle azioni del Live (README → "Efficienza (Giocatori)"). Logica pura:
 // conteggi per fondamentale ed esito, efficienza in %, fondamentali da mostrare per ruolo.
+import { OPP_ERRORS, type OppError } from "./live/skills";
+import type { Rally } from "./live/state";
 import type { LiveEvent } from "./live/types";
 import type { PlayerRole } from "./players";
 
@@ -152,4 +154,114 @@ export function bestWorstWindows(values: number[], size = 3) {
   }
   if (best.avg === worst.avg) return null;
   return { best: { ...best, avg: Math.round(best.avg) }, worst: { ...worst, avg: Math.round(worst.avg) }, size };
+}
+
+// --- Tempo in campo, punti ed errori (pagina Statistiche) ---------------------------------------
+
+export type PlayingTime = {
+  /** Punti giocati: scambi in cui era in campo. */
+  rallies: number;
+  /** Set in cui ha giocato almeno un punto. */
+  sets: number;
+  /** Di questi, set giocati dal primo all'ultimo punto. */
+  fullSets: number;
+};
+
+/** Tempo in campo di ciascun giocatore dai punti della partita (`LiveState.rallies`). */
+export function playingTime(rallies: Rally[]): Map<number, PlayingTime> {
+  const perSet = new Map<number, number>();
+  const mine = new Map<number, Map<number, number>>();
+  for (const r of rallies) {
+    perSet.set(r.setN, (perSet.get(r.setN) ?? 0) + 1);
+    for (const id of r.onCourt) {
+      const sets = mine.get(id) ?? new Map<number, number>();
+      sets.set(r.setN, (sets.get(r.setN) ?? 0) + 1);
+      mine.set(id, sets);
+    }
+  }
+  const out = new Map<number, PlayingTime>();
+  for (const [id, sets] of mine) {
+    let rallyCount = 0;
+    let fullSets = 0;
+    for (const [setN, n] of sets) {
+      rallyCount += n;
+      if (n === perSet.get(setN)) fullSets++;
+    }
+    out.set(id, { rallies: rallyCount, sets: sets.size, fullSets });
+  }
+  return out;
+}
+
+/** Somma i tempi in campo di più partite. */
+export function mergePlayingTime(list: PlayingTime[]): PlayingTime {
+  return list.reduce((a, b) => ({ rallies: a.rallies + b.rallies, sets: a.sets + b.sets, fullSets: a.fullSets + b.fullSets }), {
+    rallies: 0,
+    sets: 0,
+    fullSets: 0,
+  });
+}
+
+type ScoredEvent = Pick<LiveEvent, "deleted" | "kind" | "playerId" | "point">;
+
+/** Punti fatti (ace, attacco, muro) ed errori che hanno dato il punto all'avversario, per giocatore. */
+export function pointsAndErrors(events: Iterable<ScoredEvent>): Map<number, { points: number; errors: number }> {
+  const out = new Map<number, { points: number; errors: number }>();
+  for (const e of events) {
+    if (e.deleted || e.kind !== "action" || !e.playerId || !e.point) continue;
+    const row = out.get(e.playerId) ?? { points: 0, errors: 0 };
+    if (e.point === "us") row.points++;
+    else row.errors++;
+    out.set(e.playerId, row);
+  }
+  return out;
+}
+
+export type GivenKey = "serve" | "reception" | "attack" | "blocked" | "set" | "block" | "fault" | "opp_point" | "other";
+
+/** Come l'avversario ha fatto punto: loro punti o nostri errori, per fondamentale. */
+export const GIVEN_LABEL: Record<GivenKey, string> = {
+  opp_point: "Punti loro",
+  serve: "Errori in battuta",
+  reception: "Errori in ricezione",
+  attack: "Attacchi fuori / in rete",
+  blocked: "Attacchi murati",
+  set: "Errori in alzata",
+  block: "Invasioni a muro",
+  fault: "Falli",
+  other: "Altro",
+};
+
+type GivenEvent = Pick<LiveEvent, "deleted" | "kind" | "skill" | "outcome" | "point">;
+
+/** Punti dell'avversario per tipo; "Altro" (es. punti mai completati) e le voci a zero si tolgono. */
+export function pointsGiven(events: Iterable<GivenEvent>) {
+  const n = Object.fromEntries(Object.keys(GIVEN_LABEL).map((k) => [k, 0])) as Record<GivenKey, number>;
+  for (const e of events) {
+    if (e.deleted || e.kind !== "action" || e.point !== "them") continue;
+    const key: GivenKey =
+      e.skill === "opp_point"
+        ? "opp_point"
+        : e.skill === "attack"
+          ? e.outcome === "blocked"
+            ? "blocked"
+            : "attack"
+          : e.skill && e.skill in GIVEN_LABEL
+            ? (e.skill as GivenKey)
+            : "other";
+    n[key]++;
+  }
+  return (Object.keys(GIVEN_LABEL) as GivenKey[]).filter((k) => n[k] > 0).map((key) => ({ key, label: GIVEN_LABEL[key], value: n[key] }));
+}
+
+type OppErrorEvent = Pick<LiveEvent, "deleted" | "kind" | "skill" | "point" | "detail">;
+
+/** Errori dell'avversario per tipo (quelli registrati senza tipo vanno in "Altro"); le voci a zero si tolgono. */
+export function oppErrorSplit(events: Iterable<OppErrorEvent>) {
+  const n = new Map<OppError, number>();
+  for (const e of events) {
+    if (e.deleted || e.kind !== "action" || e.skill !== "opp_error") continue;
+    const key = e.detail?.oppError ?? "other";
+    n.set(key, (n.get(key) ?? 0) + 1);
+  }
+  return OPP_ERRORS.filter((o) => n.get(o.key)).map((o) => ({ key: o.key, label: o.label, value: n.get(o.key) ?? 0 }));
 }

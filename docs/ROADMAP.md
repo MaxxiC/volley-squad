@@ -88,7 +88,15 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
   - [x] +1 avversario con tutti i motivi: Punto avversario, Errore battuta, Attacco fuori / rete, Murato, Ricezione errata, Errore alzata, Invasione a muro / rete, Doppia / accompagnata (poi chi), Fallo di posizione (di squadra, senza giocatore: `isTeamFault`)
   - [x] "Errore avversario" col tipo, un tocco (`OPP_ERRORS` in `skills.ts`, `detail.oppError`): Battuta sbagliata, Attacco fuori, Attacco in rete, Invasione / rete, Doppia / accompagnata, Fallo di posizione, Altro. Al posto di "palla semplice nostra / azione loro" (`ballType` resta solo per leggere le partite vecchie; nello Storico diventano "Altro")
   - [x] Azioni senza punto, riga di tasti sotto i +1: **Ricezione buona**, **Ricezione scarsa** (anche il libero), **Attacco giocato**, poi il giocatore (`SIMPLE_RALLY_TYPES`) → statistiche vere anche in Semplice (es. 5 punti su 10 attacchi)
-- **Fase 4 · Pagina Statistiche pubblica** (squadra e giocatori, stagione e singola partita): dopo la fase 3 e l'elenco di Max di cosa vedere
+- **Fase 4 · Statistiche pubbliche** 🌿 `feat/statistiche` — decisioni del 30/10/2026: pubbliche (anche le % negative, per ora), si arriva dal bottone "Statistiche" in alto e toccando un nome nel riepilogo di una partita
+  - [x] Calcoli: punti giocati (chi era in campo a ogni punto, libero compreso: `LiveState.rallies`), set giocati e set interi (`playingTime`), punti fatti ed errori per giocatore (`pointsAndErrors`), punti regalati per tipo (`pointsGiven`), errori avversari per tipo (`oppErrorSplit`) in `src/lib/stats.ts`
+  - [ ] `/statistiche`: filtro stagione / singola partita, squadra (come abbiamo fatto punto, come li abbiamo regalati), tabella dei giocatori ordinabile (presenze, set, punti giocati, punti, errori, fondamentali riusciti/totali e %)
+  - [ ] `/statistiche/[giocatore]`: tempo in campo, fondamentali del ruolo in evidenza, tutti gli esiti contati, punti/errori/★/MVP, Andamento, partita per partita; la scheda di Admin Giocatori usa la stessa
+- **Amichevoli** (idea di Max del 30/10/2026, da progettare dopo la fase 4):
+  - [ ] Partita segnata come **amichevole** (nuovo campo della partita, da Admin Partite); il Live funziona uguale
+  - [ ] Filtro nel Calendario/Home pubblici (ufficiali / amichevoli)
+  - [ ] Statistiche e scheda giocatore con filtro **Ufficiali / Tutte / Solo amichevoli** (di base solo le ufficiali, così le amichevoli non pesano sui numeri)
+  - Da decidere: non entrano in classifica né nell'import dal sito ufficiale (non hanno numero gara); se mostrarle in Home come "prossima partita"
 
 ## 🔒 Sicurezza (sito online)
 - [x] Controllo del 28/10/2026: middleware su `/admin/**` + controllo in pagine, server action e API; login con bcrypt, messaggio e tempi uguali per email sconosciuta o password sbagliata, redirect solo interni; segreti solo in `.env`; area staff `noindex`.

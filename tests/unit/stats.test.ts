@@ -1,8 +1,23 @@
 // Statistiche dei giocatori: conteggi, efficienza, card per ruolo, ruolo di partita (src/lib/stats.ts).
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { bestWorstWindows, countsByPlayer, efficiency, efficiencyTone, formatPct, matchRoles, mergeCounts, skillLines } from "@/lib/stats";
-import { eventFactory } from "./helpers";
+import {
+  bestWorstWindows,
+  countsByPlayer,
+  efficiency,
+  efficiencyTone,
+  formatPct,
+  matchRoles,
+  mergeCounts,
+  mergePlayingTime,
+  oppErrorSplit,
+  playingTime,
+  pointsAndErrors,
+  pointsGiven,
+  skillLines,
+} from "@/lib/stats";
+import { computeLive } from "@/lib/live/state";
+import { eventFactory, lineup } from "./helpers";
 
 const ev = eventFactory();
 const act = (playerId: number, skill: string, outcome: string, o = {}) => ev({ playerId, skill: skill as never, outcome, ...o });
@@ -97,5 +112,111 @@ describe("andamento: periodo migliore e peggiore", () => {
   test("poche partite o tutte uguali: nessuna banda", () => {
     assert.equal(bestWorstWindows([10, 20, 30]), null);
     assert.equal(bestWorstWindows([40, 40, 40, 40]), null);
+  });
+});
+
+describe("tempo in campo", () => {
+  test("punti giocati, set e set interi; il cambio conta da quando entra", () => {
+    const e = eventFactory();
+    const s = computeLive(lineup("us"), [
+      e({ point: "us" }),
+      e({ point: "us" }),
+      // Entra il 7 per il 3: gioca solo gli ultimi due punti del set 1.
+      e({ kind: "sub", detail: { out: 3, in: 7, role: "S" } }),
+      e({ point: "them" }),
+      e({ point: "us" }),
+    ]);
+    assert.ok(s);
+    assert.equal(s.rallies.length, 4);
+    const t = playingTime(s.rallies);
+    assert.deepEqual(t.get(1), { rallies: 4, sets: 1, fullSets: 1 });
+    assert.deepEqual(t.get(3), { rallies: 2, sets: 1, fullSets: 0 });
+    assert.deepEqual(t.get(7), { rallies: 2, sets: 1, fullSets: 0 });
+    assert.equal(t.has(9), false); // libero mai entrato (senza ruoli non entra da solo)
+  });
+
+  test("i punti di tutti i set restano, non solo quelli del set in corso", () => {
+    const e = eventFactory();
+    const events = [...Array.from({ length: 25 }, () => e({ point: "us" })), e({ kind: "set_end" }), e({ point: "them" })];
+    const s = computeLive(lineup("us"), events);
+    assert.ok(s);
+    assert.equal(s.rallies.length, 26);
+    assert.deepEqual(playingTime(s.rallies).get(2), { rallies: 26, sets: 2, fullSets: 2 });
+  });
+
+  test("correzioni, timeout e azioni senza punto non sono punti giocati", () => {
+    const e = eventFactory();
+    const s = computeLive(lineup("us"), [
+      e({ kind: "correction", point: "us", detail: { delta: 1 } }),
+      e({ kind: "timeout", detail: { side: "us" } }),
+      e({ skill: "reception", outcome: "good", playerId: 2 }),
+      e({ point: "us", deleted: true }),
+    ]);
+    assert.equal(s?.rallies.length, 0);
+  });
+
+  test("somma di più partite", () => {
+    assert.deepEqual(
+      mergePlayingTime([
+        { rallies: 40, sets: 2, fullSets: 1 },
+        { rallies: 6, sets: 1, fullSets: 0 },
+      ]),
+      { rallies: 46, sets: 3, fullSets: 1 },
+    );
+  });
+});
+
+describe("punti, errori e punti regalati", () => {
+  test("punti fatti ed errori per giocatore (solo azioni valide)", () => {
+    const r = pointsAndErrors([
+      act(1, "attack", "kill", { point: "us" }),
+      act(1, "serve", "ace", { point: "us" }),
+      act(1, "attack", "blocked", { point: "them" }),
+      act(1, "attack", "in"),
+      act(1, "attack", "kill", { point: "us", deleted: true }),
+      act(2, "fault", "double", { point: "them" }),
+    ]);
+    assert.deepEqual(r.get(1), { points: 2, errors: 1 });
+    assert.deepEqual(r.get(2), { points: 0, errors: 1 });
+  });
+
+  test("punti dell'avversario per tipo, murati a parte, senza voci a zero", () => {
+    const r = pointsGiven([
+      ev({ point: "them", skill: "opp_point" }),
+      ev({ point: "them", skill: "opp_point" }),
+      act(1, "attack", "error", { point: "them" }),
+      act(1, "attack", "blocked", { point: "them" }),
+      act(2, "serve", "error", { point: "them" }),
+      ev({ point: "them", skill: "fault", outcome: "position" }),
+      ev({ point: "them" }), // mai completato
+      ev({ point: "us", skill: "opp_error" }),
+    ]);
+    assert.deepEqual(
+      r.map((x) => [x.key, x.value]),
+      [
+        ["opp_point", 2],
+        ["serve", 1],
+        ["attack", 1],
+        ["blocked", 1],
+        ["fault", 1],
+        ["other", 1],
+      ],
+    );
+  });
+
+  test("errori avversari per tipo; quelli vecchi senza tipo in \"Altro\"", () => {
+    const r = oppErrorSplit([
+      ev({ point: "us", skill: "opp_error", detail: { oppError: "serve" } }),
+      ev({ point: "us", skill: "opp_error", detail: { oppError: "serve" } }),
+      ev({ point: "us", skill: "opp_error", detail: { ballType: "free" } }),
+      ev({ point: "us", skill: "opp_error", detail: { oppError: "net" }, deleted: true }),
+    ]);
+    assert.deepEqual(
+      r.map((x) => [x.key, x.value]),
+      [
+        ["serve", 2],
+        ["other", 1],
+      ],
+    );
   });
 });
