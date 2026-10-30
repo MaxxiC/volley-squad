@@ -15,7 +15,7 @@ type Props = {
   onAction: (fields: Pick<LiveEvent, "skill" | "outcome" | "point" | "playerId" | "star">) => void;
   onOppPoint: () => void;
   onOppError: (type: OppError) => void;
-  /** Il giocatore scelto è il libero in campo: niente battuta né muro. */
+  /** Il giocatore scelto è il libero in campo: niente muro. */
   isLibero: boolean;
 };
 
@@ -77,7 +77,7 @@ export function AdvancedInput({ opponent, player, onClearPlayer, onAction, onOpp
         ))}
       </div>
 
-      {blocked && <span className="text-[13px] text-muted">Il libero non batte e non mura.</span>}
+      {blocked && <span className="text-[13px] text-muted">Il libero non mura.</span>}
 
       <button type="button" aria-pressed={star} onClick={() => setStar(!star)} className={starClass(star)}>
         ★ Meritevole

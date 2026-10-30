@@ -80,11 +80,12 @@ export function oppErrorLabel(key: OppError) {
 }
 
 /**
- * Fondamentali che il libero può fare: non batte e non mura. Può invece fare punto o sbagliare
- * mandando di là una palla (attacco, ma solo come palla semplice), ricevere, alzare, fare falli.
+ * Fondamentali che il libero può fare: non mura. Nel nostro campionato batte (non per primo nel suo
+ * turno: lo gestisce la rotazione, decisioni del 27/10/2026); può fare punto o sbagliare mandando di
+ * là una palla (attacco, ma solo come palla semplice), ricevere, alzare, fare falli.
  */
 export function liberoCan(skill: Skill) {
-  return skill !== "serve" && skill !== "block";
+  return skill !== "block";
 }
 
 /** Fondamentale ed esito che non hanno un giocatore: il fallo di posizione è di tutta la squadra. */

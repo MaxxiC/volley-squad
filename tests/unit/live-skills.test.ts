@@ -49,9 +49,8 @@ describe("modalità semplice", () => {
 });
 
 describe("libero", () => {
-  test("non batte e non mura; attacca solo come palla semplice, riceve, alza, fa falli", () => {
-    assert.equal(liberoCan("serve"), false);
+  test("non mura; batte (decisioni del 27/10), attacca solo come palla semplice, riceve, alza, fa falli", () => {
     assert.equal(liberoCan("block"), false);
-    for (const s of ["attack", "reception", "set", "fault"] as const) assert.equal(liberoCan(s), true, s);
+    for (const s of ["serve", "attack", "reception", "set", "fault"] as const) assert.equal(liberoCan(s), true, s);
   });
 });
