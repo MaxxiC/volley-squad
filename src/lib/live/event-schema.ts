@@ -1,7 +1,7 @@
 // Validazione degli eventi inviati dal Live (solo server: importata dalla route API).
 import { z } from "zod";
 import { PLAYER_ROLES } from "../players";
-import { SKILLS } from "./skills";
+import { OPP_ERROR_KEYS, SKILLS } from "./skills";
 import { EVENT_KINDS } from "./types";
 
 const side = z.enum(["us", "them"]);
@@ -21,6 +21,7 @@ export const LiveEventSchema = z.object({
   deleted: z.boolean(),
   detail: z
     .object({
+      oppError: z.enum(OPP_ERROR_KEYS).optional(),
       ballType: z.enum(["free", "rally"]).optional(),
       dir: z.union([z.literal(1), z.literal(-1)]).optional(),
       in: z.number().int().positive().optional(),

@@ -30,6 +30,11 @@ describe("eventi del Live", () => {
     assert.equal(LiveEventSchema.safeParse(bad).success, false);
   });
 
+  test("errore avversario: solo i tipi previsti", () => {
+    assert.ok(LiveEventSchema.safeParse(valid({ point: "us", skill: "opp_error", detail: { oppError: "attack_net" } })).success);
+    assert.equal(LiveEventSchema.safeParse({ ...valid({ point: "us", skill: "opp_error" }), detail: { oppError: "boh" } }).success, false);
+  });
+
   test("formazione con meno di 6 giocatori rifiutata", () => {
     assert.equal(LiveEventSchema.safeParse(valid({ kind: "lineup", detail: { slots: [1, 2, 3] } })).success, false);
   });

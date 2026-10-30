@@ -31,20 +31,33 @@ describe("modifica di un'azione", () => {
   test("senza giocatore un nostro fondamentale resta da completare; l'avversario non lo chiede", () => {
     const ev = eventFactory();
     assert.equal(applyEdit(ev({ point: "us" }), { skill: "serve", outcome: "ace", playerId: null, star: false }).incomplete, true);
-    const opp = applyEdit(ev({ point: "us", playerId: 4 }), { skill: "opp_error", outcome: "rally", playerId: 4, star: false });
+    const opp = applyEdit(ev({ point: "us", playerId: 4 }), { skill: "opp_error", outcome: "serve", playerId: 4, star: false });
     assert.equal(opp.incomplete, false);
     assert.equal(opp.playerId, null);
-    assert.deepEqual(opp.detail, { ballType: "rally" });
+    assert.deepEqual(opp.detail, { oppError: "serve" });
+  });
+
+  test("fallo di posizione: di squadra, senza giocatore ma completo", () => {
+    const ev = eventFactory();
+    const e = applyEdit(ev({ point: "them", playerId: 4 }), { skill: "fault", outcome: "position", playerId: 4, star: false });
+    assert.equal(e.playerId, null);
+    assert.equal(e.incomplete, false);
+    assert.equal(e.point, "them");
+    // Un altro fallo invece vuole il giocatore.
+    assert.equal(applyEdit(ev({ point: "them" }), { skill: "fault", outcome: "double", playerId: null, star: false }).incomplete, true);
   });
 
   test("valori del form e coerenza dell'esito", () => {
     const ev = eventFactory();
-    assert.deepEqual(editOf(ev({ skill: "opp_error", point: "us", detail: { ballType: "rally" } })), {
+    assert.deepEqual(editOf(ev({ skill: "opp_error", point: "us", detail: { oppError: "attack_out" } })), {
       skill: "opp_error",
-      outcome: "rally",
+      outcome: "attack_out",
       playerId: null,
       star: false,
     });
+    // Partite registrate prima del tipo di errore: "Altro".
+    assert.equal(editOf(ev({ skill: "opp_error", point: "us", detail: { ballType: "rally" } })).outcome, "other");
+    assert.equal(editIssue({ skill: "opp_error", outcome: "rally", playerId: null, star: false }), "Esito non valido per questo fondamentale");
     assert.equal(editIssue({ skill: "attack", outcome: "ace", playerId: 4, star: false }), "Esito non valido per questo fondamentale");
     assert.equal(editIssue({ skill: "opp_point", outcome: null, playerId: null, star: false }), null);
   });

@@ -1,6 +1,6 @@
 // Tipi del Live: eventi (come la tabella `events`, con le date in ISO) e formazioni di set.
 import type { PlayerGender, PlayerRole } from "../players";
-import type { BallType, Side, Skill } from "./skills";
+import type { BallType, OppError, Side, Skill } from "./skills";
 
 /**
  * action = azione/punto · sub = cambio · libero = entrata/uscita del libero (non conta come cambio)
@@ -14,7 +14,9 @@ export type EventKind = (typeof EVENT_KINDS)[number];
 export type OppSkill = "opp_error" | "opp_point";
 
 export type EventDetail = {
-  /** Errore avversario: su palla semplice o in azione. */
+  /** Errore avversario: che cosa hanno sbagliato. */
+  oppError?: OppError;
+  /** Errore avversario delle partite registrate prima di `oppError`: su palla semplice o in azione. */
   ballType?: BallType;
   /** Rotazione manuale: avanti (1) o indietro (-1). */
   dir?: 1 | -1;

@@ -206,6 +206,28 @@ test("Live completo sul DB reale (con ripristino)", async ({ page }) => {
     await expect(pos(page, 2)).toHaveAttribute("aria-label", before[0] ?? "");
   });
 
+  await test.step("semplice: azione senza punto ed errore avversario col tipo, poi Annulla", async () => {
+    const start = await score(page);
+    // Chi è in P4 adesso (dopo i cambi).
+    const p4 = (await pos(page, 4).getAttribute("aria-label"))?.replace(/^P4: /, "").replace(/[,(].*$/, "").trim();
+    const attacker = roster.find((p) => playerLabel(p) === p4) as P;
+    expect(attacker, `giocatore in P4: ${p4}`).toBeTruthy();
+    await page.getByRole("group", { name: "Azioni senza punto" }).getByRole("button", { name: "Attacco giocato" }).click();
+    await page.getByRole("button", { name: numbered(attacker) }).click();
+    await expect(feedTop(page)).toContainText(`Attacco in campo · ${playerLabel(attacker)}`);
+    expect(await score(page)).toEqual(start);
+
+    await page.getByRole("button", { name: new RegExp(`\\+1\\s*${TEAM_NAME}`, "i") }).click();
+    await page.getByRole("button", { name: "Errore avversario" }).click();
+    await page.getByRole("button", { name: "Battuta sbagliata" }).click();
+    await expect(feedTop(page)).toContainText(`Errore ${opponent} · battuta sbagliata`);
+    expect(await score(page)).toMatchObject({ us: start.us + 1 });
+
+    // Annulla: tipo dell'errore, punto, azione senza punto.
+    for (let i = 0; i < 3; i++) await page.getByRole("button", { name: "↶ Annulla" }).click();
+    expect(await score(page)).toEqual(start);
+  });
+
   await test.step("modalità avanzata: azione senza punto", async () => {
     await page.getByRole("group", { name: "Modalità" }).getByRole("button", { name: "Avanzato" }).click();
     const label = await pos(page, 6).getAttribute("aria-label");
@@ -246,8 +268,8 @@ test("Live completo sul DB reale (con ripristino)", async ({ page }) => {
 
     const events = await db.select().from(s.events).where(eq(s.events.matchId, matchId));
     expect(events.filter((e) => e.kind === "set_end" && !e.deleted)).toHaveLength(3);
-    // Annullati: il punto loro, il timeout tolto con −1 e lo scambio di posto.
-    expect(events.filter((e) => e.deleted).map((e) => e.kind).sort()).toEqual(["action", "swap", "timeout"]);
+    // Annullati: il punto loro, il timeout tolto con −1, lo scambio di posto, l'attacco giocato e l'errore avversario.
+    expect(events.filter((e) => e.deleted).map((e) => e.kind).sort()).toEqual(["action", "action", "action", "swap", "timeout"]);
   });
 
   await test.step("Storico: correzione con ricalcolo, modifica che romperebbe il set rifiutata", async () => {

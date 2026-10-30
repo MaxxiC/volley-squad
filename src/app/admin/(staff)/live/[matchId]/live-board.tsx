@@ -156,6 +156,7 @@ export function LiveBoard({ match, players, lineups, startId, initialEvents }: P
                 eventOf={(id) => events.get(id)}
                 onPoint={(side) => add({ ...base, point: side, incomplete: true })}
                 onComplete={update}
+                onAction={(fields) => add({ ...base, ...fields })}
                 court={court}
                 libero={libero}
                 serverId={live.rotation[0] ?? null}

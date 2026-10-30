@@ -34,6 +34,8 @@ test("punti da completare e dell'avversario", () => {
   assert.equal(text({ point: "them", skill: "opp_point" }), "Punto Dinamite");
   assert.equal(text({ point: "us", skill: "opp_error", detail: { ballType: "free" } }), "Errore Dinamite · palla semplice nostra");
   assert.equal(text({ point: "us", skill: "opp_error", detail: { ballType: "rally" } }), "Errore Dinamite · azione loro");
+  assert.equal(text({ point: "us", skill: "opp_error", detail: { oppError: "serve" } }), "Errore Dinamite · battuta sbagliata");
+  assert.equal(text({ point: "us", skill: "opp_error", detail: { oppError: "double" } }), "Errore Dinamite · doppia / accompagnata");
   assert.equal(text({ point: "us", skill: "opp_error" }), "Errore Dinamite");
 });
 

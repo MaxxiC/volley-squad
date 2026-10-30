@@ -1,7 +1,7 @@
 // Storico live: correzione delle azioni di una partita conclusa. Logica pura (client e server):
 // righe di un set con il punteggio ricalcolato, modifica di un'azione (il punto si ricava da
 // fondamentale ed esito, README → "Esiti per fondamentale") e posizione di un'azione aggiunta.
-import { BALL_TYPE_LABEL, OUTCOMES, SKILLS, SKILL_LABEL, outcomeOf, type BallType, type Side, type Skill } from "./skills";
+import { OPP_ERRORS, OUTCOMES, SKILLS, SKILL_LABEL, isTeamFault, outcomeOf, type OppError, type Side, type Skill } from "./skills";
 import { activeEvents, computeLive, setWinnerOf, type LiveState, type Score } from "./state";
 import type { LiveEvent, LiveLineup, OppSkill } from "./types";
 
@@ -17,15 +17,13 @@ export const EDIT_SKILL_LABEL: Record<EditSkill, string> = {
 
 /**
  * Modifica di un'azione. skill null = ancora da completare (resta il punto già segnato).
- * outcome: esito del fondamentale, oppure per l'errore avversario il tipo di palla (free/rally).
+ * outcome: esito del fondamentale, oppure per l'errore avversario che cosa hanno sbagliato (OPP_ERRORS).
  */
 export type ActionEdit = { skill: EditSkill | null; outcome: string | null; playerId: number | null; star: boolean };
 
-/** Esiti selezionabili: per l'errore avversario il tipo di palla, per il punto avversario nessuno. */
+/** Esiti selezionabili: per l'errore avversario che cosa hanno sbagliato, per il punto avversario nessuno. */
 export function outcomeOptions(skill: EditSkill | null): { key: string; label: string; point: Side | null }[] {
-  if (skill === "opp_error") {
-    return (Object.keys(BALL_TYPE_LABEL) as BallType[]).map((k) => ({ key: k, label: BALL_TYPE_LABEL[k], point: "us" }));
-  }
+  if (skill === "opp_error") return OPP_ERRORS.map((o) => ({ key: o.key, label: o.label, point: "us" }));
   if (skill === null || skill === "opp_point") return [];
   return OUTCOMES[skill];
 }
@@ -54,21 +52,24 @@ export function editIssue(edit: ActionEdit): string | null {
 /** Valori del form per un'azione registrata. */
 export function editOf(e: LiveEvent): ActionEdit {
   const skill = (e.skill as EditSkill | null) ?? null;
-  return { skill, outcome: skill === "opp_error" ? (e.detail?.ballType ?? "free") : e.outcome, playerId: e.playerId, star: e.star };
+  // Errore avversario delle partite più vecchie (solo palla semplice / azione loro): "Altro".
+  return { skill, outcome: skill === "opp_error" ? (e.detail?.oppError ?? "other") : e.outcome, playerId: e.playerId, star: e.star };
 }
 
 /**
  * Nuova versione dell'azione. Senza giocatore un fondamentale nostro resta "da completare";
- * per l'avversario il giocatore non serve.
+ * per l'avversario e per il fallo di posizione (di squadra) il giocatore non serve.
  */
 export function applyEdit(e: LiveEvent, edit: ActionEdit): LiveEvent {
   const base = { ...e, star: edit.star, point: pointOf(edit, e.point) };
   if (edit.skill === null) return { ...base, skill: null, outcome: null, playerId: edit.playerId, incomplete: true };
   if (edit.skill === "opp_error" || edit.skill === "opp_point") {
-    const detail = edit.skill === "opp_error" ? { ballType: (edit.outcome as BallType) ?? "free" } : null;
+    const detail = edit.skill === "opp_error" ? { oppError: (edit.outcome as OppError | null) ?? "other" } : null;
     return { ...base, skill: edit.skill, outcome: null, playerId: null, detail, incomplete: false };
   }
-  return { ...base, skill: edit.skill, outcome: edit.outcome, playerId: edit.playerId, detail: null, incomplete: edit.playerId === null };
+  const teamFault = isTeamFault(edit.skill, edit.outcome);
+  const playerId = teamFault ? null : edit.playerId;
+  return { ...base, skill: edit.skill, outcome: edit.outcome, playerId, detail: null, incomplete: playerId === null && !teamFault };
 }
 
 /** Azioni che si possono modificare (fondamentali, punti) ed eventi che si possono eliminare. */

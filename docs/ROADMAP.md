@@ -85,8 +85,9 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
   - [x] Timeout +1 / −1 (il −1 annulla l'ultimo timeout di quella squadra nel set, `lastTimeout` in `state.ts`)
   - [x] "⇄ Scambia" sul campo del Live: due giocatori in campo si scambiano di posto (evento `swap`, migrazione `0007`), non conta come cambio, si annulla con Annulla e si elimina dallo Storico
 - **Fase 3 · Semplice più ricca** — decisioni del 29/10/2026:
-  - [ ] Punto avversario e "Errore avversario": elenco completo dei casi, una scelta con un tocco (al posto di "palla semplice nostra / azione loro")
-  - [ ] Azioni senza punto con una riga di tasti sotto i +1: **Ricezione** (solo Buona / Scarsa) e **Attacco giocato**, poi il giocatore → statistiche vere anche in Semplice (es. 5 punti su 10 attacchi)
+  - [x] +1 avversario con tutti i motivi: Punto avversario, Errore battuta, Attacco fuori / rete, Murato, Ricezione errata, Errore alzata, Invasione a muro / rete, Doppia / accompagnata (poi chi), Fallo di posizione (di squadra, senza giocatore: `isTeamFault`)
+  - [x] "Errore avversario" col tipo, un tocco (`OPP_ERRORS` in `skills.ts`, `detail.oppError`): Battuta sbagliata, Attacco fuori, Attacco in rete, Invasione / rete, Doppia / accompagnata, Fallo di posizione, Altro. Al posto di "palla semplice nostra / azione loro" (`ballType` resta solo per leggere le partite vecchie; nello Storico diventano "Altro")
+  - [x] Azioni senza punto, riga di tasti sotto i +1: **Ricezione buona**, **Ricezione scarsa** (anche il libero), **Attacco giocato**, poi il giocatore (`SIMPLE_RALLY_TYPES`) → statistiche vere anche in Semplice (es. 5 punti su 10 attacchi)
 - **Fase 4 · Pagina Statistiche pubblica** (squadra e giocatori, stagione e singola partita): dopo la fase 3 e l'elenco di Max di cosa vedere
 
 ## 🔒 Sicurezza (sito online)
