@@ -226,7 +226,7 @@ export const events = pgTable(
     incomplete: boolean().notNull().default(false),
     /** Undo offline: l'evento resta ma non conta. */
     deleted: boolean().notNull().default(false),
-    /** Es. { ballType: "free" | "rally" } per errore avversario, { in, out } per i cambi. */
+    /** Es. { oppError } per errore avversario, { in, out } per cambi e scambi (vedi EventDetail). */
     detail: jsonb(),
   },
   (t) => [index("events_match_set_seq").on(t.matchId, t.setN, t.seq)],

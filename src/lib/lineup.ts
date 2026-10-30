@@ -30,14 +30,48 @@ export function roleMismatches(slots: Slots, roleOf: (id: number) => PlayerRole 
   return result;
 }
 
+/**
+ * Ruoli consigliati per ogni posizione, ricavati da chi è già in campo: lo schema P S C O S C
+ * si fa girare finché segue il più possibile i ruoli già messi (il libero non conta). Con più
+ * giri ugualmente buoni si uniscono i ruoli (es. solo una banda in P2: in P1 alzatore o opposto,
+ * che stanno sempre uno di fronte all'altro). Campo vuoto: lo schema con l'alzatore in P1.
+ */
+export function suggestedRoles(slots: Slots, roleOf: (id: number) => PlayerRole | undefined): PlayerRole[][] {
+  const score = (k: number) =>
+    slots.reduce<number>((n, id, i) => n + (id !== null && roleOf(id) === FILL_ROLE_ORDER[(i - k + 6) % 6] ? 1 : 0), 0);
+  const scores = FILL_ROLE_ORDER.map((_, k) => score(k));
+  const best = Math.max(...scores);
+  const turns = best === 0 ? [0] : scores.flatMap((s, k) => (s === best ? [k] : []));
+  return slots.map((_, i) => [...new Set(turns.map((k) => FILL_ROLE_ORDER[(i - k + 6) % 6]))]);
+}
+
+/** Ordine dei gruppi di ruolo nella lista dei presenti. */
+const ROLE_GROUP_ORDER: PlayerRole[] = ["P", "S", "O", "C", "L"];
+
+/**
+ * Presenti divisi per ruolo: prima i ruoli consigliati (nell'ordine dato), poi gli altri.
+ * Dentro un gruppo resta l'ordine di partenza.
+ */
+export function groupByRole<P extends { id: number }>(
+  players: P[],
+  roleOf: (id: number) => PlayerRole | undefined,
+  preferred: PlayerRole[] = [],
+) {
+  const order = [...new Set([...preferred, ...ROLE_GROUP_ORDER])];
+  return order
+    .map((role) => ({ role, preferred: preferred.includes(role), players: players.filter((p) => (roleOf(p.id) ?? "S") === role) }))
+    .filter((g) => g.players.length > 0);
+}
+
 /** Minimo di donne in campo nel campionato misto (solo avviso). */
 export const MIN_WOMEN = 2;
 
 type Candidate = { id: number; role: PlayerRole };
 
 /**
- * Riempie le posizioni vuote seguendo FILL_ROLE_ORDER (se manca il ruolo giusto, il primo libero
- * disponibile che non sia un libero) e assegna il libero se manca. Non tocca le posizioni già piene.
+ * Riempie le posizioni vuote con i ruoli consigliati (`suggestedRoles`: lo schema gira con chi è già
+ * in campo; se manca il ruolo giusto, il primo libero disponibile che non sia un libero) e assegna il
+ * libero se manca. Non tocca le posizioni già piene.
  */
 export function fillInOrder(slots: Slots, libero: number | null, present: Candidate[]) {
   const next = [...slots];
@@ -49,9 +83,11 @@ export function fillInOrder(slots: Slots, libero: number | null, present: Candid
     nextLibero = pick((c) => c.role === "L");
     if (nextLibero) taken.add(nextLibero);
   }
+  // Lo schema gira con chi è già in campo (es. alzatore messo in P3).
+  const roles = suggestedRoles(next, (id) => present.find((c) => c.id === id)?.role);
   next.forEach((id, i) => {
     if (id !== null) return;
-    const chosen = pick((c) => c.role === FILL_ROLE_ORDER[i]) ?? pick((c) => c.role !== "L");
+    const chosen = pick((c) => roles[i].includes(c.role)) ?? pick((c) => c.role !== "L");
     if (chosen !== null) {
       next[i] = chosen;
       taken.add(chosen);

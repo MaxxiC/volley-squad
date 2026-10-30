@@ -174,10 +174,14 @@ test("Live completo sul DB reale (con ripristino)", async ({ page }) => {
   });
 
   await test.step("timeout e correzione del punteggio", async () => {
-    const timeout = page.getByRole("button", { name: new RegExp(`^Timeout\\s*${TEAM_NAME}`, "i") });
-    for (let i = 0; i < 3; i++) await timeout.click();
+    const timeout = page.getByRole("group", { name: `Timeout di ${TEAM_NAME}` });
+    const addTimeout = page.getByRole("button", { name: `Aggiungi un timeout a ${TEAM_NAME}` });
+    for (let i = 0; i < 3; i++) await addTimeout.click();
     await expect(timeout).toContainText("3/2");
     await expect(timeout).toHaveClass(/text-red/);
+    // −1 toglie l'ultimo timeout (resta nel registro come annullato).
+    await page.getByRole("button", { name: `Togli un timeout a ${TEAM_NAME}` }).click();
+    await expect(timeout).toContainText("2/2");
 
     await page.getByRole("button", { name: "Correggi" }).click();
     await page.getByRole("button", { name: `Aggiungi un punto a ${opponent}` }).click();
@@ -186,6 +190,42 @@ test("Live completo sul DB reale (con ripristino)", async ({ page }) => {
     expect(await score(page)).toMatchObject({ us: 1, them: 1 });
     await expect(feedTop(page)).toContainText(`Correzione punteggio: −1 ${opponent}`);
     await page.getByRole("button", { name: "Fatto" }).click();
+  });
+
+  await test.step("scambio di posto a set in corso, poi Annulla", async () => {
+    const before = [await pos(page, 2).getAttribute("aria-label"), await pos(page, 3).getAttribute("aria-label")];
+    const who = (label: string | null) => label?.replace(/^P\d: /, "").replace(/,.*$/, "") ?? "";
+    await page.getByRole("button", { name: "⇄ Scambia" }).click();
+    await pos(page, 2).click();
+    await pos(page, 3).click();
+    await expect(pos(page, 2)).toHaveAttribute("aria-label", new RegExp(`^P2: ${esc(who(before[1]))}`));
+    await expect(pos(page, 3)).toHaveAttribute("aria-label", new RegExp(`^P3: ${esc(who(before[0]))}`));
+    await expect(feedTop(page)).toContainText("Scambio di posto");
+    await expect(page.getByRole("button", { name: /^Cambio 1\/6/ })).toBeVisible();
+    await page.getByRole("button", { name: "↶ Annulla" }).click();
+    await expect(pos(page, 2)).toHaveAttribute("aria-label", before[0] ?? "");
+  });
+
+  await test.step("semplice: azione senza punto ed errore avversario col tipo, poi Annulla", async () => {
+    const start = await score(page);
+    // Chi è in P4 adesso (dopo i cambi).
+    const p4 = (await pos(page, 4).getAttribute("aria-label"))?.replace(/^P4: /, "").replace(/[,(].*$/, "").trim();
+    const attacker = roster.find((p) => playerLabel(p) === p4) as P;
+    expect(attacker, `giocatore in P4: ${p4}`).toBeTruthy();
+    await page.getByRole("group", { name: "Azioni senza punto" }).getByRole("button", { name: "Attacco giocato" }).click();
+    await page.getByRole("button", { name: numbered(attacker) }).click();
+    await expect(feedTop(page)).toContainText(`Attacco in campo · ${playerLabel(attacker)}`);
+    expect(await score(page)).toEqual(start);
+
+    await page.getByRole("button", { name: new RegExp(`\\+1\\s*${TEAM_NAME}`, "i") }).click();
+    await page.getByRole("button", { name: "Errore avversario" }).click();
+    await page.getByRole("button", { name: "Battuta sbagliata" }).click();
+    await expect(feedTop(page)).toContainText(`Errore ${opponent} · battuta sbagliata`);
+    expect(await score(page)).toMatchObject({ us: start.us + 1 });
+
+    // Annulla: tipo dell'errore, punto, azione senza punto.
+    for (let i = 0; i < 3; i++) await page.getByRole("button", { name: "↶ Annulla" }).click();
+    expect(await score(page)).toEqual(start);
   });
 
   await test.step("modalità avanzata: azione senza punto", async () => {
@@ -228,7 +268,8 @@ test("Live completo sul DB reale (con ripristino)", async ({ page }) => {
 
     const events = await db.select().from(s.events).where(eq(s.events.matchId, matchId));
     expect(events.filter((e) => e.kind === "set_end" && !e.deleted)).toHaveLength(3);
-    expect(events.filter((e) => e.deleted)).toHaveLength(1); // il punto loro annullato
+    // Annullati: il punto loro, il timeout tolto con −1, lo scambio di posto, l'attacco giocato e l'errore avversario.
+    expect(events.filter((e) => e.deleted).map((e) => e.kind).sort()).toEqual(["action", "action", "action", "swap", "timeout"]);
   });
 
   await test.step("Storico: correzione con ricalcolo, modifica che romperebbe il set rifiutata", async () => {
@@ -259,6 +300,30 @@ test("Live completo sul DB reale (con ripristino)", async ({ page }) => {
     await expect(page.getByText(fullName(player(slots[3])), { exact: true }).first()).toBeVisible();
     await expect(page.getByRole("heading", { name: "Come abbiamo fatto punto" })).toBeVisible();
     await expect(page.getByText("25–1")).toBeVisible();
+  });
+
+  await test.step("statistiche pubbliche: la partita c'è e si può scegliere da sola", async () => {
+    await page.goto("/statistiche");
+    const filter = page.getByLabel("Partite");
+    const value = await filter.locator("option", { hasText: opponent }).getAttribute("value");
+    expect(value).toBe(String(matchId));
+    await filter.selectOption(String(matchId));
+    await expect(page.getByText("1 vinte · 0 perse")).toBeVisible();
+    // Chi ha fatto il punto d'attacco del set 1 (poi spostato nello Storico) è in tabella.
+    await expect(page.getByRole("rowheader", { name: new RegExp(esc(shortName(player(slots[1])))) })).toBeVisible();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(overflow, "scroll orizzontale nelle statistiche").toBeLessThanOrEqual(0);
+
+    // Dal riepilogo della partita, il nome dell'MVP apre la sua scheda con questa partita.
+    const mvp = player(slots[3]);
+    await page.goto(`/partite/${matchId}`);
+    await page.getByRole("link", { name: fullName(mvp) }).click();
+    await expect(page).toHaveURL(new RegExp(`/statistiche/${mvp.id}$`));
+    await expect(page.locator("h1")).toHaveText(fullName(mvp));
+    await expect(page.getByRole("link", { name: new RegExp(esc(opponent)) })).toHaveAttribute("href", `/partite/${matchId}`);
+    await expect(page.getByText("1 volta MVP")).toBeVisible();
+    const overflowPlayer = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(overflowPlayer, "scroll orizzontale nella scheda giocatore").toBeLessThanOrEqual(0);
   });
 
   await test.step("pagine pubbliche e controlli finali", async () => {

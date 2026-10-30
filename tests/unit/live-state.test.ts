@@ -1,7 +1,7 @@
 // Stato del Live ricostruito dal registro eventi (src/lib/live/state.ts).
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { computeLive, liberoTarget, rotateClockwise, rotationWithoutLibero, setWinnerOf, subWarning, type LiveState } from "@/lib/live/state";
+import { computeLive, lastTimeout, liberoTarget, rotateClockwise, rotationWithoutLibero, setWinnerOf, subWarning, type LiveState } from "@/lib/live/state";
 import { eventFactory, lineup, points, wonSet } from "./helpers";
 
 /** computeLive senza null: nei test c'è sempre la formazione del set 1. */
@@ -403,5 +403,38 @@ describe("timeout e correzioni", () => {
     const ev = eventFactory();
     const s = live(lineup("us"), [ev({ kind: "correction", point: "them", detail: { delta: -1 } })]);
     assert.equal(s.score.them, 0);
+  });
+});
+
+describe("scambio di posto e timeout −1", () => {
+  test("lo scambio inverte due posizioni, non conta come cambio e non tocca punteggio né battuta", () => {
+    const ev = eventFactory();
+    const s = live(lineup("us"), [ev({ point: "us" }), ev({ kind: "swap", detail: { in: 2, out: 3 } })]);
+    assert.deepEqual(s.rotation, [1, 3, 2, 4, 5, 6]);
+    assert.equal(s.subs, 0);
+    assert.deepEqual(s.score, { us: 1, them: 0 });
+    assert.equal(s.serving, "us");
+  });
+
+  test("la rotazione dopo lo scambio parte dalle nuove posizioni", () => {
+    const ev = eventFactory();
+    const s = live(lineup("them"), [ev({ kind: "swap", detail: { in: 1, out: 2 } }), ev({ point: "us" })]);
+    // Prima [2, 1, 3, 4, 5, 6], poi cambio palla: ruota.
+    assert.deepEqual(s.rotation, [1, 3, 4, 5, 6, 2]);
+  });
+
+  test("scambio con un giocatore non in campo o annullato: nessun effetto", () => {
+    const ev = eventFactory();
+    assert.deepEqual(live(lineup("us"), [ev({ kind: "swap", detail: { in: 2, out: 7 } })]).rotation, [1, 2, 3, 4, 5, 6]);
+    assert.deepEqual(live(lineup("us"), [ev({ kind: "swap", detail: { in: 2, out: 3 }, deleted: true })]).rotation, [1, 2, 3, 4, 5, 6]);
+  });
+
+  test("lastTimeout: l'ultimo valido di quella squadra in quel set", () => {
+    const ev = eventFactory();
+    const t = (side: "us" | "them", o = {}) => ev({ kind: "timeout", detail: { side }, ...o });
+    const events = [t("us"), t("us"), t("them"), t("us", { deleted: true }), t("us", { setN: 2 })];
+    assert.equal(lastTimeout(events, 1, "us")?.id, "e2");
+    assert.equal(lastTimeout(events, 1, "them")?.id, "e3");
+    assert.equal(lastTimeout(events, 3, "us"), null);
   });
 });

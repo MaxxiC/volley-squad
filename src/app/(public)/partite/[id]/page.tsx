@@ -1,4 +1,5 @@
 import { asc, eq } from "drizzle-orm";
+import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache } from "react";
@@ -74,8 +75,8 @@ export default async function PartitaPage({ params }: { params: Promise<{ id: st
   const setsClass = (side: (typeof sides)[number]) => (side.isUs ? "text-gold" : score.won ? "text-faint" : "text-ink");
 
   return (
-    <PublicShell width="narrow" navLink={{ href: "/calendario", label: "← Calendario" }}>
-      <main className="relative z-1 mx-auto flex max-w-[1000px] flex-col gap-[clamp(36px,6vw,56px)] px-gutter pt-[clamp(16px,4vw,40px)] pb-18">
+    <PublicShell width="narrow" navLinks={[{ href: "/calendario", label: "← Calendario" }, { href: "/statistiche", label: "Statistiche" }]}>
+      <main className="page-enter relative z-1 mx-auto flex max-w-[1000px] flex-col gap-[clamp(36px,6vw,56px)] px-gutter pt-[clamp(16px,4vw,40px)] pb-18">
         <section className="flex flex-col gap-5.5">
           <div className="flex flex-wrap gap-x-3.5 gap-y-2 font-display text-[15px] font-semibold tracking-[.14em] uppercase">
             <span className="text-gold">
@@ -151,7 +152,7 @@ function MvpCard({
   role,
   line,
 }: {
-  mvp: { number: number; firstName: string; lastName: string };
+  mvp: { id: number; number: number; firstName: string; lastName: string };
   role: keyof typeof ROLE_LABEL | undefined;
   line: ReturnType<typeof playerLine> | null;
 }) {
@@ -166,7 +167,12 @@ function MvpCard({
       <span className="font-display text-[clamp(72px,16vw,112px)] leading-[.8] font-extrabold text-gold tabular-nums">{mvp.number}</span>
       <div className="flex min-w-0 flex-col gap-1.5">
         <span className="font-display text-[15px] font-bold tracking-[.24em] text-gold uppercase">MVP della partita</span>
-        <span className="font-display text-[clamp(28px,6vw,40px)] leading-none font-bold break-words uppercase">{fullName(mvp)}</span>
+        <Link
+          href={`/statistiche/${mvp.id}`}
+          className="inline-flex min-h-11 items-center self-start font-display text-[clamp(28px,6vw,40px)] leading-none font-bold break-words text-ink uppercase underline decoration-gold-line underline-offset-6 hover:text-gold"
+        >
+          {fullName(mvp)}
+        </Link>
         {details.length > 0 && <span className="text-[15px] text-ink-2">{details.join(" · ")}</span>}
       </div>
     </section>
@@ -215,15 +221,20 @@ function Bests({
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,210px),1fr))] gap-2.5">
         {bests.map((b) => {
           const p = playerOf(b.playerId);
+          // Tutta la card apre la scheda del giocatore.
           return (
-            <div key={b.category} className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3.5 gap-y-1 rounded-card border border-line bg-surface p-4">
+            <Link
+              key={b.category}
+              href={`/statistiche/${b.playerId}`}
+              className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3.5 gap-y-1 rounded-card border border-line bg-surface p-4 text-ink hover:border-gold-line hover:text-ink"
+            >
               <span className="col-span-2 font-display text-sm font-bold tracking-[.2em] text-gold uppercase">{b.category}</span>
               <span className="font-display text-[44px] leading-none font-extrabold text-gold tabular-nums">{p?.number ?? "?"}</span>
               <span className="flex min-w-0 flex-col gap-0.5">
-                <span className="truncate text-base font-semibold">{p ? fullName(p) : "—"}</span>
+                <span className="truncate text-base font-semibold underline decoration-line-strong underline-offset-4">{p ? fullName(p) : "—"}</span>
                 <span className="text-sm text-muted">{b.value}</span>
               </span>
-            </div>
+            </Link>
           );
         })}
       </div>

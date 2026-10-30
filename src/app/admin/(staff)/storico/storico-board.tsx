@@ -9,7 +9,7 @@ import { useState, useTransition } from "react";
 import { BTN_DANGER, BTN_GOLD_OUTLINE, BTN_PRIMARY, BTN_SECONDARY, INPUT, LABEL } from "@/components/admin/styles";
 import { TEAM_NAME } from "@/lib/club";
 import { describeEvent, playerLabel } from "@/lib/live/describe";
-import type { Side } from "@/lib/live/skills";
+import { isTeamFault, type Side } from "@/lib/live/skills";
 import { activeEvents } from "@/lib/live/state";
 import {
   EDIT_SKILLS,
@@ -246,7 +246,14 @@ function rowText(e: LiveEvent, playerOf: (id: number) => LivePlayer | undefined,
   }
   const outcome = outcomeOptions(skill).find((o) => o.key === editOf(e).outcome)?.label;
   const title = outcome ? `${EDIT_SKILL_LABEL[skill]} · ${outcome}` : EDIT_SKILL_LABEL[skill];
-  const who = skill === "opp_error" || skill === "opp_point" ? opponent : e.playerId ? playerLabel(playerOf(e.playerId)) : "giocatore da indicare";
+  const who =
+    skill === "opp_error" || skill === "opp_point"
+      ? opponent
+      : e.playerId
+        ? playerLabel(playerOf(e.playerId))
+        : isTeamFault(skill, e.outcome)
+          ? TEAM_NAME
+          : "giocatore da indicare";
   return { title, who, muted: false };
 }
 
@@ -293,6 +300,8 @@ function EventEditor({
   const actionEvent = !event || isEditable(event);
   const outcomes = outcomeOptions(edit.skill);
   const opp = edit.skill === "opp_error" || edit.skill === "opp_point";
+  // Né per l'avversario né per il fallo di posizione (di squadra) si sceglie un giocatore.
+  const noPlayer = opp || isTeamFault(edit.skill, edit.outcome);
   const before = event?.point ?? null;
   const after = pointOf(edit, before);
 
@@ -335,7 +344,7 @@ function EventEditor({
           </label>
           {outcomes.length > 0 && (
             <label className="flex flex-col gap-1.5">
-              <span className={LABEL}>{edit.skill === "opp_error" ? "Su" : "Esito"}</span>
+              <span className={LABEL}>{edit.skill === "opp_error" ? "Errore" : "Esito"}</span>
               <select value={edit.outcome ?? ""} onChange={(e) => setEdit({ ...edit, outcome: e.target.value })} className={INPUT}>
                 {outcomes.map((o) => (
                   <option key={o.key} value={o.key}>
@@ -345,7 +354,7 @@ function EventEditor({
               </select>
             </label>
           )}
-          {!opp && (
+          {!noPlayer && (
             <label className="flex flex-col gap-1.5">
               <span className={LABEL}>Giocatore</span>
               <select

@@ -34,6 +34,8 @@ test("punti da completare e dell'avversario", () => {
   assert.equal(text({ point: "them", skill: "opp_point" }), "Punto Dinamite");
   assert.equal(text({ point: "us", skill: "opp_error", detail: { ballType: "free" } }), "Errore Dinamite · palla semplice nostra");
   assert.equal(text({ point: "us", skill: "opp_error", detail: { ballType: "rally" } }), "Errore Dinamite · azione loro");
+  assert.equal(text({ point: "us", skill: "opp_error", detail: { oppError: "serve" } }), "Errore Dinamite · battuta sbagliata");
+  assert.equal(text({ point: "us", skill: "opp_error", detail: { oppError: "double" } }), "Errore Dinamite · doppia / accompagnata");
   assert.equal(text({ point: "us", skill: "opp_error" }), "Errore Dinamite");
 });
 
@@ -55,4 +57,8 @@ test("cambi e libero", () => {
   assert.equal(text({ kind: "libero", detail: { in: 2, out: 9 } }), "Libero esce · rientra #7 Botticelli");
   assert.equal(text({ kind: "libero", detail: { in: 9 } }), "Libero scelto · #2 Federici");
   assert.equal(text({ kind: "libero", detail: { in: 19, out: 9 } }), "Cambio libero · entra #9 Casadei, esce #2 Federici");
+});
+
+test("scambio di posto", () => {
+  assert.equal(text({ kind: "swap", detail: { in: 2, out: 3 } }), "Scambio di posto · #7 Botticelli ↔ #3 Claudio");
 });

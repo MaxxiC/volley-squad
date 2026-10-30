@@ -1,7 +1,7 @@
 // Testo leggibile di un evento per il feed "Ultime azioni" (e in futuro per lo Storico).
 import { TEAM_NAME } from "../club";
 import { ROLE_LABEL, shortName } from "../players";
-import { BALL_TYPE_LABEL, SKILL_LABEL, outcomeOf, type Skill } from "./skills";
+import { BALL_TYPE_LABEL, SKILL_LABEL, oppErrorLabel, outcomeOf, type Skill } from "./skills";
 import type { LiveEvent, LivePlayer } from "./types";
 
 export function playerLabel(p: LivePlayer | undefined) {
@@ -23,6 +23,8 @@ export function describeEvent(e: LiveEvent, playerOf: (id: number) => LivePlayer
       return `Timeout ${team(d.side)}`;
     case "correction":
       return `Correzione punteggio: ${d.delta === -1 ? "−1" : "+1"} ${team(e.point)}`;
+    case "swap":
+      return `Scambio di posto · ${playerLabel(playerOf(d.in ?? 0))} ↔ ${playerLabel(playerOf(d.out ?? 0))}`;
     case "sub": {
       const role = d.role ? ` (${ROLE_LABEL[d.role]})` : "";
       return `Cambio · entra ${playerLabel(playerOf(d.in ?? 0))}${role}, esce ${playerLabel(playerOf(d.out ?? 0))}`;
@@ -39,8 +41,12 @@ export function describeEvent(e: LiveEvent, playerOf: (id: number) => LivePlayer
   }
   if (e.skill === "opp_point") return `Punto ${opponent}`;
   if (e.skill === "opp_error") {
-    const ball = e.detail?.ballType ? ` · ${BALL_TYPE_LABEL[e.detail.ballType]}` : "";
-    return `Errore ${opponent}${ball}`;
+    const what = e.detail?.oppError
+      ? ` · ${oppErrorLabel(e.detail.oppError).toLowerCase()}`
+      : e.detail?.ballType
+        ? ` · ${BALL_TYPE_LABEL[e.detail.ballType]}`
+        : "";
+    return `Errore ${opponent}${what}`;
   }
   if (!e.skill) return e.point === "us" ? `Punto ${TEAM_NAME}` : e.point === "them" ? `Punto ${opponent}` : "Azione";
   const outcome = e.outcome ? outcomeOf(e.skill as Skill, e.outcome)?.label.toLowerCase() : "";

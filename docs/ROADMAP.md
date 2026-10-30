@@ -57,7 +57,7 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] Annulla/Ripeti anche dopo un ricaricamento: la pila si salva sul telefono a ogni tocco (`undo-store.ts`, legata al Live in corso, ultime 300 operazioni) e si riprende identica; se manca o non torna col registro (azioni fatte altrove, dati cancellati) si ricostruisce dal registro (`restoreHistory` in `history.ts`: Annulla toglie l'ultima azione valida, poi la precedente). Si cancella con la copia del registro (fine partita, azzeramento, nuovo Live, Esci).
 - [x] MVP facoltativo alla chiusura ("Concludi senza MVP"); si sceglie o si cambia anche dopo dallo Storico.
 - [x] Partita conclusa: dallo Storico "Riapri nel Live" (torna in corso con tutte le azioni, parziali tolti fino alla nuova chiusura, l'MVP salvato resta proposto) e "Azzera il Live" (doppia conferma, via anche risultato e MVP). Per le prove: partita futura → Live → conclusa → Azzera.
-- [x] Chiusura (28/10/2026): prove di Max su iPhone (Vercel), E2E verdi su dev e su build di produzione con service worker, DB ripristinato e verificato; partita e squadra TEST-volley eliminate (per le prove si usa una partita futura e poi "Azzera il Live"). Merge `feat/live` → `dev` → `main` a cura di Max.
+- [x] Chiusura (28/10/2026): prove di Max su iPhone (Vercel), E2E verdi su dev e su build di produzione con service worker, DB ripristinato e verificato; partita e squadra TEST-volley eliminate (per le prove si usa una partita futura e poi "Azzera il Live"). Merge `feat/live` → `dev` → `main` fatto.
 
 ## 5 · Storico, statistiche, riepilogo pubblico 🌿 `feat/storico` ✅
 - Decisioni (28/10/2026): nello Storico si correggono **solo le partite concluse** (quelle in corso in sola lettura, così Storico e telefono del Live non si sovrascrivono). Le partite con il risultato inserito a mano (es. n. 15 con Stordyteam) non hanno azioni: niente Storico né statistiche per loro.
@@ -70,8 +70,33 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] Manifest + icone 192/512 (+ maskable, apple-touch 180) dal logo su fondo `bg`: due app installabili, "CUSBros" (da sito pubblico, apre `/`) e "CUSBros Staff" (da `/admin/**`, apre `/admin`), schermo intero (`display: standalone`)
 - [x] Progetto Vercel collegato al repo (deploy da `main`, https://volley-squad.vercel.app), env `DATABASE_URL` + `AUTH_SECRET`, funzioni in `fra1` (`vercel.json`) vicino a Neon `eu-central-1`
 - [~] Verifica su telefono reale: Live provato da Max su iPhone (28/10/2026), app installata a schermo intero; manca la prova **offline in palestra** in una partita vera
-- [ ] **iPhone:** Safari cancella cache e dati di un sito non aperto da 7 giorni se non è installato sulla Home → installazione PWA consigliata per chi registra il Live; in ogni caso aprire il Live con la rete prima della partita
-- [ ] Merge finale `dev` → `main`
+- Nota **iPhone:** Safari cancella cache e dati di un sito non aperto da 7 giorni se non è installato sulla Home → installazione PWA consigliata per chi registra il Live; in ogni caso aprire il Live con la rete prima della partita (scritto anche nel README)
+- [x] Merge `dev` → `main` (28/10/2026, compreso l'import dal sito ufficiale): `main` e `dev` sono allineati
+
+## 7 · Miglioramenti dopo la prima partita col Live (feedback di Max, 29/10/2026)
+- [x] Animazioni leggere tra le pagine (CSS, `page-enter` nel pubblico, `page-fade` nello staff via `template.tsx`; niente con "Riduci movimento")
+- **Fase 1 · Formazione e cambi**
+  - [x] Presenti divisi per ruolo nella scelta della formazione (Prepara Live e set successivi)
+  - [x] Ruolo consigliato per ogni posizione dallo schema 5-1 (P S C O S C, opposti P1–P4, P2–P5, P3–P6) a partire da chi è già in campo: scritto nelle caselle vuote e gruppo in cima ai presenti (`suggestedRoles`, `groupByRole` in `src/lib/lineup.ts`)
+  - [x] "⇄ Scambia due posizioni" nella formazione
+  - [x] Cambi: in panchina prima lo stesso ruolo di chi esce
+- **Fase 2 · Live più chiaro**
+  - [x] Scelta del giocatore dopo un +1 disposta come il campo (P4 P3 P2 / P5 P6 P1 con la posizione, libero in fondo quando serve)
+  - [x] Timeout +1 / −1 (il −1 annulla l'ultimo timeout di quella squadra nel set, `lastTimeout` in `state.ts`)
+  - [x] "⇄ Scambia" sul campo del Live: due giocatori in campo si scambiano di posto (evento `swap`, migrazione `0007`), non conta come cambio, si annulla con Annulla e si elimina dallo Storico
+- **Fase 3 · Semplice più ricca** — decisioni del 29/10/2026:
+  - [x] +1 avversario con tutti i motivi: Punto avversario, Errore battuta, Attacco fuori / rete, Murato, Ricezione errata, Errore alzata, Invasione a muro / rete, Doppia / accompagnata (poi chi), Fallo di posizione (di squadra, senza giocatore: `isTeamFault`)
+  - [x] "Errore avversario" col tipo, un tocco (`OPP_ERRORS` in `skills.ts`, `detail.oppError`): Battuta sbagliata, Attacco fuori, Attacco in rete, Invasione / rete, Doppia / accompagnata, Fallo di posizione, Altro. Al posto di "palla semplice nostra / azione loro" (`ballType` resta solo per leggere le partite vecchie; nello Storico diventano "Altro")
+  - [x] Azioni senza punto, riga di tasti sotto i +1: **Ricezione buona**, **Ricezione scarsa** (anche il libero), **Attacco giocato**, poi il giocatore (`SIMPLE_RALLY_TYPES`) → statistiche vere anche in Semplice (es. 5 punti su 10 attacchi)
+- **Fase 4 · Statistiche pubbliche** 🌿 `feat/statistiche` — decisioni del 30/10/2026: pubbliche (anche le % negative, per ora), si arriva dal bottone "Statistiche" in alto e toccando un nome nel riepilogo di una partita
+  - [x] Calcoli: punti giocati (chi era in campo a ogni punto, libero compreso: `LiveState.rallies`), set giocati e set interi (`playingTime`), punti fatti ed errori per giocatore (`pointsAndErrors`), punti regalati per tipo (`pointsGiven`), errori avversari per tipo (`oppErrorSplit`) in `src/lib/stats.ts`
+  - [x] `/statistiche` (bottone "Statistiche" nel menu pubblico, che ora ha due link): filtro stagione / singola partita, squadra (partite V/P, punti fatti e subiti, come abbiamo fatto punto con gli errori avversari per tipo, come hanno fatto punto loro), tabella dei giocatori ordinabile (punti, errori, partite, set e set interi, punti giocati, fondamentali con % e riusciti/totali; prima colonna fissa). Punti fatti/subiti dai parziali veri, con la voce "Corretti a mano" per i punti aggiunti con Correggi (nella partita del 28/10 sono 9 e 26); ordinando un fondamentale prima chi ha almeno 3 azioni. Numeri di ogni partita calcolati sul server (`src/lib/stats-data.ts`), somma e ordinamento sul telefono (`src/lib/stats-season.ts`, `stats-board.tsx`); si aggiorna con `revalidatePublicPages()`
+  - [x] `/statistiche/[id]` scheda giocatore (si apre dalla tabella, dall'MVP e da "I migliori" nel riepilogo della partita): filtro stagione / partita e per ruolo giocato, partite, set (interi), punti giocati, punti fatti, errori, ★ e MVP, fondamentali del ruolo in evidenza (anche senza azioni) e fuori ruolo con ogni esito contato, Andamento, partita per partita. Componente unico `src/components/player-stats/` usato anche da Admin Giocatori (con link "Scheda pubblica"): tolto il calcolo duplicato della pagina staff
+- **Amichevoli** (idea di Max del 30/10/2026, da progettare dopo la fase 4):
+  - [ ] Partita segnata come **amichevole** (nuovo campo della partita, da Admin Partite); il Live funziona uguale
+  - [ ] Filtro nel Calendario/Home pubblici (ufficiali / amichevoli)
+  - [ ] Statistiche e scheda giocatore con filtro **Ufficiali / Tutte / Solo amichevoli** (di base solo le ufficiali, così le amichevoli non pesano sui numeri)
+  - Da decidere: non entrano in classifica né nell'import dal sito ufficiale (non hanno numero gara); se mostrarle in Home come "prossima partita"
 
 ## 🔒 Sicurezza (sito online)
 - [x] Controllo del 28/10/2026: middleware su `/admin/**` + controllo in pagine, server action e API; login con bcrypt, messaggio e tempi uguali per email sconosciuta o password sbagliata, redirect solo interni; segreti solo in `.env`; area staff `noindex`.
@@ -83,9 +108,9 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 
 ## 💡 Idee future
 - [x] **Import dal sito ufficiale** (SportAdmin) 🌿 `feat/import`: Admin → Partite → **Ufficiale**, bottone "Controlla il sito ufficiale" (la pagina si legge solo su richiesta) → differenze → "Applica". Nostre partite riconosciute dal numero gara (data, ora, palestra, casa/trasferta, avversario, risultato se non registrate col Live; con il Live solo un avviso), partite nuove create, squadre collegate con l'id ufficiale (`teams.official_id`, migrazione `0006`) o create, classifica copiata dal sito (punti, G, V, P) con i set calcolati dai parziali. Lettura in `src/lib/official/parse.ts` (`node-html-parser`), confronto in `diff.ts`, test con una pagina finta in `tests/unit/fixtures/`.
-- [ ] **Giornate di riposo** nel Calendario pubblico ("Riposa CUSBros", 7ª andata e ritorno), come sul sito ufficiale.
-- [ ] **Loghi delle squadre** accanto ai nomi (come sul sito ufficiale).
-- [ ] **Animazioni leggere tra le pagine:** transizioni morbide (fade/slide brevi) senza librerie pesanti, es. View Transitions API del browser o CSS puro; rispettare `prefers-reduced-motion`.
+- Giornate di riposo nel Calendario pubblico: **non servono per ora** (Max, 30/10/2026).
+- Loghi delle squadre: **non per ora** (Max, 30/10/2026).
+- [x] **Animazioni leggere tra le pagine** (fatte, vedi sezione 7): transizioni morbide (fade/slide brevi) senza librerie pesanti, es. View Transitions API del browser o CSS puro; rispettare `prefers-reduced-motion`.
 
 ---
 
@@ -93,11 +118,12 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - [x] **Neon:** progetto creato, `.env` compilato.
 - [x] **Utente admin** creato.
 - [ ] **Allenatori:** crea i 2 utenti `coach` con `npm run user:create -- <email> "<nome>" coach`.
-- [ ] **Sesso dei giocatori** in Admin Giocatori (serve all'avviso "almeno 2 donne in campo").
+- [x] **Sesso dei giocatori** impostato per tutti i 14 (serve all'avviso "almeno 2 donne in campo").
 - [x] **Classifica:** si copia dal sito ufficiale con "Applica" (resta modificabile a mano da Partite → Classifica).
 - [x] **"Andata" nel Calendario:** aggiunta la fase (andata/ritorno) e il numero gara ufficiale.
 - [x] **Rosa vera:** 14 giocatori caricati (27/10/2026).
-- [ ] **Numeri di maglia veri** (ora provvisori 1–14) e **cognomi mancanti** (Claudio, Kevi, Francesco, Maria Chiara, Rebecca): si sistemano da Admin Giocatori.
+- [x] **Numeri di maglia veri** inseriti.
+- [ ] **Cognomi mancanti** (al 29/10/2026: Claudio, Francesco, Kevi, Maria Chiara, Erika): si sistemano da Admin Giocatori.
 
 ## ✅ Decisioni sul gioco (27/10/2026)
 - **Ruoli variabili:** ruolo principale in anagrafica; **ruolo per partita** scelto in Prepara Live (proposto quello dell'anagrafica); nei **cambi** si indica in che ruolo entra (proposto quello di chi esce). Variabili: Capelli, Claudio (anche adattatore), Clementi, Placucci, Kevi, Botticelli, Fish.
@@ -112,6 +138,5 @@ Legenda: `[ ]` da fare · `[x]` fatto · `[~]` in corso
 - **Classifica:** dal sito ufficiale (Partite → Ufficiale → Applica), con i set calcolati dai parziali di tutte le gare del girone; la modifica a mano resta possibile.
 - **npm audit:** 2 avvisi su `postcss` interno a Next 15 (solo build-time). La "fix" proposta è passare a Next 16: non applicata, si rivaluta quando esce una patch 15.x. Altri avvisi `esbuild` arrivano da `drizzle-kit` (solo CLI in locale, non va in produzione).
 - **Auth.js v5** è ancora in beta: versione bloccata a `5.0.0-beta.32`, aggiornare solo di proposito.
-- **Login:** nessun limite di tentativi per ora (uso interno, 3 utenti): il sito è online, vedi la sezione Sicurezza.
 - **Password dimenticata:** per ora solo messaggio "contatta l'admin".
-- **Stato al 28/10/2026:** step 0–4 completati (step 4 su `feat/live`, merge a cura di Max); step 5.1 Storico live fatto su `feat/storico`; step 5 completato su `feat/storico` (Storico, statistiche, andamento, riepilogo pubblico), E2E verdi il 28/10/2026; merge su `dev`/`main` a cura di Max. Il dev server si avvia con `npm run dev` (porta 3001).
+- **Stato al 29/10/2026:** step 0–5 completati, più sicurezza e import dal sito ufficiale; tutto unito su `dev` e su `main` (online su Vercel), nessun branch `feat` aperto. Restano: prova del Live **offline in palestra** in una partita vera (step 6), utenti `coach` e cognomi mancanti (Max), idee future ancora aperte (giornate di riposo, loghi, animazioni). Il dev server si avvia con `npm run dev` (porta 3001).

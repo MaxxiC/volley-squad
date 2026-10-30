@@ -40,6 +40,8 @@ export type LiveState = {
   timeouts: Score;
   /** Eventi validi del set in corso, in ordine, con il punteggio subito dopo ciascuno. */
   timeline: { event: LiveEvent; score: Score }[];
+  /** Tutti i punti giocati nella partita (non solo nel set in corso): set e chi era in campo (libero compreso). */
+  rallies: Rally[];
   /** Chi ha raggiunto il punteggio per chiudere il set (25, 15 al 5°, con 2 di scarto). */
   setWinner: Side | null;
   /** Qualcuno ha vinto 3 set. */
@@ -47,6 +49,9 @@ export type LiveState = {
   /** Il set in corso non ha ancora azioni: si può ancora impostare la formazione. */
   setNotStarted: boolean;
 };
+
+/** Un punto giocato: in che set e chi era in campo durante lo scambio. */
+export type Rally = { setN: number; onCourt: number[] };
 
 /** Rotazione in senso orario: chi era in P2 va in P1 (README → Rotazione automatica). */
 export function rotateClockwise(pos: number[]) {
@@ -70,6 +75,11 @@ export function setWinnerOf(setN: number, score: Score): Side | null {
 /** Eventi in ordine di registrazione (seq), esclusi gli annullati. */
 export function activeEvents(events: Iterable<LiveEvent>) {
   return [...events].filter((e) => !e.deleted).sort((a, b) => a.seq - b.seq);
+}
+
+/** Ultimo timeout valido di una squadra nel set (per il −1: si annulla quello). */
+export function lastTimeout(events: Iterable<LiveEvent>, setN: number, side: Side) {
+  return activeEvents(events).findLast((e) => e.kind === "timeout" && e.setN === setN && e.detail?.side === side) ?? null;
 }
 
 /** Posizioni di seconda linea: P1, P6, P5 (dove può stare il libero). */
@@ -141,6 +151,7 @@ export function computeLive(
       roles: previous?.roles ?? {},
       timeouts: { us: 0, them: 0 },
       timeline: [],
+      rallies: previous?.rallies ?? [],
       setWinner: null,
       matchOver: false,
       setNotStarted: true,
@@ -209,6 +220,17 @@ export function computeLive(
         }
         break;
       }
+      case "swap":
+        // Correzione della formazione a set in corso: due giocatori in campo si scambiano di posto.
+        // Non conta come cambio e non tocca punteggio né battuta.
+        if (d.in && d.out && d.in !== d.out && s.rotation.includes(d.in) && s.rotation.includes(d.out)) {
+          const a = s.rotation.indexOf(d.in);
+          const b = s.rotation.indexOf(d.out);
+          const rotation = [...s.rotation];
+          [rotation[a], rotation[b]] = [rotation[b], rotation[a]];
+          s = liberoLeavesFrontRow({ ...s, rotation });
+        }
+        break;
       case "timeout":
         if (d.side) s = { ...s, timeouts: { ...s.timeouts, [d.side]: s.timeouts[d.side] + 1 } };
         break;
@@ -217,6 +239,7 @@ export function computeLive(
         break;
       case "action":
         if (e.point) {
+          s = { ...s, rallies: [...s.rallies, { setN: s.setN, onCourt: [...s.rotation] }] };
           const score = { ...s.score, [e.point]: s.score[e.point] + 1 };
           // Cambio palla a nostro favore: si ruota prima di andare in battuta.
           const rotation = e.point === "us" && s.serving === "them" ? rotateClockwise(s.rotation) : s.rotation;

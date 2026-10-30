@@ -2,7 +2,16 @@
 
 import { useState } from "react";
 import { TEAM_NAME } from "@/lib/club";
-import { SIMPLE_OUR_TYPES, SIMPLE_THEIR_TYPES, type BallType, type Side, type SimpleType } from "@/lib/live/skills";
+import { COURT_ORDER } from "@/lib/lineup";
+import {
+  OPP_ERRORS,
+  SIMPLE_OUR_TYPES,
+  SIMPLE_RALLY_TYPES,
+  SIMPLE_THEIR_TYPES,
+  isTeamFault,
+  type Side,
+  type SimpleType,
+} from "@/lib/live/skills";
 import type { LiveEvent, LivePlayer } from "@/lib/live/types";
 import { shortName } from "@/lib/players";
 import { SMALL_BTN, starClass, toneClass } from "./live-ui";
@@ -21,7 +30,9 @@ type Props = {
   onPoint: (side: Side) => LiveEvent;
   /** Completa "come" e "chi" del punto. */
   onComplete: (id: string, patch: Partial<LiveEvent>) => void;
-  /** Giocatori tra cui scegliere: in campo (P1 per primo) e libero. */
+  /** Azione senza punto (es. ricezione, attacco rimasto in gioco), segnata a giocatore scelto. */
+  onAction: (fields: Pick<LiveEvent, "skill" | "outcome" | "playerId">) => void;
+  /** Giocatori in campo, indice = posizione (P1 per primo), e libero. */
   court: LivePlayer[];
   libero: LivePlayer | undefined;
   /** P1 al momento del punto: è chi batteva (suggerito per ace ed errori in battuta). */
@@ -30,18 +41,22 @@ type Props = {
   lastFor: (type: SimpleType) => number | null;
 };
 
+type SkillType = Extract<SimpleType, { kind: "skill" }>;
+
+/** Pannello aperto: per un punto appena segnato (come → chi) o per un'azione senza punto (chi). */
 type Panel =
   | { stage: "type"; eventId: string; side: Side }
-  | { stage: "ball"; eventId: string; side: Side; type: SimpleType }
-  | { stage: "player"; eventId: string; side: Side; type: Extract<SimpleType, { kind: "skill" }> };
+  | { stage: "opp_error"; eventId: string; side: Side }
+  | { stage: "player"; eventId: string; side: Side; type: SkillType }
+  | { stage: "rally"; type: SkillType };
 
-export function SimpleInput({ opponent, eventOf, onPoint, onComplete, court, libero, serverId, lastFor }: Props) {
+export function SimpleInput({ opponent, eventOf, onPoint, onComplete, onAction, court, libero, serverId, lastFor }: Props) {
   const [panel, setPanel] = useState<Panel | null>(null);
   const [star, setStar] = useState(false);
 
-  // Il pannello vale solo finché il suo punto esiste ed è ancora da completare (Annulla lo chiude).
-  const current = panel ? eventOf(panel.eventId) : undefined;
-  const open = panel && current && !current.deleted && current.incomplete ? panel : null;
+  // Il pannello di un punto vale solo finché il punto esiste ed è ancora da completare (Annulla lo chiude).
+  const current = panel && panel.stage !== "rally" ? eventOf(panel.eventId) : undefined;
+  const open = panel?.stage === "rally" || (current && !current.deleted && current.incomplete) ? panel : null;
 
   const close = () => {
     setPanel(null);
@@ -53,16 +68,27 @@ export function SimpleInput({ opponent, eventOf, onPoint, onComplete, court, lib
     setPanel({ stage: "type", eventId: e.id, side });
   };
   const complete = (patch: Partial<LiveEvent>) => {
-    if (!open) return;
+    if (!open || open.stage === "rally") return;
     onComplete(open.eventId, { ...patch, incomplete: false });
     close();
   };
 
   const chooseType = (type: SimpleType) => {
-    if (!open) return;
+    if (!open || open.stage === "rally") return;
     if (type.kind === "opp_point") complete({ skill: "opp_point" });
-    else if (type.kind === "opp_error") setPanel({ stage: "ball", eventId: open.eventId, side: open.side, type });
+    else if (type.kind === "opp_error") setPanel({ stage: "opp_error", eventId: open.eventId, side: open.side });
+    // Fallo di squadra (es. di posizione): nessun giocatore da scegliere.
+    else if (isTeamFault(type.skill, type.outcome)) complete({ skill: type.skill, outcome: type.outcome, playerId: null });
     else setPanel({ stage: "player", eventId: open.eventId, side: open.side, type });
+  };
+
+  const choosePlayer = (id: number) => {
+    if (!open || (open.stage !== "player" && open.stage !== "rally")) return;
+    const { skill, outcome } = open.type;
+    if (open.stage === "rally") {
+      onAction({ skill, outcome, playerId: id });
+      close();
+    } else complete({ skill, outcome, playerId: id, star: open.side === "us" && star });
   };
 
   if (!open) {
@@ -86,32 +112,57 @@ export function SimpleInput({ opponent, eventOf, onPoint, onComplete, court, lib
             <span className="max-w-full truncate px-2 font-display text-[17px] font-bold tracking-[.12em] uppercase">{opponent}</span>
           </button>
         </div>
-        <span className="text-[13px] text-faint">Il punto si segna subito. Poi puoi aggiungere come è arrivato e chi l&apos;ha fatto.</span>
+        {/* Azioni senza punto: la palla resta in gioco, servono alle statistiche. */}
+        <div role="group" aria-label="Azioni senza punto" className="grid grid-cols-3 gap-2">
+          {SIMPLE_RALLY_TYPES.map((t) => (
+            <button
+              key={t.label}
+              type="button"
+              onClick={() => setPanel({ stage: "rally", type: t })}
+              className="min-h-12 cursor-pointer rounded-tile border border-line-strong bg-surface-2 px-1.5 py-1 font-display text-sm leading-[1.1] font-bold tracking-[.04em] text-ink uppercase active:bg-chip"
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <span className="text-[13px] text-faint">
+          Il punto si segna subito. Poi puoi aggiungere come è arrivato e chi l&apos;ha fatto.
+        </span>
       </div>
     );
   }
 
+  const rally = open.stage === "rally";
   const title =
-    open.stage === "type" ? "Come è arrivato?" : open.stage === "ball" ? `Errore ${opponent} su…` : `${open.type.label} · chi?`;
-  const types = open.side === "us" ? SIMPLE_OUR_TYPES : SIMPLE_THEIR_TYPES;
-  const last = open.stage === "player" ? lastFor(open.type) : null;
-  const suggested = open.stage === "player" && open.type.kind === "skill" && open.type.skill === "serve" ? serverId : null;
-  const choices = open.stage === "player" && open.type.includeLibero && libero ? [...court, libero] : court;
-  const us = open.side === "us";
+    open.stage === "type"
+      ? "Come è arrivato?"
+      : open.stage === "opp_error"
+        ? `Errore ${opponent}: cosa?`
+        : `${open.type.label} · chi?`;
+  const types = !rally && open.side === "us" ? SIMPLE_OUR_TYPES : SIMPLE_THEIR_TYPES;
+  const choosing = open.stage === "player" || open.stage === "rally" ? open.type : null;
+  const last = choosing ? lastFor(choosing) : null;
+  const suggested = choosing?.skill === "serve" ? serverId : null;
+  // Disposti come il campo del Live (P4 P3 P2 / P5 P6 P1); il libero in panchina in fondo, quando serve.
+  const position = (p: LivePlayer) => court.indexOf(p);
+  const field = court.length === 6 ? COURT_ORDER.map((i) => court[i]) : court;
+  const withLibero = choosing?.includeLibero && libero && !court.includes(libero);
+  const choices = withLibero ? [...field, libero] : field;
+  const us = !rally && open.side === "us";
+  // Colore del pannello: oro = punto nostro, rosso = punto loro, neutro = azione senza punto.
+  const frame = rally ? "border-line-strong bg-surface" : us ? "border-gold bg-surface-sel" : "border-red-line bg-surface";
 
   return (
-    <section
-      className={`${STAGE} gap-3.5 rounded-panel border p-3.5 ${us ? "border-gold bg-surface-sel" : "border-red-line bg-surface"}`}
-    >
+    <section className={`${STAGE} gap-3.5 rounded-panel border p-3.5 ${frame}`}>
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           {/* Di chi è il punto: si capisce a colpo d'occhio anche dal colore del pannello. */}
           <span
-            className={`mr-auto min-w-0 truncate font-display text-[13px] font-bold tracking-[.16em] uppercase ${us ? "text-gold" : "text-red"}`}
+            className={`mr-auto min-w-0 truncate font-display text-[13px] font-bold tracking-[.16em] uppercase ${rally ? "text-muted" : us ? "text-gold" : "text-red"}`}
           >
-            +1 {us ? TEAM_NAME : opponent}
+            {rally ? "Senza punto" : `+1 ${us ? TEAM_NAME : opponent}`}
           </span>
-          {open.stage !== "type" && (
+          {!rally && open.stage !== "type" && (
             <button
               type="button"
               onClick={() => setPanel({ stage: "type", eventId: open.eventId, side: open.side })}
@@ -121,7 +172,7 @@ export function SimpleInput({ opponent, eventOf, onPoint, onComplete, court, lib
             </button>
           )}
           <button type="button" onClick={close} className={`${SMALL_BTN} text-muted`}>
-            Salta
+            {rally ? "Annulla" : "Salta"}
           </button>
         </div>
         <span className="font-display text-[22px] leading-[1.1] font-bold uppercase">{title}</span>
@@ -136,7 +187,7 @@ export function SimpleInput({ opponent, eventOf, onPoint, onComplete, court, lib
                 key={t.label}
                 type="button"
                 onClick={() => chooseType(t)}
-                className={`min-h-16 cursor-pointer rounded-tile border px-3 py-2 font-display text-lg leading-[1.1] font-bold tracking-[.04em] uppercase active:bg-chip ${toneClass(tone)}`}
+                className={`min-h-14 cursor-pointer rounded-tile border px-3 py-2 font-display text-lg leading-[1.1] font-bold tracking-[.04em] uppercase active:bg-chip ${toneClass(tone)}`}
               >
                 {t.label}
               </button>
@@ -145,28 +196,33 @@ export function SimpleInput({ opponent, eventOf, onPoint, onComplete, court, lib
         </div>
       )}
 
-      {open.stage === "ball" && (
+      {open.stage === "opp_error" && (
         <div className="grid grid-cols-2 gap-2">
-          {(["free", "rally"] as BallType[]).map((ball) => (
+          {OPP_ERRORS.map((o) => (
             <button
-              key={ball}
+              key={o.key}
               type="button"
-              onClick={() => complete({ skill: "opp_error", detail: { ballType: ball } })}
-              className={`min-h-16 cursor-pointer rounded-tile border px-3 font-display text-lg font-bold tracking-[.04em] uppercase active:bg-chip ${toneClass(null)}`}
+              onClick={() => complete({ skill: "opp_error", detail: { oppError: o.key } })}
+              className={`min-h-14 cursor-pointer rounded-tile border px-3 py-2 font-display text-lg leading-[1.1] font-bold tracking-[.04em] uppercase active:bg-chip ${toneClass(null)}`}
             >
-              {ball === "free" ? "Palla semplice nostra" : "Azione loro"}
+              {o.label}
             </button>
           ))}
         </div>
       )}
 
-      {open.stage === "player" && (
+      {choosing && (
         <>
-          {open.side === "us" && (
+          {us && (
             <button type="button" aria-pressed={star} onClick={() => setStar(!star)} className={starClass(star)}>
               ★ Meritevole
             </button>
           )}
+          <div aria-hidden className="-mb-1 flex items-center gap-2">
+            <span className="h-0.5 flex-1 rounded-pill bg-line-strong" />
+            <span className="text-[10px] font-bold tracking-[.2em] text-faint uppercase">Rete</span>
+            <span className="h-0.5 flex-1 rounded-pill bg-line-strong" />
+          </div>
           <div className="grid grid-cols-3 gap-2">
             {choices.map((p) => {
               const tag = p.id === suggested ? "battuta" : p.id === last ? "ultimo" : p.id === libero?.id ? "libero" : "";
@@ -175,12 +231,14 @@ export function SimpleInput({ opponent, eventOf, onPoint, onComplete, court, lib
                 <button
                   key={p.id}
                   type="button"
-                  onClick={() =>
-                    open.type.kind === "skill" &&
-                    complete({ skill: open.type.skill, outcome: open.type.outcome, playerId: p.id, star: open.side === "us" && star })
-                  }
+                  onClick={() => choosePlayer(p.id)}
                   className={`relative flex min-h-17 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-tile border text-ink active:border-gold ${highlight ? "border-gold-line bg-surface-sel" : "border-line bg-surface-2"}`}
                 >
+                  {position(p) >= 0 && (
+                    <span aria-hidden className="absolute top-1 left-1.5 text-[10px] font-semibold text-faint">
+                      P{position(p) + 1}
+                    </span>
+                  )}
                   <span className="font-display text-[28px] leading-none font-extrabold text-gold tabular-nums">{p.number}</span>
                   <span className="max-w-full truncate px-1 text-[13px] text-ink-2">{shortName(p)}</span>
                   {tag && (

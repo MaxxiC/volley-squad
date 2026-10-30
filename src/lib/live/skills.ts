@@ -55,13 +55,38 @@ export function outcomeOf(skill: Skill, key: string) {
   return OUTCOMES[skill].find((o) => o.key === key) ?? null;
 }
 
-/** Errore avversario: su una nostra palla semplice (free) o durante una loro azione (rally). */
+/**
+ * Errore avversario, versione vecchia: su una nostra palla semplice (free) o durante una loro azione
+ * (rally). Resta solo per leggere le partite registrate prima del tipo di errore (OPP_ERRORS).
+ */
 export const BALL_TYPE_LABEL = { free: "palla semplice nostra", rally: "azione loro" } as const;
 export type BallType = keyof typeof BALL_TYPE_LABEL;
 
+/** Errore avversario: che cosa hanno sbagliato (nell'ordine dei bottoni). */
+export const OPP_ERRORS = [
+  { key: "serve", label: "Battuta sbagliata" },
+  { key: "attack_out", label: "Attacco fuori" },
+  { key: "attack_net", label: "Attacco in rete" },
+  { key: "net", label: "Invasione / rete" },
+  { key: "double", label: "Doppia / accompagnata" },
+  { key: "position", label: "Fallo di posizione" },
+  { key: "other", label: "Altro" },
+] as const;
+export type OppError = (typeof OPP_ERRORS)[number]["key"];
+export const OPP_ERROR_KEYS = OPP_ERRORS.map((o) => o.key) as [OppError, ...OppError[]];
+
+export function oppErrorLabel(key: OppError) {
+  return OPP_ERRORS.find((o) => o.key === key)?.label ?? "Altro";
+}
+
+/** Fondamentale ed esito che non hanno un giocatore: il fallo di posizione è di tutta la squadra. */
+export function isTeamFault(skill: string | null, outcome: string | null) {
+  return skill === "fault" && outcome === "position";
+}
+
 /**
  * Modalità semplice: come è arrivato il punto. Ogni tipo diventa un fondamentale+esito
- * (o un evento dell'avversario) e dice se serve scegliere il giocatore.
+ * (o un evento dell'avversario); il giocatore si sceglie sempre, tranne per i falli di squadra.
  */
 export type SimpleType =
   | { kind: "skill"; label: string; skill: Skill; outcome: string; includeLibero?: boolean }
@@ -78,7 +103,21 @@ export const SIMPLE_OUR_TYPES: SimpleType[] = [
 export const SIMPLE_THEIR_TYPES: SimpleType[] = [
   { kind: "opp_point", label: "Punto avversario" },
   { kind: "skill", label: "Errore battuta", skill: "serve", outcome: "error" },
-  { kind: "skill", label: "Errore attacco", skill: "attack", outcome: "error" },
+  { kind: "skill", label: "Attacco fuori / rete", skill: "attack", outcome: "error" },
+  { kind: "skill", label: "Murato", skill: "attack", outcome: "blocked" },
   { kind: "skill", label: "Ricezione errata", skill: "reception", outcome: "error", includeLibero: true },
-  { kind: "skill", label: "Fallo / invasione", skill: "fault", outcome: "invasion" },
+  { kind: "skill", label: "Errore alzata", skill: "set", outcome: "error", includeLibero: true },
+  { kind: "skill", label: "Invasione a muro / rete", skill: "block", outcome: "net" },
+  { kind: "skill", label: "Doppia / accompagnata", skill: "fault", outcome: "double", includeLibero: true },
+  { kind: "skill", label: "Fallo di posizione", skill: "fault", outcome: "position" },
+];
+
+/**
+ * Modalità semplice: azioni senza punto (la palla resta in gioco), per avere statistiche vere
+ * anche qui, es. quanti attacchi in tutto per i punti fatti.
+ */
+export const SIMPLE_RALLY_TYPES: Extract<SimpleType, { kind: "skill" }>[] = [
+  { kind: "skill", label: "Ricezione buona", skill: "reception", outcome: "good", includeLibero: true },
+  { kind: "skill", label: "Ricezione scarsa", skill: "reception", outcome: "poor", includeLibero: true },
+  { kind: "skill", label: "Attacco giocato", skill: "attack", outcome: "in" },
 ];

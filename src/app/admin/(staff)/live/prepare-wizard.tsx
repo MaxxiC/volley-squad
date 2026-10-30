@@ -277,7 +277,7 @@ export function PrepareWizard({ match, choices, roster, current, last }: Props) 
 
           <div className="flex flex-col gap-3">
             <h2 className={H2}>Presenti</h2>
-            <LineupPool lineup={lineup} players={present} tagOf={(p) => roles[p.id]} />
+            <LineupPool lineup={lineup} players={present} roleOf={(id) => roles[id]} />
             <div className="flex flex-wrap gap-2">
               <button type="button" className={CHIP} disabled={!last} onClick={fromLast}>
                 Come ultima partita
@@ -294,7 +294,7 @@ export function PrepareWizard({ match, choices, roster, current, last }: Props) 
               </button>
             </div>
             <span className="text-[13px] text-faint">
-              &quot;Riempi in ordine&quot; mette i presenti nelle posizioni vuote seguendo i ruoli di questa partita (P, S, C, O, S, C)
+              &quot;Riempi in ordine&quot; mette i presenti nelle posizioni vuote con i ruoli consigliati (schema P, S, C, O, S, C che gira con chi hai già messo, es. l&apos;alzatore in P3)
               e assegna il libero se manca.
             </span>
           </div>

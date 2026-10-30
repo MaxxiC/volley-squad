@@ -45,8 +45,8 @@ export default async function CalendarioPage() {
   });
 
   return (
-    <PublicShell width="narrow" navLink={{ href: "/", label: "Home" }}>
-      <main className="relative z-1 mx-auto flex max-w-[1000px] flex-col gap-[clamp(36px,6vw,60px)] px-gutter pt-[clamp(20px,5vw,48px)] pb-18">
+    <PublicShell width="narrow" navLinks={[{ href: "/", label: "Home" }, { href: "/statistiche", label: "Statistiche" }]}>
+      <main className="page-enter relative z-1 mx-auto flex max-w-[1000px] flex-col gap-[clamp(36px,6vw,60px)] px-gutter pt-[clamp(20px,5vw,48px)] pb-18">
         <header className="flex flex-col gap-3">
           <span className="font-display text-[15px] font-semibold tracking-[.28em] text-gold uppercase">
             Stagione {season.name}
