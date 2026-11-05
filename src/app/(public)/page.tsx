@@ -66,7 +66,6 @@ export default async function HomePage() {
           <Logo
             alt="Logo CUSBros Volleyball Team"
             priority
-            sizes="260px"
             className="block h-auto w-[clamp(140px,30vw,260px)] drop-shadow-[0_12px_40px_rgba(212,174,98,0.18)]"
           />
           <div className="flex min-w-0 flex-col gap-3.5">
