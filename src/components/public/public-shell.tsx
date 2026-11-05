@@ -20,11 +20,11 @@ export function PublicShell({ width, navLinks, watermark = false, children }: Pu
 
   return (
     <div className="relative min-h-screen overflow-x-clip">
+      {/* Niente `sizes`: stessa immagine del logo grande della Home, scaricata una volta sola. */}
       {watermark && (
         <Logo
           decorative
           alt=""
-          sizes="900px"
           className="pointer-events-none absolute -top-[10vw] -right-[18vw] z-0 h-auto w-[clamp(420px,70vw,900px)] opacity-6 grayscale"
         />
       )}
